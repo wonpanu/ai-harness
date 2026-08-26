@@ -1,6 +1,6 @@
 ---
 name: go-backend-style
-description: Go backend code-style rules distilled from production BFF services — guard-clause error ladders, descriptive naming, initialism casing, layering, why-comments. Use when writing or reviewing Go code: services, handlers, usecases, repos, or any .go file.
+description: Go backend code-style rules distilled from production BFF services — guard-clause error ladders, descriptive naming, initialism casing, layering, why-comments. Use when writing or reviewing Go code — services, handlers, usecases, repos, or any .go file.
 ---
 
 # Go backend style
