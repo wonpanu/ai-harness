@@ -6,7 +6,7 @@ subagents in `agents/`; a tool without subagents applies each role's discipline 
 
 **Keep the playbook in sync:** `PLAYBOOK.html` is the visual version of this file (interactive
 flow diagram + rules). Whenever this file, the agent definitions, or the skills it describes
-change, update PLAYBOOK.html in the same turn. It is also published as the "Claude Orchestrator
+change, update PLAYBOOK.html in the same turn. It is also published as the "AI Orchestrator
 Playbook" artifact — offer to republish it so the hosted copy stays current.
 
 ## Orchestration workflow
