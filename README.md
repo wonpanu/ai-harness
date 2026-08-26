@@ -32,7 +32,7 @@ flowchart LR
     PEER --> SYN
     WEB --> SYN
     COMMIT --> SYN
-    SYN -->|synthesize| REV["senior-lead-reviewer<br/>session model · fresh ctx"]
+    SYN -->|synthesize| REV["senior-lead-reviewer<br/>opus-4.8 · fresh ctx"]
     REV --> SHIP([Ship])
 ```
 
@@ -52,7 +52,7 @@ docs (`grill-with-docs`) **before** the PRD is drafted.
 | **Peer** | session model · fresh context | An engineer on par with deep-reasoner, from a different perspective — a peer, not a reviewer. Works the same high-stakes problem independently; the orchestrator synthesizes without showing either the other's answer. |
 | **web-searcher** | haiku-4.5 | Internet research: docs, library versions, error messages, current facts. Prefers primary sources, cross-checks surprises, returns answer + source URLs; says so when sources conflict — never guesses. |
 | **code-committer** | haiku-4.5 | Commits finished work on instruction from the orchestrator or another worker. Reads the actual diff before writing the message, stages only relevant files, matches repo convention. Never edits code; pushes only when explicitly told. |
-| **senior-lead-reviewer** | session model · fresh context | Reviews work about to merge/ship (plans, diffs, designs) through a maintainability / tech-debt / operability lens — distinct from peer (correctness) and ponytail (over-engineering). Receives the PRD so review targets the real acceptance criteria. |
+| **senior-lead-reviewer** | opus-4.8 · fresh context | Reviews work about to merge/ship (plans, diffs, designs) through a maintainability / tech-debt / operability lens — distinct from peer (correctness) and ponytail (over-engineering). Receives the PRD so review targets the real acceptance criteria. |
 
 ## Second brain
 
