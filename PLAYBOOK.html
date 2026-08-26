@@ -21,6 +21,8 @@ h2{font-family:"Bricolage Grotesque","IBM Plex Sans Thai","IBM Plex Sans",sans-s
 h2.stack{font-size:1.15rem;margin:36px 0 12px}
 .sub+h2.stack{margin-top:0}
 .note{color:var(--muted);font-size:.88rem;margin-top:10px;max-width:62ch}
+.eyebrow a,.note a,footer a{color:var(--accent);text-decoration:none;border-bottom:1px solid transparent}
+.eyebrow a:hover,.note a:hover,footer a:hover,.eyebrow a:focus-visible,.note a:focus-visible,footer a:focus-visible{border-bottom-color:var(--accent);outline:none}
 .sub{color:var(--muted);margin:0 0 20px;max-width:66ch}
 /* diagram */
 .diagram-card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px 12px 8px;overflow-x:auto}
@@ -89,10 +91,10 @@ section{scroll-margin-top:24px}
 
 <div class="wrap">
 <header>
-  <p class="eyebrow">AGENTS.md · github.com/wonpanu/ai-harness</p>
+  <p class="eyebrow"><a href="https://github.com/wonpanu/ai-harness" target="_blank" rel="noopener">AGENTS.md · github.com/wonpanu/ai-harness ↗</a></p>
   <h1>AI Orchestrator Playbook</h1>
   <p>ผังการทำงานของทุก session <strong>บนเครื่องนี้</strong>: orchestrator ตัวเดียว route งานไปยัง agent ที่กำหนดไว้ ผ่าน PRD gate พร้อมกฎ code style ที่กลั่นจาก production services จริง — คลิก node ในไดอะแกรมเพื่อดูรายละเอียด</p>
-  <p class="note">⚠ config ทั้งหมดเป็นไฟล์ local (CLAUDE.md, agents/, skills/) — ไม่ sync ตาม account ใช้เครื่องอื่น clone จาก github.com/wonpanu/ai-harness — AI เจ้าอื่น (Codex, Cursor, Gemini CLI) ใช้ส่วน portable ผ่าน AGENTS.md ใน repo ได้</p>
+  <p class="note">⚠ config ทั้งหมดเป็นไฟล์ local (CLAUDE.md, agents/, skills/) — ไม่ sync ตาม account ใช้เครื่องอื่น clone จาก <a href="https://github.com/wonpanu/ai-harness" target="_blank" rel="noopener">github.com/wonpanu/ai-harness</a> — AI เจ้าอื่น (Codex, Cursor, Gemini CLI) ใช้ส่วน portable ผ่าน AGENTS.md ใน repo ได้</p>
   <nav class="brain" aria-label="กระโดดไปแต่ละส่วน">
     <a href="#workflow" style="--bc:var(--c-orch)"><b><i></i>ผังการทำงาน</b><span>orchestrator + agents 6 ตัว</span></a>
     <a href="#code-style" style="--bc:var(--c-deep)"><b><i></i>กฎการเขียนโค้ด</b><span>universal + Go + React skill</span></a>
@@ -380,7 +382,7 @@ section{scroll-margin-top:24px}
   </div>
 </section>
 
-<footer>source: AGENTS.md @ github.com/wonpanu/ai-harness (CLAUDE.md symlinks here; install via make install) · updated 2026-08-26</footer>
+<footer>source: <a href="https://github.com/wonpanu/ai-harness" target="_blank" rel="noopener">AGENTS.md @ github.com/wonpanu/ai-harness</a> (CLAUDE.md symlinks here; install via make install) · updated 2026-08-26</footer>
 </div>
 
 <script>
