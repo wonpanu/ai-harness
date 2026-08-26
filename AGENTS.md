@@ -27,7 +27,7 @@ High-stakes decisions: task the peer on the same problem in parallel, synthesize
 - Mechanical work, well-specified but bulky/repetitive (multi-file renames, boilerplate, test scaffolds) → `fast-worker`
 - Internet research → `web-searcher`; committing finished work → `code-committer`
 - High-stakes decision where being wrong is expensive → peer + deep-reasoner in parallel, then synthesize
-- Reviewing work about to merge/ship (plan, diff, design) from a senior-lead lens — maintainability, tech-debt, operability → `senior-lead-reviewer` (Opus 4.8, fresh context; distinct lens from peer=correctness and ponytail=over-engineering)
+- Reviewing work about to merge/ship (plan, diff, design) from a senior-lead lens — maintainability, tech-debt, operability → `senior-lead-reviewer` (Opus 5.0, effort xhigh, fresh context; distinct lens from peer=correctness and ponytail=over-engineering)
 Work you can finish yourself in one turn (1-2 file edits, answering questions, small edits): **do NOT delegate** — cold-context agent overhead isn't worth it (ponytail).
 
 **PRD before starting:** whenever the orchestrator takes on incoming requirements, write a brief PRD first — goal, acceptance criteria, and necessary context (constraints, relevant files/systems, decisions already made) — and pass it to every delegated worker and reviewer so they work/review on the same context. Scale to the task: a few lines for small work, full form only for large work. If any domain term in the requirement is ambiguous or may mean something different in this project's context, run `grill-with-docs` (or align terminology against the project's domain model/docs by hand) BEFORE drafting the PRD — so the PRD's words carry the project's meaning, not a guessed one.
@@ -57,4 +57,4 @@ Stack-specific style lives in skills — invoke/read the matching one before wri
 - **Reference repos are a source of patterns, not verbatim copies** — borrow the pattern (state mgmt, hook structure, return shape, logic flow) but **rename everything to fit its role in our own repo's context**.
 - Before asserting "the rest already follows best practice" → verify by actually exploring; don't trust memory.
 - Grill the user via AskUserQuestion (or plain questions) one at a time before starting — the user likes assumptions challenged and decisions settled point by point.
-- For rigor on hard tasks, apply `skills/fable-mode/`: restate → verify assumptions → falsify conclusions → hostile self-review → cite or label every claim.
+- For rigor on hard tasks, apply `skills/frontier-mode/`: restate → verify assumptions → falsify conclusions → hostile self-review → cite or label every claim.

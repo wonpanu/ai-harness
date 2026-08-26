@@ -68,7 +68,7 @@ pre{margin:0;padding:14px 16px;background:var(--code-bg);color:var(--code-ink);f
 .practice b{display:block;margin-bottom:2px}
 .practice p{margin:0;color:var(--muted);font-size:.95rem;max-width:70ch}
 footer{color:var(--muted);font-size:.82rem;font-family:"IBM Plex Mono",monospace}
-/* fable mode */
+/* frontier mode */
 .fable{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
 .fable>div{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 20px}
 .fable i{font:700 .78rem "IBM Plex Mono",monospace;font-style:normal;color:var(--accent);display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border:1.5px solid var(--accent);border-radius:50%;margin-bottom:8px}
@@ -96,7 +96,7 @@ section{scroll-margin-top:24px}
   <nav class="brain" aria-label="กระโดดไปแต่ละส่วน">
     <a href="#workflow" style="--bc:var(--c-orch)"><b><i></i>ผังการทำงาน</b><span>orchestrator + agents 6 ตัว</span></a>
     <a href="#code-style" style="--bc:var(--c-deep)"><b><i></i>กฎการเขียนโค้ด</b><span>universal + Go + React skill</span></a>
-    <a href="#fable" style="--bc:var(--c-peer)"><b><i></i>Fable mode</b><span>discipline 5 ช่วง + checklist</span></a>
+    <a href="#fable" style="--bc:var(--c-peer)"><b><i></i>Frontier mode</b><span>discipline 5 ช่วง + checklist</span></a>
     <a href="#creating" style="--bc:var(--c-explore)"><b><i></i>Creating skills</b><span>เลือก pattern ตาม use case</span></a>
     <a href="#practice" style="--bc:var(--c-rev)"><b><i></i>กฎการทำงาน</b><span>PRD gate · docs-first · grill</span></a>
   </nav>
@@ -184,7 +184,7 @@ section{scroll-margin-top:24px}
         <rect x="690" y="160" width="146" height="52"/>
         <circle class="dot" cx="706" cy="178" r="4"/>
         <text x="763" y="182" text-anchor="middle">senior-lead-reviewer</text>
-        <text class="role" x="763" y="199" text-anchor="middle">opus-4.8 · fresh ctx</text>
+        <text class="role" x="763" y="199" text-anchor="middle">opus-5 · xhigh</text>
       </g>
       <g class="node" data-id="ship" style="--nc:var(--good)">
         <rect x="878" y="160" width="16" height="52" rx="6"/>
@@ -332,9 +332,9 @@ section{scroll-margin-top:24px}
 </section>
 
 <section id="fable">
-  <p class="eyebrow">Session mode · /fable-mode</p>
-  <h2>Fable mode</h2>
-  <p class="sub">โครง discipline ระดับ frontier model สำหรับ model ที่เบากว่า (เช่น Opus 5) — เพิ่ม raw capability ไม่ได้ แต่บังคับ habit ที่ model ระดับท็อปทำเองโดยธรรมชาติ เรียกใช้เองเท่านั้น มีผลจนสั่ง "stop fable mode"</p>
+  <p class="eyebrow">Session mode · /frontier-mode</p>
+  <h2>Frontier mode</h2>
+  <p class="sub">โครง discipline ระดับ frontier model สำหรับ model ที่เบากว่า (เช่น Opus 5) — เพิ่ม raw capability ไม่ได้ แต่บังคับ habit ที่ model ระดับท็อปทำเองโดยธรรมชาติ เรียกใช้เองเท่านั้น มีผลจนสั่ง "stop frontier mode"</p>
   <div class="fable">
     <div><i>1</i><b>ก่อนลงมือ</b><p>Restate โจทย์หนึ่งบรรทัด ไล่ assumption ที่รับน้ำหนัก — อะไร verify ได้ต้องอ่านจริง ห้ามตอบจากความจำ ชั่งน้ำหนัก 2-3 approach ก่อน commit</p></div>
     <div><i>2</i><b>ระหว่างทำ</b><p>พยายาม falsify ทุกข้อสรุปสำคัญ ผลที่ surprise คือ signal — หยุดแล้ว reconcile ก่อนต่อยอด ทำ step เล็ก ตามด้วย check ที่ถูกสุดที่จะ fail ถ้าผิด</p></div>
@@ -344,7 +344,7 @@ section{scroll-margin-top:24px}
   </div>
   <div class="checklist">
     <b>Checklist ที่ agent ต้อง copy ลง response แล้วติ๊กตามจริง (ข้ามได้เฉพาะงาน trivial):</b>
-<pre>Fable checklist:
+<pre>Frontier checklist:
 - [ ] Problem restated; load-bearing assumptions read, not recalled
 - [ ] 2-3 approaches weighed before committing
 - [ ] Each significant conclusion challenged (falsify pass)
@@ -418,7 +418,7 @@ const DATA = {
     "รับคำสั่ง commit จาก orchestrator หรือ worker ตัวอื่นเมื่องานเสร็จ",
     "อ่าน diff จริงก่อนเขียน message — เจอของไม่ตรงคำสั่งให้ flag ไม่ใช่ commit ทิ้งไป",
     "Stage เฉพาะไฟล์ที่เกี่ยว ตาม convention ของ repo — ไม่แก้โค้ด ไม่ push ถ้าไม่ได้สั่ง"]},
-  rev:  {name:"senior-lead-reviewer", meta:{model:"claude-opus-4-8 — fresh context", lens:"maintainability · tech-debt · operability"}, points:[
+  rev:  {name:"senior-lead-reviewer", meta:{model:"claude-opus-5 · xhigh — fresh context", lens:"maintainability · tech-debt · operability"}, points:[
     "Review งานก่อน merge/ship: plan, diff, design",
     "คนละ lens กับ peer (correctness) และ ponytail (over-engineering)",
     "ได้รับ PRD เพื่อ review ให้ตรง acceptance criteria จริง"]},
