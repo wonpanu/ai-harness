@@ -11,6 +11,8 @@ Playbook" artifact — offer to republish it so the hosted copy stays current.
 
 ## Orchestration workflow
 
+Model per role is configured in `models.env` (personal overrides in `models.local.env`, applied by `make install`) — the models named below are the defaults.
+
 You (the session model) are the orchestrator. Plan, decompose, synthesize.
 Reasoning-heavy phases → deep-reasoner role (Opus 5.0, effort xhigh)
 Mechanical work → fast-worker role (Opus 5.0, effort medium)

@@ -83,10 +83,15 @@ git clone git@github.com:wonpanu/ai-harness.git ~/ai-harness
 cd ~/ai-harness && make install   # later: make update (pull + re-link)
 ```
 
-Everything is symlinked, so `git pull` updates the live setting. A pre-existing
-regular-file `CLAUDE.md` is backed up to `CLAUDE.md.bak` first. Install into a
-different profile with `CLAUDE_DIR=~/.claude-x ~/ai-harness/install.sh`.
-Adjust agent `model:`/`effort:` in `agents/*.md` frontmatter to taste.
+`CLAUDE.md` and skills are symlinked, so `git pull` updates them live. Agents are
+**generated** from `agents/*.md` + [models.env](models.env), so model/effort can
+differ per machine. A pre-existing regular-file `CLAUDE.md` is backed up to
+`CLAUDE.md.bak` first. Install into a different profile with
+`CLAUDE_DIR=~/.claude-x ~/ai-harness/install.sh`.
+
+**Customize models:** copy any variable from `models.env` into `models.local.env`
+(gitignored), change the value, run `make install`. Repo updates never touch your
+local overrides.
 
 ## License
 
