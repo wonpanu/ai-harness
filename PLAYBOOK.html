@@ -17,7 +17,10 @@ body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.6 "IBM Plex 
 header h1{font-family:"Bricolage Grotesque","IBM Plex Sans Thai","IBM Plex Sans",sans-serif;font-weight:700;font-size:clamp(2rem,5vw,3rem);margin:0 0 8px;text-wrap:balance;letter-spacing:-.01em}
 header p{color:var(--muted);max-width:62ch;margin:0}
 .eyebrow{font-size:.72rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0 0 6px}
-h2{font-family:"Bricolage Grotesque","IBM Plex Sans Thai","IBM Plex Sans",sans-serif;font-weight:700;font-size:1.5rem;margin:0 0 4px;letter-spacing:-.01em}
+h2{font-family:"Bricolage Grotesque","IBM Plex Sans Thai","IBM Plex Sans",sans-serif;font-weight:700;font-size:1.5rem;margin:0 0 4px;letter-spacing:-.01em;text-wrap:balance}
+h2.stack{font-size:1.15rem;margin:36px 0 12px}
+.sub+h2.stack{margin-top:0}
+.note{color:var(--muted);font-size:.88rem;margin-top:10px;max-width:62ch}
 .sub{color:var(--muted);margin:0 0 20px;max-width:66ch}
 /* diagram */
 .diagram-card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px 12px 8px;overflow-x:auto}
@@ -35,7 +38,7 @@ svg{display:block;min-width:820px;width:100%;height:auto}
 @keyframes flow{to{stroke-dashoffset:-10}}
 .elabel{fill:var(--muted);font:500 10.5px "IBM Plex Mono",monospace}
 /* detail panel */
-.detail{margin-top:16px;border-top:1px solid var(--line);padding:18px 10px 12px;display:grid;grid-template-columns:220px 1fr;gap:8px 28px}
+.detail{margin-top:16px;border-top:1px solid var(--line);padding:18px 10px 12px;display:grid;grid-template-columns:minmax(170px,220px) 1fr;gap:8px 28px;min-height:172px;align-content:start}
 .detail h3{grid-column:1/-1;margin:0;font-size:1.05rem;display:flex;align-items:center;gap:10px}
 .detail h3 .chip{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--nc,var(--accent))}
 .meta{display:flex;flex-direction:column;gap:6px;font-family:"IBM Plex Mono",monospace;font-size:.82rem}
@@ -51,7 +54,8 @@ svg{display:block;min-width:820px;width:100%;height:auto}
 .rule .why{color:var(--muted);margin:0 0 16px;max-width:66ch;font-size:.95rem}
 .panes{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 @media (max-width:760px){.panes{grid-template-columns:1fr}}
-.pane{border-radius:10px;overflow:hidden;border:1px solid var(--line)}
+.pane{border-radius:10px;overflow:hidden;border:1px solid var(--line);display:flex;flex-direction:column}
+.pane pre{flex:1}
 .pane .tag{font:600 .72rem "IBM Plex Sans",sans-serif;letter-spacing:.1em;text-transform:uppercase;padding:6px 12px;display:block}
 .pane.bad .tag{background:var(--bad-bg);color:var(--bad)}
 .pane.good .tag{background:var(--good-bg);color:var(--good)}
@@ -88,7 +92,7 @@ section{scroll-margin-top:24px}
   <p class="eyebrow">AGENTS.md · github.com/wonpanu/ai-harness</p>
   <h1>Claude Orchestrator Playbook</h1>
   <p>ผังการทำงานของทุก session <strong>บนเครื่องนี้</strong>: orchestrator ตัวเดียว route งานไปยัง agent ที่กำหนดไว้ ผ่าน PRD gate พร้อมกฎ code style ที่กลั่นจาก production services จริง — คลิก node ในไดอะแกรมเพื่อดูรายละเอียด</p>
-  <p style="color:var(--muted);font-size:.88rem;margin-top:10px;max-width:62ch">⚠ config ทั้งหมดเป็นไฟล์ local (CLAUDE.md, agents/, skills/) — ไม่ sync ตาม account ใช้เครื่องอื่น clone จาก github.com/wonpanu/ai-harness — AI เจ้าอื่น (Codex, Cursor, Gemini CLI) ใช้ส่วน portable ผ่าน AGENTS.md ใน repo ได้</p>
+  <p class="note">⚠ config ทั้งหมดเป็นไฟล์ local (CLAUDE.md, agents/, skills/) — ไม่ sync ตาม account ใช้เครื่องอื่น clone จาก github.com/wonpanu/ai-harness — AI เจ้าอื่น (Codex, Cursor, Gemini CLI) ใช้ส่วน portable ผ่าน AGENTS.md ใน repo ได้</p>
   <nav class="brain" aria-label="กระโดดไปแต่ละส่วน">
     <a href="#workflow" style="--bc:var(--c-orch)"><b><i></i>ผังการทำงาน</b><span>orchestrator + agents 6 ตัว</span></a>
     <a href="#code-style" style="--bc:var(--c-deep)"><b><i></i>กฎการเขียนโค้ด</b><span>universal + Go + React skill</span></a>
@@ -196,7 +200,7 @@ section{scroll-margin-top:24px}
   <p class="eyebrow">Code style</p>
   <h2>กฎการเขียนโค้ด</h2>
   <p class="sub">กฎ universal (guard clause, naming, why-comment) อยู่ใน CLAUDE.md โหลดทุก session ส่วนกฎ stack-specific แยกเป็น <strong>skill</strong> ที่ agent invoke เฉพาะตอนทำงาน stack นั้น — <code>go-backend-style</code>, <code>react-frontend-style</code>, <code>tailwindcss-style</code>, <code>tanstack-query-style</code> ประหยัด token ตามหลัก progressive disclosure · pattern เฉพาะโปรเจกต์อยู่ใน CLAUDE.md ของโปรเจกต์นั้นและชนะ skill เสมอ</p>
-  <h2 style="margin-top:8px;font-size:1.15rem">Backend · skill go-backend-style</h2>
+  <h2 class="stack">Backend · skill go-backend-style</h2>
 
   <div class="rules">
     <div class="rule">
@@ -313,7 +317,7 @@ section{scroll-margin-top:24px}
     </div>
   </div>
 
-  <h2 style="margin-top:36px;font-size:1.15rem">Frontend · skill react-frontend-style (+ tailwindcss-style, tanstack-query-style)</h2>
+  <h2 class="stack">Frontend · skill react-frontend-style (+ tailwindcss-style, tanstack-query-style)</h2>
   <p class="sub">กลั่นจาก pattern ที่ทำสม่ำเสมอใน production React app</p>
   <div class="practice">
     <div><b>Component</b><p>หนึ่ง component ต่อไฟล์ ชื่อไฟล์ PascalCase = ชื่อ component · orchestrator ทำหน้าที่ compose hook + render, pure UI อยู่ใน components/ · ไม่มี barrel index.ts — import path ตรง</p></div>
