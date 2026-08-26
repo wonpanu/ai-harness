@@ -1,0 +1,440 @@
+<title>Claude Orchestrator Playbook</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#F2F4F3; --surface:#FFFFFF; --surface2:#E9EEEC; --ink:#1B2420; --muted:#5B6963;
+  --line:#D5DDD9; --accent:#0E7C66; --accent-soft:#DCEEE9;
+  --c-orch:#0E7C66; --c-deep:#4A5BC4; --c-fast:#A96A00; --c-explore:#3E7F98; --c-peer:#A34D8C; --c-rev:#6B5CA8;
+  --bad:#B3382E; --bad-bg:#FBEDEB; --good:#2E7D4F; --good-bg:#EAF4EE;
+  --code-bg:#1C2422; --code-ink:#DCE6E1; --code-cm:#7E948B; --code-kw:#8FD4C2; --code-str:#E3C185;
+}
+/* single light theme by design — dark hosts still get the explicit light ground */
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.6 "IBM Plex Sans","IBM Plex Sans Thai",system-ui,sans-serif}
+.wrap{max-width:1040px;margin:0 auto;padding:48px 24px 80px;display:flex;flex-direction:column;gap:56px}
+header h1{font-family:"Bricolage Grotesque","IBM Plex Sans Thai","IBM Plex Sans",sans-serif;font-weight:700;font-size:clamp(2rem,5vw,3rem);margin:0 0 8px;text-wrap:balance;letter-spacing:-.01em}
+header p{color:var(--muted);max-width:62ch;margin:0}
+.eyebrow{font-size:.72rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0 0 6px}
+h2{font-family:"Bricolage Grotesque","IBM Plex Sans Thai","IBM Plex Sans",sans-serif;font-weight:700;font-size:1.5rem;margin:0 0 4px;letter-spacing:-.01em}
+.sub{color:var(--muted);margin:0 0 20px;max-width:66ch}
+/* diagram */
+.diagram-card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px 12px 8px;overflow-x:auto}
+svg{display:block;min-width:820px;width:100%;height:auto}
+.node rect{fill:var(--surface2);stroke:var(--line);stroke-width:1.5;rx:10;transition:stroke .15s}
+.node text{fill:var(--ink);font:600 14px "IBM Plex Sans",sans-serif}
+.node .role{fill:var(--muted);font:500 10.5px "IBM Plex Mono",monospace}
+.node{cursor:pointer}
+.node:hover rect{stroke:var(--nc)}
+.node.active rect{stroke:var(--nc);stroke-width:2.5}
+.node .dot{fill:var(--nc)}
+.edge{stroke:var(--line);stroke-width:1.8;fill:none}
+.edge.hot{stroke:var(--accent);stroke-dasharray:5 5;animation:flow 1.2s linear infinite}
+@media (prefers-reduced-motion: reduce){.edge.hot{animation:none}}
+@keyframes flow{to{stroke-dashoffset:-10}}
+.elabel{fill:var(--muted);font:500 10.5px "IBM Plex Mono",monospace}
+/* detail panel */
+.detail{margin-top:16px;border-top:1px solid var(--line);padding:18px 10px 12px;display:grid;grid-template-columns:220px 1fr;gap:8px 28px}
+.detail h3{grid-column:1/-1;margin:0;font-size:1.05rem;display:flex;align-items:center;gap:10px}
+.detail h3 .chip{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--nc,var(--accent))}
+.meta{display:flex;flex-direction:column;gap:6px;font-family:"IBM Plex Mono",monospace;font-size:.82rem}
+.meta span b{color:var(--muted);font-weight:500;margin-right:6px}
+.detail ul{margin:0;padding-left:18px;color:var(--ink)}
+.detail li{margin:3px 0}
+.detail li::marker{color:var(--accent)}
+@media (max-width:640px){.detail{grid-template-columns:1fr}}
+/* code rules */
+.rules{display:flex;flex-direction:column;gap:28px}
+.rule{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px 24px}
+.rule h3{margin:0 0 4px;font-size:1.08rem}
+.rule .why{color:var(--muted);margin:0 0 16px;max-width:66ch;font-size:.95rem}
+.panes{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:760px){.panes{grid-template-columns:1fr}}
+.pane{border-radius:10px;overflow:hidden;border:1px solid var(--line)}
+.pane .tag{font:600 .72rem "IBM Plex Sans",sans-serif;letter-spacing:.1em;text-transform:uppercase;padding:6px 12px;display:block}
+.pane.bad .tag{background:var(--bad-bg);color:var(--bad)}
+.pane.good .tag{background:var(--good-bg);color:var(--good)}
+pre{margin:0;padding:14px 16px;background:var(--code-bg);color:var(--code-ink);font:400 .8rem/1.55 "IBM Plex Mono",monospace;overflow-x:auto}
+.cm{color:var(--code-cm)} .kw{color:var(--code-kw)} .str{color:var(--code-str)}
+/* practice list */
+.practice{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:8px 24px}
+.practice div{padding:16px 0;border-bottom:1px solid var(--line)}
+.practice div:last-child{border-bottom:none}
+.practice b{display:block;margin-bottom:2px}
+.practice p{margin:0;color:var(--muted);font-size:.95rem;max-width:70ch}
+footer{color:var(--muted);font-size:.82rem;font-family:"IBM Plex Mono",monospace}
+/* fable mode */
+.fable{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.fable>div{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+.fable i{font:700 .78rem "IBM Plex Mono",monospace;font-style:normal;color:var(--accent);display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border:1.5px solid var(--accent);border-radius:50%;margin-bottom:8px}
+.fable b{display:block;margin-bottom:2px}
+.fable p{margin:0;color:var(--muted);font-size:.92rem}
+.checklist{margin-top:14px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+.checklist b{display:block;margin-bottom:10px;font-size:.92rem}
+.checklist pre{border-radius:8px}
+/* second brain nav */
+.brain{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:24px}
+.brain a{display:block;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;text-decoration:none;color:var(--ink);transition:border-color .15s, transform .15s}
+.brain a:hover,.brain a:focus-visible{border-color:var(--accent);transform:translateY(-2px);outline:none}
+.brain a b{display:block;font-size:.92rem}
+.brain a span{color:var(--muted);font-size:.78rem}
+.brain a i{font-style:normal;display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--bc,var(--accent));margin-right:7px}
+section{scroll-margin-top:24px}
+</style>
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">AGENTS.md · github.com/wonpanu/ai-harness</p>
+  <h1>Claude Orchestrator Playbook</h1>
+  <p>ผังการทำงานของทุก session <strong>บนเครื่องนี้</strong>: orchestrator ตัวเดียว route งานไปยัง agent ที่กำหนดไว้ ผ่าน PRD gate พร้อมกฎ code style ที่กลั่นจาก production services จริง — คลิก node ในไดอะแกรมเพื่อดูรายละเอียด</p>
+  <p style="color:var(--muted);font-size:.88rem;margin-top:10px;max-width:62ch">⚠ config ทั้งหมดเป็นไฟล์ local (CLAUDE.md, agents/, skills/) — ไม่ sync ตาม account ใช้เครื่องอื่น clone จาก github.com/wonpanu/ai-harness — AI เจ้าอื่น (Codex, Cursor, Gemini CLI) ใช้ส่วน portable ผ่าน AGENTS.md ใน repo ได้</p>
+  <nav class="brain" aria-label="กระโดดไปแต่ละส่วน">
+    <a href="#workflow" style="--bc:var(--c-orch)"><b><i></i>ผังการทำงาน</b><span>orchestrator + agents 6 ตัว</span></a>
+    <a href="#code-style" style="--bc:var(--c-deep)"><b><i></i>กฎการเขียนโค้ด</b><span>universal + Go + React skill</span></a>
+    <a href="#fable" style="--bc:var(--c-peer)"><b><i></i>Fable mode</b><span>discipline 5 ช่วง + checklist</span></a>
+    <a href="#creating" style="--bc:var(--c-explore)"><b><i></i>Creating skills</b><span>เลือก pattern ตาม use case</span></a>
+    <a href="#practice" style="--bc:var(--c-rev)"><b><i></i>กฎการทำงาน</b><span>PRD gate · docs-first · grill</span></a>
+  </nav>
+</header>
+
+<section id="workflow">
+  <p class="eyebrow">Orchestration</p>
+  <h2>ผังการทำงาน</h2>
+  <p class="sub">เส้นทาง default คือ <strong>solo</strong> — orchestrator ทำงานที่จบใน turn เดียวด้วยตัวเอง จะ delegate เฉพาะเมื่อเข้าเงื่อนไขของ node ด้านล่างอย่างชัดเจน</p>
+  <div class="diagram-card">
+    <svg viewBox="0 0 900 484" role="img" aria-label="Orchestration workflow diagram">
+      <!-- edges -->
+      <path class="edge" d="M118 186 H160"/>
+      <path class="edge hot" id="e-solo" d="M320 186 C 420 186 480 186 568 186"/>
+      <path class="edge" d="M320 160 C 400 120 420 62 468 62"/>
+      <path class="edge" d="M320 172 C 390 150 410 124 468 124"/>
+      <path class="edge" d="M320 200 C 390 222 410 248 468 248"/>
+      <path class="edge" d="M320 212 C 400 252 420 310 468 310"/>
+      <path class="edge" d="M320 216 C 400 280 420 372 468 372"/>
+      <path class="edge" d="M320 220 C 400 310 420 434 468 434"/>
+      <path class="edge" d="M628 62  C 660 62 640 150 568 176"/>
+      <path class="edge" d="M628 124 C 656 124 636 160 568 180"/>
+      <path class="edge" d="M628 248 C 656 248 636 212 568 192"/>
+      <path class="edge" d="M628 310 C 660 310 640 222 568 196"/>
+      <path class="edge" d="M628 372 C 668 372 648 232 568 198"/>
+      <path class="edge" d="M628 434 C 676 434 654 242 568 200"/>
+      <path class="edge" d="M648 186 H 690"/>
+      <path class="edge" d="M836 186 H 878"/>
+      <text class="elabel" x="380" y="176" text-anchor="middle">solo (default)</text>
+      <text class="elabel" x="386" y="84">delegate</text>
+      <text class="elabel" x="654" y="150">synthesize</text>
+
+      <!-- requirement -->
+      <g class="node" data-id="req" style="--nc:var(--muted)">
+        <rect x="8" y="160" width="110" height="52"/>
+        <text x="63" y="183" text-anchor="middle">Requirement</text>
+        <text class="role" x="63" y="200" text-anchor="middle">input</text>
+      </g>
+      <!-- orchestrator -->
+      <g class="node" data-id="orch" style="--nc:var(--c-orch)">
+        <rect x="160" y="148" width="160" height="76"/>
+        <circle class="dot" cx="176" cy="166" r="4"/>
+        <text x="240" y="180" text-anchor="middle">Orchestrator</text>
+        <text class="role" x="240" y="198" text-anchor="middle">session model · PRD gate</text>
+      </g>
+      <!-- agents -->
+      <g class="node" data-id="deep" style="--nc:var(--c-deep)">
+        <rect x="468" y="36" width="160" height="52"/>
+        <circle class="dot" cx="484" cy="54" r="4"/>
+        <text x="548" y="58" text-anchor="middle">deep-reasoner</text>
+        <text class="role" x="548" y="76" text-anchor="middle">opus-5 · xhigh</text>
+      </g>
+      <g class="node" data-id="fast" style="--nc:var(--c-fast)">
+        <rect x="468" y="98" width="160" height="52"/>
+        <circle class="dot" cx="484" cy="116" r="4"/>
+        <text x="548" y="120" text-anchor="middle">fast-worker</text>
+        <text class="role" x="548" y="138" text-anchor="middle">opus-5 · medium</text>
+      </g>
+      <g class="node" data-id="explore" style="--nc:var(--c-explore)">
+        <rect x="468" y="222" width="160" height="52"/>
+        <circle class="dot" cx="484" cy="240" r="4"/>
+        <text x="548" y="244" text-anchor="middle">Explore</text>
+        <text class="role" x="548" y="262" text-anchor="middle">read-only search</text>
+      </g>
+      <g class="node" data-id="peer" style="--nc:var(--c-peer)">
+        <rect x="468" y="284" width="160" height="52"/>
+        <circle class="dot" cx="484" cy="302" r="4"/>
+        <text x="548" y="306" text-anchor="middle">Peer</text>
+        <text class="role" x="548" y="324" text-anchor="middle">session model · fresh ctx</text>
+      </g>
+      <g class="node" data-id="websearch" style="--nc:var(--c-explore)">
+        <rect x="468" y="346" width="160" height="52"/>
+        <circle class="dot" cx="484" cy="364" r="4"/>
+        <text x="548" y="368" text-anchor="middle">web-searcher</text>
+        <text class="role" x="548" y="386" text-anchor="middle">haiku-4.5 · internet</text>
+      </g>
+      <g class="node" data-id="committer" style="--nc:var(--c-fast)">
+        <rect x="468" y="408" width="160" height="52"/>
+        <circle class="dot" cx="484" cy="426" r="4"/>
+        <text x="548" y="430" text-anchor="middle">code-committer</text>
+        <text class="role" x="548" y="448" text-anchor="middle">haiku-4.5 · git only</text>
+      </g>
+      <!-- reviewer + ship -->
+      <g class="node" data-id="rev" style="--nc:var(--c-rev)">
+        <rect x="690" y="160" width="146" height="52"/>
+        <circle class="dot" cx="706" cy="178" r="4"/>
+        <text x="763" y="182" text-anchor="middle">senior-lead-reviewer</text>
+        <text class="role" x="763" y="199" text-anchor="middle">session model · fresh ctx</text>
+      </g>
+      <g class="node" data-id="ship" style="--nc:var(--good)">
+        <rect x="878" y="160" width="16" height="52" rx="6"/>
+      </g>
+      <!-- merge point -->
+      <circle cx="568" cy="186" r="4" fill="var(--accent)"/>
+    </svg>
+    <div class="detail" id="detail"></div>
+  </div>
+</section>
+
+<section id="code-style">
+  <p class="eyebrow">Code style</p>
+  <h2>กฎการเขียนโค้ด</h2>
+  <p class="sub">กฎ universal (guard clause, naming, why-comment) อยู่ใน CLAUDE.md โหลดทุก session ส่วนกฎ stack-specific แยกเป็น <strong>skill</strong> ที่ agent invoke เฉพาะตอนทำงาน stack นั้น — <code>go-backend-style</code>, <code>react-frontend-style</code>, <code>tailwindcss-style</code>, <code>tanstack-query-style</code> ประหยัด token ตามหลัก progressive disclosure · pattern เฉพาะโปรเจกต์อยู่ใน CLAUDE.md ของโปรเจกต์นั้นและชนะ skill เสมอ</p>
+  <h2 style="margin-top:8px;font-size:1.15rem">Backend · skill go-backend-style</h2>
+
+  <div class="rules">
+    <div class="rule">
+      <h3>Guard clause + early return — ไม่มี <code>else</code></h3>
+      <p class="why">Error handling อ่านเป็น ladder แบนของ <code>if</code> guard อิสระ แต่ละอัน return ออกทันที — ในโค้ดเขียนมือของ repo อ้างอิงไม่มี <code>} else {</code> เลยแม้แต่จุดเดียว</p>
+      <div class="panes">
+        <div class="pane bad"><span class="tag">อย่าทำ — nested</span>
+<pre><span class="kw">func</span> (r *repo) GetOrder(ctx ..., id string) {
+    resp, err := r.client.Get(url)
+    <span class="kw">if</span> err == <span class="kw">nil</span> {
+        <span class="kw">if</span> resp.StatusCode() == 200 {
+            <span class="kw">if</span> resp.Body != <span class="kw">nil</span> {
+                <span class="kw">return</span> resp.ToEntity(), <span class="kw">nil</span>
+            } <span class="kw">else</span> {
+                <span class="kw">return</span> <span class="kw">nil</span>, errEmptyBody
+            }
+        } <span class="kw">else</span> { ... }
+    } <span class="kw">else</span> { ... }
+}</pre></div>
+        <div class="pane good"><span class="tag">ทำแบบนี้ — flat ladder</span>
+<pre><span class="kw">func</span> (r *repo) GetOrder(ctx ..., id string) {
+    resp, err := r.client.Get(url)
+    <span class="kw">if</span> err != <span class="kw">nil</span> {
+        <span class="kw">return</span> <span class="kw">nil</span>, errs.New(errcode.OrderFetchFailed, err)
+    }
+    <span class="kw">if</span> resp.StatusCode() == 404 {
+        <span class="kw">return</span> <span class="kw">nil</span>, errs.New(errcode.OrderNotFound, err)
+    }
+    <span class="kw">if</span> resp.Body == <span class="kw">nil</span> {
+        <span class="kw">return</span> <span class="kw">nil</span>, errs.New(errcode.OrderEmptyBody, err)
+    }
+    <span class="kw">return</span> resp.ToEntity(), <span class="kw">nil</span>
+}</pre></div>
+      </div>
+    </div>
+
+    <div class="rule">
+      <h3>ชื่อสื่อความหมาย ไม่ย่อ — แม้จะยาว</h3>
+      <p class="why">โค้ดต้องอ่านรู้เรื่องโดยไม่พึ่ง comment ชื่อสั้นใช้ได้เฉพาะ scope แคบ: ตัวแปร loop และ receiver ตัวอักษรเดียว (<code>h</code> handler, <code>u</code> usecase, <code>r</code> repo)</p>
+      <div class="panes">
+        <div class="pane bad"><span class="tag">อย่าทำ</span>
+<pre><span class="kw">type</span> refundsUsecase <span class="kw">struct</span> {
+    maxAmt float64
+    gwBase string
+}</pre></div>
+        <div class="pane good"><span class="tag">ทำแบบนี้</span>
+<pre><span class="kw">type</span> refundsUsecase <span class="kw">struct</span> {
+    maximumRefundAmount    float64
+    paymentGatewayBaseURL  string
+}</pre></div>
+      </div>
+    </div>
+
+    <div class="rule">
+      <h3>คำนวณ boolean ตั้งชื่อไว้ก่อน แล้ว branch จากชื่อ</h3>
+      <p class="why">ชื่อทำหน้าที่อธิบาย intent ในตัว และเงื่อนไขถูกทดสอบครั้งเดียว ไม่ต้องเขียนซ้ำ inline ทุก branch</p>
+      <div class="panes">
+        <div class="pane bad"><span class="tag">อย่าทำ</span>
+<pre><span class="kw">if</span> order.Type != <span class="kw">nil</span> &amp;&amp; *order.Type == <span class="str">"express"</span> {
+    order.Queue = expressQueue
+}
+...
+<span class="kw">if</span> order.Type != <span class="kw">nil</span> &amp;&amp; *order.Type == <span class="str">"express"</span> {
+    span.SetAttributes(...)
+}</pre></div>
+        <div class="pane good"><span class="tag">ทำแบบนี้</span>
+<pre>isExpress := order.Type != <span class="kw">nil</span> &amp;&amp;
+    *order.Type == <span class="str">"express"</span>
+
+<span class="kw">if</span> isExpress {
+    order.Queue = expressQueue
+}
+...
+<span class="kw">if</span> isExpress { span.SetAttributes(...) }</pre></div>
+      </div>
+    </div>
+
+    <div class="rule">
+      <h3>Comment อธิบาย <em>why</em> ไม่ใช่ <em>what</em></h3>
+      <p class="why">เขียนเหตุผล workaround หรือ constraint ที่โค้ดแสดงเองไม่ได้ เป็นประโยคสั้นตัวพิมพ์เล็ก — godoc เฉพาะ exported symbol ที่กฎไม่ได้อยู่ใน signature</p>
+      <div class="panes">
+        <div class="pane bad"><span class="tag">อย่าทำ</span>
+<pre><span class="cm">// loop over accounts</span>
+<span class="kw">for</span> _, a := <span class="kw">range</span> accounts {
+    <span class="cm">// append to result</span>
+    result = <span class="kw">append</span>(result, a.ToEntity())
+}</pre></div>
+        <div class="pane good"><span class="tag">ทำแบบนี้</span>
+<pre><span class="cm">// express orders skip the nightly batch; route them
+// to the priority queue so same-day delivery holds</span>
+<span class="kw">if</span> isExpress {
+    order.Queue = expressQueue
+}</pre></div>
+      </div>
+    </div>
+
+    <div class="rule">
+      <h3>ที่เหลือยึด official style ของภาษา</h3>
+      <p class="why">Go บังคับ initialism casing: <code>ID</code>, <code>URL</code>, <code>API</code> — ข้อยกเว้นเดียวคือ struct ที่ mirror wire format ให้ใช้ casing ตาม JSON ต้นทางเป๊ะ</p>
+      <div class="panes">
+        <div class="pane bad"><span class="tag">อย่าทำ</span>
+<pre><span class="kw">type</span> Account <span class="kw">struct</span> {
+    UserId              string
+    ProfileImageUrl     string
+    ApiKeyExpireAt      time.Time
+}</pre></div>
+        <div class="pane good"><span class="tag">ทำแบบนี้</span>
+<pre><span class="kw">type</span> Account <span class="kw">struct</span> {
+    UserID               string
+    UserProfileImageURL  string
+    APIKeyExpireAt       time.Time
+}</pre></div>
+      </div>
+    </div>
+  </div>
+
+  <h2 style="margin-top:36px;font-size:1.15rem">Frontend · skill react-frontend-style (+ tailwindcss-style, tanstack-query-style)</h2>
+  <p class="sub">กลั่นจาก pattern ที่ทำสม่ำเสมอใน production React app</p>
+  <div class="practice">
+    <div><b>Component</b><p>หนึ่ง component ต่อไฟล์ ชื่อไฟล์ PascalCase = ชื่อ component · orchestrator ทำหน้าที่ compose hook + render, pure UI อยู่ใน components/ · ไม่มี barrel index.ts — import path ตรง</p></div>
+    <div><b>Hooks</b><p>useXxx ไฟล์ละตัว · return object ที่ตั้งชื่อค่าแต่ละตัว ไม่ส่ง raw library result ออกไป · expose handler (handleX) ไม่ใช่ raw setter · derived flag คำนวณใน hook ไม่ใช่ใน JSX</p></div>
+    <div><b>State</b><p>State ที่เกี่ยวกันรวมเป็น object เดียว + patch updater เดียว · UI mode ที่ exclusive กันใช้ discriminated union เดียว ไม่ใช่ boolean หลายตัว · derive ได้อย่า store ซ้ำ · Context เฉพาะ state ที่ลึก ≥3 ชั้น (memoized + hook ที่ throw เมื่อไม่มี provider)</p></div>
+    <div><b>Rendering</b><p>Loading/error/empty เป็น early-return ladder ใน gate component ที่คืน pure content component · inline && ใช้แค่ JSX ชิ้นเล็ก optional ไม่ใช่ state branching</p></div>
+    <div><b>TypeScript</b><p>interface สำหรับ shape, type สำหรับ union/derived · import type เสมอ · ไม่มี any ใน app code · string-literal set เป็น as const แล้ว derive type · เปิด compiler config เข้มสุดที่โปรเจกต์รับได้</p></div>
+    <div><b>Naming</b><p>Handler = handleX, callback prop = onX, boolean = is/has/should/can · props interface ชื่อ &lt;Component&gt;Props วางเหนือ component</p></div>
+    <div><b>Data layer</b><p>Wire type → domain entity ผ่าน pure mapper → service · HTTP client typed ตัวเดียวร่วมกัน feature ห้ามเรียก fetch เอง · service เป็น injectable factory คืน mapped entity — consumer ไม่แตะ wire envelope</p></div>
+    <div><b>Styling & tests</b><p>Conditional class ผ่าน cn() helper · ใช้ semantic design token แทน raw palette · logic ที่ต้องพึ่ง DOM แยกเป็น pure function แล้ว test ตรงนั้น hook เป็นแค่ thin binding</p></div>
+  </div>
+</section>
+
+<section id="fable">
+  <p class="eyebrow">Session mode · /fable-mode</p>
+  <h2>Fable mode</h2>
+  <p class="sub">โครง discipline ระดับ frontier model สำหรับ model ที่เบากว่า (เช่น Opus 5) — เพิ่ม raw capability ไม่ได้ แต่บังคับ habit ที่ model ระดับท็อปทำเองโดยธรรมชาติ เรียกใช้เองเท่านั้น มีผลจนสั่ง "stop fable mode"</p>
+  <div class="fable">
+    <div><i>1</i><b>ก่อนลงมือ</b><p>Restate โจทย์หนึ่งบรรทัด ไล่ assumption ที่รับน้ำหนัก — อะไร verify ได้ต้องอ่านจริง ห้ามตอบจากความจำ ชั่งน้ำหนัก 2-3 approach ก่อน commit</p></div>
+    <div><i>2</i><b>ระหว่างทำ</b><p>พยายาม falsify ทุกข้อสรุปสำคัญ ผลที่ surprise คือ signal — หยุดแล้ว reconcile ก่อนต่อยอด ทำ step เล็ก ตามด้วย check ที่ถูกสุดที่จะ fail ถ้าผิด</p></div>
+    <div><i>3</i><b>ก่อน claim ว่าเสร็จ</b><p>Self-review แบบ hostile reviewer ทุก claim ต้อง verified, cite file:line หรือ label ว่า unverified — รัน check จริง ไม่ใช่ proxy</p></div>
+    <div><i>4</i><b>Escalation</b><p>ยังไม่แน่ใจ → fan out ไป deep-reasoner + peer ตัวใหม่คู่ขนานแล้วสังเคราะห์ สองคำตอบขัดกันโดยไม่มีหลักฐานตัดสิน → เสนอทั้งคู่พร้อม deciding experiment</p></div>
+    <div><i>5</i><b>Calibration</b><p>เรื่องที่ verify แล้วพูดตรง ๆ ไม่ hedge เรื่องเดา label ว่าเดา ผิดก่อนหน้าต้องแก้ให้ชัดเจน</p></div>
+  </div>
+  <div class="checklist">
+    <b>Checklist ที่ agent ต้อง copy ลง response แล้วติ๊กตามจริง (ข้ามได้เฉพาะงาน trivial):</b>
+<pre>Fable checklist:
+- [ ] Problem restated; load-bearing assumptions read, not recalled
+- [ ] 2-3 approaches weighed before committing
+- [ ] Each significant conclusion challenged (falsify pass)
+- [ ] Cheapest failing check run after each step
+- [ ] Hostile self-review of final diff/answer
+- [ ] Every claim: verified, cited file:line, or labeled unverified
+- [ ] Real check run (tests/app), not a proxy</pre>
+  </div>
+</section>
+
+<section id="creating">
+  <p class="eyebrow">Skill · /creating-skills</p>
+  <h2>Creating skills</h2>
+  <p class="sub">คู่มือสร้าง/ปรับโครงสร้าง skill ตาม best practices ล่าสุดของ Anthropic — เลือก pattern ให้ตรง use case และบังคับ fetch doc จริงก่อน finalize ทุกครั้งกันของค้างเก่า</p>
+  <div class="practice">
+    <div><b>Degrees of freedom</b><p>งานยืดหยุ่นหลายทาง → heuristic prose · งานมี pattern ที่ชอบ → template/pseudocode · งานเปราะ (migration, destructive) → สคริปต์เป๊ะ ห้ามเพิ่ม flag</p></div>
+    <div><b>Structure</b><p>ไฟล์เดียวจนใกล้ 500 บรรทัด → แยก reference ลึก 1 ชั้นเท่านั้น · หลาย domain → ไฟล์ละ domain โหลดเฉพาะที่เกี่ยว · basic vs advanced → conditional link</p></div>
+    <div><b>Reliability</b><p>หลายขั้นตอน → copyable checklist · คุณภาพสำคัญ → feedback loop (draft → validate → fix) · format สำคัญ → template · งาน style → example pairs · งาน destructive → plan-validate-execute</p></div>
+    <div><b>Scripts</b><p>Solve ไม่ defer error ให้ Claude · ห้าม voodoo constant ทุกค่าต้องมีเหตุผล · บอกชัดว่า execute ("Run x.py") หรือ read ("See x.py") · ระบุ package ที่ต้องมี</p></div>
+    <div><b>Process</b><p>Eval-first: ทำงานจริงโดยไม่มี skill ก่อนเพื่อเก็บ gap → เขียน minimal ให้ผ่าน eval → test ด้วย fresh instance ทุก model tier → observe การใช้จริงแล้วปรับ → เช็ค live checklist ก่อน ship</p></div>
+  </div>
+</section>
+
+<section id="practice">
+  <p class="eyebrow">General practice</p>
+  <h2>กฎการทำงาน</h2>
+  <div class="practice">
+    <div><b>PRD ก่อนลงมือ</b><p>ทุก requirement ที่เข้ามาต้องมี PRD ย่อ — goal, acceptance criteria, context ที่จำเป็น — ส่งให้ทุก worker และ reviewer ที่ delegate งานเล็กไม่กี่บรรทัดพอ งานใหญ่ค่อยเต็มรูป ถ้า domain term ใน requirement กำกวมหรือความหมายอาจต่างใน context ของโปรเจกต์ → รัน grill-with-docs ก่อนร่าง PRD เพื่อเทียบศัพท์กับ domain model/docs ให้ตรงก่อน</p></div>
+    <div><b>Docs-first</b><p>ยึด practice ที่ถูกที่สุดแม้ขัด convention ปัจจุบัน — การเปลี่ยน pattern ต้องเสนอและแก้ docs ก่อนลงมือ implement</p></div>
+    <div><b>Pattern ไม่ใช่ copy</b><p>Reference repo ให้ pattern (state management, hook structure, return shape) — ตั้งชื่อใหม่ทั้งหมดให้สื่อหน้าที่ใน repo ของเราเอง</p></div>
+    <div><b>Verify ไม่ใช่จำ</b><p>ก่อน assert ว่า "ส่วนอื่นถูก practice แล้ว" ต้อง explore โค้ดจริง อย่าเชื่อความจำ</p></div>
+    <div><b>Grill ก่อนเริ่ม</b><p>Challenge สมมติฐานผ่าน AskUserQuestion ทีละคำถามก่อนเริ่มงาน เคาะ decision เป็นข้อ ๆ</p></div>
+  </div>
+</section>
+
+<footer>source: AGENTS.md @ github.com/wonpanu/ai-harness (CLAUDE.md symlinks here; install via make install) · updated 2026-08-26</footer>
+</div>
+
+<script>
+const DATA = {
+  req:  {name:"Requirement", meta:{}, points:[
+    "งานที่เข้ามาทุกรูปแบบ: feature, fix, คำถาม, plan",
+    "จุดแรกคือ orchestrator เสมอ — ไม่มีการ route ตรงไปหา agent"]},
+  orch: {name:"Orchestrator", meta:{model:"session model ปัจจุบัน", role:"plan · decompose · synthesize"}, points:[
+    "PRD gate: เขียน goal + acceptance criteria + context ก่อน delegate ทุกครั้ง — ทุก worker และ reviewer ได้รับ",
+    "Domain term กำกวม → รัน grill-with-docs เทียบศัพท์กับ docs ของโปรเจกต์ก่อนร่าง PRD",
+    "Default คือ solo — งานจบใน turn เดียว (แก้ 1-2 ไฟล์, ตอบคำถาม, edit เล็ก) ไม่ delegate",
+    "Decision สำคัญ: ส่ง peer + deep-reasoner ทำคู่ขนาน แล้วสังเคราะห์โดยไม่ให้เห็นคำตอบกัน",
+    "รักษา context ของตัวเองให้ lean"]},
+  deep: {name:"deep-reasoner", meta:{model:"claude-opus-5", effort:"xhigh"}, points:[
+    "Architecture, debug ซับซ้อน, ออกแบบ algorithm, วิเคราะห์ trade-off",
+    "งานที่ต้องคิดลึกและกินหลาย tool call",
+    "คืนข้อสรุปกระชับพร้อมใช้ — decision, evidence สำคัญ, alternative ที่ตัดทิ้ง"]},
+  fast: {name:"fast-worker", meta:{model:"claude-opus-5", effort:"medium"}, points:[
+    "งานสเปคชัดแต่เยอะ/ซ้ำ: rename หลายไฟล์, boilerplate, test scaffold",
+    "ทำตามสเปคเป๊ะ — ไม่ redesign ไม่ขยาย scope",
+    "Verify ด้วย check ที่ถูก (typecheck, targeted test) เมื่อมีให้ใช้"]},
+  explore: {name:"Explore", meta:{model:"inherit จาก session", mode:"read-only"}, points:[
+    "ค้นหลายไฟล์/ไดเรกทอรี ที่การอ่านกินแรงกว่าการตอบ",
+    "หาตำแหน่งโค้ด ไม่ review หรือ audit",
+    "คืนข้อสรุป ไม่ใช่ file dump"]},
+  peer: {name:"Peer", meta:{model:"session model — fresh instance", context:"แยกจาก orchestrator"}, points:[
+    "วิศวกรระดับเดียวกับ deep-reasoner จากคนละมุมมอง",
+    "เป็น peer ไม่ใช่ reviewer — ทำโจทย์เดียวกันอย่างอิสระ",
+    "ใช้กับ decision สำคัญที่ผิดแล้วแพง"]},
+  websearch: {name:"web-searcher", meta:{model:"claude-haiku-4-5", scope:"internet research"}, points:[
+    "ค้นข้อมูลจาก internet: docs, เวอร์ชัน library, error message, ข้อเท็จจริงปัจจุบัน",
+    "ยึด official docs/primary source และ cross-check เรื่องที่ surprising กับแหล่งที่สอง",
+    "คืนคำตอบก่อน ตามด้วย evidence + source URL — หาไม่เจอหรือแหล่งขัดกันต้องบอกตรง ๆ ห้ามเดา"]},
+  committer: {name:"code-committer", meta:{model:"claude-haiku-4-5", scope:"git commit only"}, points:[
+    "รับคำสั่ง commit จาก orchestrator หรือ worker ตัวอื่นเมื่องานเสร็จ",
+    "อ่าน diff จริงก่อนเขียน message — เจอของไม่ตรงคำสั่งให้ flag ไม่ใช่ commit ทิ้งไป",
+    "Stage เฉพาะไฟล์ที่เกี่ยว ตาม convention ของ repo — ไม่แก้โค้ด ไม่ push ถ้าไม่ได้สั่ง"]},
+  rev:  {name:"senior-lead-reviewer", meta:{model:"session model — fresh instance", lens:"maintainability · tech-debt · operability"}, points:[
+    "Review งานก่อน merge/ship: plan, diff, design",
+    "คนละ lens กับ peer (correctness) และ ponytail (over-engineering)",
+    "ได้รับ PRD เพื่อ review ให้ตรง acceptance criteria จริง"]},
+  ship: {name:"Ship", meta:{}, points:["Merge, ship หรือส่งมอบ — ผ่านการสังเคราะห์และ review แล้ว"]}
+};
+const detail = document.getElementById("detail");
+function render(id){
+  const d = DATA[id];
+  const node = document.querySelector(`.node[data-id="${id}"]`);
+  document.querySelectorAll(".node").forEach(n=>n.classList.toggle("active", n===node));
+  const meta = Object.entries(d.meta).map(([k,v])=>`<span><b>${k}</b>${v}</span>`).join("");
+  detail.innerHTML =
+    `<h3><span class="chip" style="--nc:${getComputedStyle(node).getPropertyValue("--nc")}"></span>${d.name}</h3>
+     <div class="meta">${meta || "<span><b>—</b></span>"}</div>
+     <ul>${d.points.map(p=>`<li>${p}</li>`).join("")}</ul>`;
+}
+document.querySelectorAll(".node").forEach(n=>{
+  n.addEventListener("click", ()=>render(n.dataset.id));
+  n.setAttribute("tabindex","0");
+  n.addEventListener("keydown", e=>{ if(e.key==="Enter"||e.key===" "){e.preventDefault();render(n.dataset.id);} });
+});
+render("orch");
+</script>
