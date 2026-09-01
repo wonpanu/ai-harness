@@ -329,7 +329,7 @@ section{scroll-margin-top:24px}
     <div><b>TypeScript</b><p>interface สำหรับ shape, type สำหรับ union/derived · import type เสมอ · ไม่มี any ใน app code · string-literal set เป็น as const แล้ว derive type · เปิด compiler config เข้มสุดที่โปรเจกต์รับได้</p></div>
     <div><b>Naming</b><p>Handler = handleX, callback prop = onX, boolean = is/has/should/can · props interface ชื่อ &lt;Component&gt;Props วางเหนือ component</p></div>
     <div><b>Data layer</b><p>Wire type → domain entity ผ่าน pure mapper → service · HTTP client typed ตัวเดียวร่วมกัน feature ห้ามเรียก fetch เอง · service เป็น injectable factory คืน mapped entity — consumer ไม่แตะ wire envelope</p></div>
-    <div><b>Styling & tests</b><p>Conditional class ผ่าน cn() helper · ใช้ semantic design token แทน raw palette · logic ที่ต้องพึ่ง DOM แยกเป็น pure function แล้ว test ตรงนั้น hook เป็นแค่ thin binding</p></div>
+    <div><b>Styling & tests</b><p>Conditional class ผ่าน cn() helper (มีอยู่แล้วใน repo — หาให้เจอก่อนสร้างใหม่) · โค้ดเดิมที่ใช้ raw twMerge/template string คือ legacy อย่าลอกตาม · ใช้ semantic design token แทน raw palette · logic ที่ต้องพึ่ง DOM แยกเป็น pure function แล้ว test ตรงนั้น hook เป็นแค่ thin binding</p></div>
   </div>
 </section>
 

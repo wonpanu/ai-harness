@@ -12,6 +12,7 @@ Project CLAUDE.md/CONVENTIONS.md wins over anything here.
   ```tsx
   <tr className={cn('border-b', isExpanded && 'bg-surface-raised', isError && 'border-status-error')}>
   ```
+  The repo usually already exports `cn()` (search before adding one, e.g. in a `utils` barrel). Surrounding code using raw `twMerge`, template strings, or `cond ? 'x' : ''` is legacy, not a pattern to copy — new and edited code uses `cn()` with `&&` conditionals, and converting a touched file fully to `cn()` is welcome.
 - Semantic design tokens over raw palette utilities: `text-content-subtle`, `bg-surface-inset`, `border-status-error` — not `text-gray-500`, `bg-gray-100`, `border-red-500`. If the project has no token layer yet, propose one before scattering grays (docs-first).
 - Dark mode lives in the token definitions, not per-component `dark:` overrides — components reference tokens and stay theme-agnostic.
 - Inline `style` only for genuinely non-class values (`<col style={{ width: 90 }} />`); never for anything a utility expresses.
