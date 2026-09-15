@@ -240,6 +240,28 @@ section{scroll-margin-top:24px}
     </div>
 
     <div class="rule">
+      <h3>หนึ่ง guard = หนึ่ง condition — ไม่ยุบ error check กับ logic รวมเป็น boolean เดียว</h3>
+      <p class="why">การเช็ค "ข้อมูลไม่มี" กับ "ข้อมูลไม่ผ่านเงื่อนไข" เป็นคนละเหตุผล ยุบรวมแล้วอ่านไม่ออกว่า return เพราะอะไร และใส่ why-comment แยกไม่ได้ — แยกเป็น guard ละบรรทัด ladder จะอ่านจากบนลงล่างเป็นรายการเหตุผลที่ต้อง bail</p>
+      <div class="panes">
+        <div class="pane bad"><span class="tag">อย่าทำ — ยุบรวม</span>
+<pre><span class="kw">return</span> (
+  selectedChannels !== <span class="kw">undefined</span> &amp;&amp;
+  !selectedChannels.some((c) =&gt; p90SupportedChannels.includes(c))
+)</pre></div>
+        <div class="pane good"><span class="tag">ทำแบบนี้ — guard ละ condition</span>
+<pre><span class="cm">// Monitor view has no channel filter — stays enabled.</span>
+<span class="kw">if</span> (selectedChannels === <span class="kw">undefined</span>) <span class="kw">return</span> <span class="kw">false</span>
+
+<span class="kw">const</span> hasSupportedChannel = selectedChannels.some((c) =&gt;
+  p90SupportedChannels.includes(c)
+)
+<span class="kw">if</span> (hasSupportedChannel) <span class="kw">return</span> <span class="kw">false</span>
+
+<span class="kw">return</span> <span class="kw">true</span></pre></div>
+      </div>
+    </div>
+
+    <div class="rule">
       <h3>ชื่อสื่อความหมาย ไม่ย่อ — แม้จะยาว</h3>
       <p class="why">โค้ดต้องอ่านรู้เรื่องโดยไม่พึ่ง comment ชื่อสั้นใช้ได้เฉพาะ scope แคบ: ตัวแปร loop และ receiver ตัวอักษรเดียว (<code>h</code> handler, <code>u</code> usecase, <code>r</code> repo)</p>
       <div class="panes">

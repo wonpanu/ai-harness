@@ -37,6 +37,7 @@ Workflow skills (grill / ponytail-review / to-prd / to-issues / tdd) are invoked
 ## Code style
 
 - Guard clauses + early return; never `else` after a returning branch. Error handling reads as a flat ladder of independent `if` guards, no nesting.
+- One condition per guard, one return each — never fold an error/missing-data check and a business-logic check into a single boolean (`a !== undefined && !a.some(...)` → `if (a === undefined) return …` then `if (!a.some(...)) return …`). Each guard gets its own why-comment; the ladder reads top-down as a list of reasons to bail.
 - Names are descriptive and unabbreviated, even when long (`maximumRefundAmount`, not `maxAmt`); code reads without needing comments. Short names only for tight-scope idioms (loop vars, single-letter receivers).
 - Precompute a named boolean and branch on it instead of re-testing a condition inline — the name documents the intent.
 - Comments explain why (rationale, workaround, constraint), never what the next line does.
