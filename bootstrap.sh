@@ -1,6 +1,6 @@
 #!/bin/sh
 # One-shot machine setup from this repo. Idempotent — safe to re-run.
-# Usage: ./bootstrap.sh            (PROFILES="fenrir other" adds extra Claude config dirs ~/.claude-<name>)
+# Usage: ./bootstrap.sh            (PROFILES="work other" adds one extra Claude config dir ~/.claude-<name> per extra Claude account)
 set -eu
 HARNESS_DIR=$(cd "$(dirname "$0")" && pwd)
 
@@ -45,7 +45,7 @@ done. Manual steps left (logins and the Orca app cannot be scripted):
   1. claude              → sign in (Claude subscription)
   2. codex login         → sign in with ChatGPT (Plus is enough)
   3. gh auth login
-  4. Orca: download https://www.onorca.dev, open it, add your Claude and Codex accounts in-app.
+  4. Orca: download https://www.onorca.dev, open it, add your Claude and/or OpenAI account in-app.
      It writes its own hooks into ~/.claude/settings.json and ~/.orca/agent-hooks on first launch.
-  Extra profile: run with PROFILES="fenrir" and start Claude with CLAUDE_CONFIG_DIR=~/.claude-fenrir
+  Extra Claude account: re-run with PROFILES="<name>" and start Claude with CLAUDE_CONFIG_DIR=~/.claude-<name>
 TODO

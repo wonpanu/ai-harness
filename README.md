@@ -58,15 +58,19 @@ docs (`grill-with-docs`) **before** the PRD is drafted.
 
 ## New machine
 
-Tell any AI agent: *"clone github.com/wonpanu/ai-harness and run its bootstrap"*. One command, then four logins:
+Paste this into any AI coding agent on the new machine (it needs a shell and a browser you can reach):
 
-```sh
-git clone git@github.com:wonpanu/ai-harness.git ~/ai-harness && cd ~/ai-harness && PROFILES="fenrir" ./bootstrap.sh
+```text
+Set this machine up from https://github.com/wonpanu/ai-harness.
+1. Clone it to ~/ai-harness and read README.md and bootstrap.sh before running anything.
+2. Ask me one question, multi-select: which AI providers to connect — Claude, OpenAI, or both. Do not ask about model choices: model tiers are fixed by the repo (agents/*.md, codex/config.toml, claude/settings.json) — apply them as-is.
+3. Run ./bootstrap.sh. If I chose more than one Claude account, run it with PROFILES="<one short name per extra account>" and tell me the CLAUDE_CONFIG_DIR to use for each.
+4. Then walk me through the logins in this order, one at a time, waiting for me to confirm each: (a) install Orca from https://www.onorca.dev and open it; (b) in Orca, add an account for each provider I chose — Claude first, then OpenAI; (c) `claude` sign-in per profile; (d) `codex login` if OpenAI was chosen; (e) `gh auth login`.
+5. Verify: `claude --version`, `codex --version` (if chosen), `ls -l ~/.claude/agents ~/.codex/config.toml` show symlinks into ~/ai-harness, and Orca's hooks exist in ~/.orca/agent-hooks. Report what works and what is left.
+Never print or ask for account names, emails, or tokens; refer to accounts only as "your Claude account" / "your OpenAI account".
 ```
 
-`bootstrap.sh` (idempotent, ~3 min) installs node/jq/gh/claude/codex via brew+npm, merges [claude/settings.json](claude/settings.json) (model, effort, plugins, TUI prefs — no secrets, no machine paths) over `~/.claude/settings.json`, installs the [claude/statusline-command.sh](claude/statusline-command.sh), adds the ponytail + i-have-adhd plugins, then runs `install.sh` for `~/.claude`, `~/.codex` and each `PROFILES` entry (`~/.claude-<name>`, sharing settings and skills with `~/.claude`).
-
-Manual after that: `claude` (sign in) · `codex login` (ChatGPT Plus) · `gh auth login` · **Orca** — download from https://www.onorca.dev, add the Claude and Codex accounts in-app; it writes its own hooks into `~/.claude/settings.json` and `~/.orca/agent-hooks`. Account tokens live in Orca's app data and are never versioned here.
+What `bootstrap.sh` does (idempotent, ~3 min): installs node/jq/gh/claude/codex via brew+npm, merges [claude/settings.json](claude/settings.json) (model, effort, plugins, TUI prefs — no secrets, no machine paths) over `~/.claude/settings.json`, installs [claude/statusline-command.sh](claude/statusline-command.sh), adds the ponytail + i-have-adhd plugins, then runs `install.sh` for `~/.claude`, `~/.codex` and each `PROFILES` entry (`~/.claude-<name>`, sharing settings and skills with `~/.claude`). Logins and the Orca app are the only manual steps; Orca writes its own hooks into `~/.claude/settings.json` and `~/.orca/agent-hooks`, and account tokens stay in Orca's app data, never in this repo.
 
 Parked: [docs/pi-agent.md](docs/pi-agent.md) — pi coding agent evaluation, not adopted.
 
