@@ -85,7 +85,11 @@ docs (`grill-with-docs`) **before** the PRD is drafted.
 
 - `AGENTS.md` — global rules: orchestration workflow, delegate conditions, PRD gate, universal code style, general practice (`CLAUDE.md` symlinks here)
 - `PLAYBOOK.html` — visual version of AGENTS.md (kept in sync by rule)
-- `install.sh` — symlinks everything into `~/.claude` (see Install)
+- `INSTALL.md` — agent-facing setup procedure (provider choice, Orca, logins, verify)
+- `bootstrap.sh` — new-machine setup: tools, plugins, both provider configs, then `install.sh`
+- `install.sh` — symlinks AGENTS.md/agents/skills into `~/.claude` and AGENTS.md/config.toml into `~/.codex`
+- `claude/` — `settings.json` snapshot (model, effort, plugins, prefs) + `statusline-command.sh`
+- `codex/config.toml` — Codex session model + `[agents.*]` roles on the OpenAI tier
 - `agents/` — subagent definitions: `deep-reasoner` (opus-5-5/xhigh), `fast-worker` (sonnet-5/medium), `web-searcher` (haiku-4.5), `code-committer` (haiku-4.5), `senior-lead-reviewer` (opus-5-5/xhigh)
 - `skills/` — on-demand skills: `go-backend-style`, `react-frontend-style` (each with EXAMPLES.md), `tailwindcss-style`, `tanstack-query-style`, `frontier-mode`, `creating-skills`
 
