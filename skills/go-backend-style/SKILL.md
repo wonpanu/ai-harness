@@ -13,7 +13,9 @@ Concrete avoid/prefer code for every rule: see [EXAMPLES.md](EXAMPLES.md) — re
 
 - Guard clauses + early return; never `else` after a returning branch.
 - Error handling is a flat ladder of independent `if` guards (transport err → 404 → non-200 → nil body), each returning immediately, never nested.
-- Precompute a named boolean (`isExpress := ...`) and branch on it; never re-test the condition inline.
+- Name a boolean only for a business condition (`isExpress := ...`) or one tested more than once; plain nil/empty guards stay inline (`if messages == nil`).
+- Extract a function only for reused (two or more callers) or genuinely complex logic; single-use blocks stay inline so a method reads top to bottom.
+- Assign, then guard on its own line (`err := f()` / `if err != nil {`) — no `if err := f(); err != nil {` one-liners.
 
 ## Naming
 
@@ -32,11 +34,14 @@ Concrete avoid/prefer code for every rule: see [EXAMPLES.md](EXAMPLES.md) — re
 ## Errors & observability
 
 - Follow the project's error-value pattern (typed error codes, compare helpers) — don't invent `fmt.Errorf("%w")` chains where the codebase uses coded errors.
+- `if err != nil` first, classify inside it (`errs.IsErrorCode`, `errors.Is`); never compare a specific error before the nil guard.
+- Canonical error values (`errInvalidCredentials`) are package-level `var`s beside the file's `const`s, never declared mid-function.
+- Contract values another system reads (JWT issuer, URL prefix, TTL, fixed enum strings) are named `const`s at the top of the file, never inline literals.
 - Every method opens with the project's tracing boilerplate (span named `Type/Method`) when the codebase does; every error branch records to the span.
 - Handlers respond only through the shared response helpers, never hand-rolled payloads.
 
 ## Comments & tests
 
-- Comments explain why (rationale, workaround, constraint) in lowercase fragments — never what the next line does.
-- Godoc only on exported symbols whose rule isn't visible in the signature.
-- Tests: external test package, `t.Run("should …")` subtests, Arrange/Act/Assert markers, tiny local helpers (`intPtr`) over inline noise.
+- Comments only when necessary, one line max: explain why (rationale, workaround, constraint) in lowercase fragments — never what the next line does.
+- Godoc only on exported symbols whose rule isn't visible in the signature, also one line.
+- Tests: external test package, `t.Run("should …")` subtests, `// Arrange` / `// Act` / `// Assert` markers in every case, tiny local helpers (`intPtr`) over inline noise.

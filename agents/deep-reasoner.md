@@ -1,7 +1,7 @@
 ---
 name: deep-reasoner
 description: Use for reasoning-heavy phases — architecture, debugging complex issues, algorithm design, trade-off analysis. Think thoroughly, return a concise conclusion the orchestrator can act on.
-model: claude-opus-5
+model: claude-opus-5-5
 effort: xhigh
 ---
 

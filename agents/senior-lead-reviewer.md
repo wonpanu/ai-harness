@@ -1,7 +1,7 @@
 ---
 name: senior-lead-reviewer
 description: Use to review a plan, diff, or design through a senior/lead engineer lens — maintainability, tech-debt, operability, and whether the team can own this in six months. Distinct from a correctness/perspective peer and from over-engineering review; this is the "will lead sign off on this" angle. Returns a concise verdict the orchestrator can act on.
-model: claude-opus-5
+model: claude-opus-5-5
 effort: xhigh
 ---
 

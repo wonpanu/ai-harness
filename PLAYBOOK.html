@@ -149,13 +149,13 @@ section{scroll-margin-top:24px}
         <rect x="468" y="36" width="160" height="52"/>
         <circle class="dot" cx="484" cy="54" r="4"/>
         <text x="548" y="58" text-anchor="middle">deep-reasoner</text>
-        <text class="role" x="548" y="76" text-anchor="middle">opus-5 · xhigh</text>
+        <text class="role" x="548" y="76" text-anchor="middle">opus-5-5 · xhigh</text>
       </g>
       <g class="node" data-id="fast" style="--nc:var(--c-fast)">
         <rect x="468" y="98" width="160" height="52"/>
         <circle class="dot" cx="484" cy="116" r="4"/>
         <text x="548" y="120" text-anchor="middle">fast-worker</text>
-        <text class="role" x="548" y="138" text-anchor="middle">opus-5 · medium</text>
+        <text class="role" x="548" y="138" text-anchor="middle">sonnet-5 · medium</text>
       </g>
       <g class="node" data-id="explore" style="--nc:var(--c-explore)">
         <rect x="468" y="222" width="160" height="52"/>
@@ -186,7 +186,7 @@ section{scroll-margin-top:24px}
         <rect x="690" y="160" width="146" height="52"/>
         <circle class="dot" cx="706" cy="178" r="4"/>
         <text x="763" y="182" text-anchor="middle">senior-lead-reviewer</text>
-        <text class="role" x="763" y="199" text-anchor="middle">opus-5 · xhigh</text>
+        <text class="role" x="763" y="199" text-anchor="middle">opus-5-5 · xhigh</text>
       </g>
       <g class="node" data-id="ship" style="--nc:var(--good)">
         <rect x="878" y="160" width="16" height="52" rx="6"/>
@@ -279,32 +279,118 @@ section{scroll-margin-top:24px}
     </div>
 
     <div class="rule">
-      <h3>คำนวณ boolean ตั้งชื่อไว้ก่อน แล้ว branch จากชื่อ</h3>
-      <p class="why">ชื่อทำหน้าที่อธิบาย intent ในตัว และเงื่อนไขถูกทดสอบครั้งเดียว ไม่ต้องเขียนซ้ำ inline ทุก branch</p>
+      <h3>ตั้งชื่อ boolean เฉพาะเงื่อนไขที่มีความหมายทาง business — guard ธรรมดาเขียนตรง ๆ</h3>
+      <p class="why">ชื่ออธิบาย intent เมื่อเงื่อนไขมีความหมาย (<code>isExpress</code>) หรือถูกทดสอบซ้ำหลายจุด แต่ nil/empty guard ตั้งชื่อแล้วกลับอ่านยากขึ้น — <code>hasNoMessages</code> ตามด้วย <code>hasMessages</code> อ่านเหมือนขัดกันเอง ทั้งที่เช็คคนละอย่าง (nil กับ ว่าง)</p>
       <div class="panes">
-        <div class="pane bad"><span class="tag">อย่าทำ</span>
-<pre><span class="kw">if</span> order.Type != <span class="kw">nil</span> &amp;&amp; *order.Type == <span class="str">"express"</span> {
-    order.Queue = expressQueue
-}
-...
-<span class="kw">if</span> order.Type != <span class="kw">nil</span> &amp;&amp; *order.Type == <span class="str">"express"</span> {
-    span.SetAttributes(...)
-}</pre></div>
-        <div class="pane good"><span class="tag">ทำแบบนี้</span>
-<pre>isExpress := order.Type != <span class="kw">nil</span> &amp;&amp;
-    *order.Type == <span class="str">"express"</span>
+        <div class="pane bad"><span class="tag">อย่าทำ — ตั้งชื่อ guard</span>
+<pre>hasNoMessages := messages == <span class="kw">nil</span>
+<span class="kw">if</span> hasNoMessages { messages = []Message{} }
 
-<span class="kw">if</span> isExpress {
-    order.Queue = expressQueue
-}
+lastID := <span class="str">""</span>
+hasMessages := <span class="kw">len</span>(messages) &gt; 0
+<span class="kw">if</span> hasMessages { lastID = messages[<span class="kw">len</span>(messages)-1].ID }</pre></div>
+        <div class="pane good"><span class="tag">ทำแบบนี้ — guard inline, ชื่อเฉพาะ business condition</span>
+<pre><span class="cm">// the client iterates these; null would break it</span>
+<span class="kw">if</span> messages == <span class="kw">nil</span> { messages = []Message{} }
+
+lastID := <span class="str">""</span>
+<span class="kw">if</span> <span class="kw">len</span>(messages) &gt; 0 { lastID = messages[<span class="kw">len</span>(messages)-1].ID }
+
+isExpress := order.Type != <span class="kw">nil</span> &amp;&amp; *order.Type == <span class="str">"express"</span>
+<span class="kw">if</span> isExpress { order.Queue = expressQueue }
 ...
 <span class="kw">if</span> isExpress { span.SetAttributes(...) }</pre></div>
       </div>
     </div>
 
     <div class="rule">
-      <h3>Comment อธิบาย <em>why</em> ไม่ใช่ <em>what</em></h3>
-      <p class="why">เขียนเหตุผล workaround หรือ constraint ที่โค้ดแสดงเองไม่ได้ เป็นประโยคสั้นตัวพิมพ์เล็ก — godoc เฉพาะ exported symbol ที่กฎไม่ได้อยู่ใน signature</p>
+      <h3>แยก function เมื่อมีคนเรียกซ้ำ — โค้ดใช้ครั้งเดียวอยู่ inline</h3>
+      <p class="why">helper ที่มีไว้แค่ตั้งชื่อ block โค้ด ทำให้อ่านทีเดียวไม่จบ ต้องกระโดดไปมา และซ่อนว่ามีคนเรียกกี่ที่ — แยกเมื่อมีผู้เรียกตั้งแต่สองที่ หรือ logic ซับซ้อนพอจะมี test ของตัวเอง</p>
+      <div class="panes">
+        <div class="pane bad"><span class="tag">อย่าทำ — helper ใช้ครั้งเดียว</span>
+<pre><span class="kw">func</span> (u *usecase) GetLatest(...) {
+    page := pageFromOffset(params.Offset)
+    list, err := u.repo.Get(ctx, buildRequest(params, page))
+    ...
+    <span class="kw">return</span> toResponse(params.Offset, list)
+}
+
+<span class="kw">func</span> pageFromOffset(offset <span class="kw">int</span>) <span class="kw">int</span> { <span class="kw">return</span> offset/pageSize + 1 }
+<span class="kw">func</span> buildRequest(...) Request { <span class="cm">/* 8 บรรทัด, ผู้เรียกเดียว */</span> }</pre></div>
+        <div class="pane good"><span class="tag">ทำแบบนี้ — flow อยู่ที่เดียว</span>
+<pre><span class="kw">func</span> (u *usecase) GetLatest(...) {
+    <span class="cm">// client sends offset = messages.length, so it is always page-aligned</span>
+    page := params.Offset/pageSize + 1
+
+    list, err := u.repo.Get(ctx, Request{Page: page, ...})
+    ...
+}
+
+<span class="cm">// แยกเมื่อมีผู้เรียกที่สอง: wrapModuleError ทุก error path,
+// categoryOptions ใช้ร่วมสอง mapper</span></pre></div>
+      </div>
+    </div>
+
+    <div class="rule">
+      <h3>Assign แล้วค่อย guard — เช็ค <code>err != nil</code> ก่อน แล้วค่อยแยกประเภทข้างใน</h3>
+      <p class="why">one-liner <code>if err := f(); err != nil</code> กับการเทียบ error เฉพาะก่อน nil check ทำให้ ladder มีสองทรง อ่านไม่ลื่น — ทุก call ใช้ทรงเดียว: assign หนึ่งบรรทัด, guard หนึ่งบรรทัด, จำแนก error ภายใน block นั้น</p>
+      <div class="panes">
+        <div class="pane bad"><span class="tag">อย่าทำ — สองทรงในฟังก์ชันเดียว</span>
+<pre>user, err := u.userRepo.GetUserByEmail(ctx, email)
+<span class="kw">if</span> errs.IsErrorCode(err, errcode.UserNotFound) {
+    <span class="kw">return</span> entity.Login{}, invalidCredentials
+}
+<span class="kw">if</span> err != <span class="kw">nil</span> {
+    <span class="kw">return</span> entity.Login{}, err
+}
+<span class="kw">if</span> err := bcrypt.CompareHashAndPassword(hash, pw); err != <span class="kw">nil</span> {
+    <span class="kw">return</span> entity.Login{}, invalidCredentials
+}</pre></div>
+        <div class="pane good"><span class="tag">ทำแบบนี้ — ทรงเดียวทุก call</span>
+<pre>user, err := u.userRepo.GetUserByEmail(ctx, email)
+<span class="kw">if</span> err != <span class="kw">nil</span> {
+    <span class="kw">if</span> errs.IsErrorCode(err, errcode.UserNotFound) {
+        <span class="kw">return</span> entity.Login{}, errInvalidCredentials
+    }
+    <span class="kw">return</span> entity.Login{}, err
+}
+
+err = bcrypt.CompareHashAndPassword(hash, pw)
+<span class="kw">if</span> err != <span class="kw">nil</span> {
+    <span class="kw">return</span> entity.Login{}, errInvalidCredentials
+}</pre></div>
+      </div>
+    </div>
+
+    <div class="rule">
+      <h3>Sentinel error และค่าที่เป็น contract อยู่บนสุดของไฟล์เป็น <code>const</code>/<code>var</code></h3>
+      <p class="why">error ที่สร้างกลางฟังก์ชันและ string ที่ระบบอื่นอ่าน (issuer, URL prefix, TTL) แทรกอยู่ใน flow ทำให้ scan โค้ดสะดุด และไม่บอกว่าเป็น contract ของใคร — ประกาศครั้งเดียวบนสุด ตั้งชื่อตามเจ้าของ contract</p>
+      <div class="panes">
+        <div class="pane bad"><span class="tag">อย่าทำ — ประกาศกลางฟังก์ชัน, literal inline</span>
+<pre><span class="kw">func</span> (u *authUsecase) Login(...) {
+    invalidCredentials := errs.AppError{ErrorCode: <span class="str">"AUL01"</span>, ...}
+    ...
+    jwt.MapClaims{
+        <span class="str">"iss"</span>: <span class="str">"message-center-russet"</span>,
+        <span class="str">"exp"</span>: now.Add(24 * time.Hour).Unix(),
+    }</pre></div>
+        <div class="pane good"><span class="tag">ทำแบบนี้ — บนสุดของไฟล์</span>
+<pre><span class="cm">// Explorer claims are ze-explorer's contract, copied from russet.</span>
+<span class="kw">const</span> (
+    explorerTokenTTL    = 24 * time.Hour
+    explorerTokenIssuer = <span class="str">"message-center-russet"</span>
+)
+
+<span class="kw">var</span> errInvalidCredentials = errs.AppError{
+    ErrorCode: errcode.ErrCodeAuthUsecaseLoginInvalidCredentials.ToString(),
+    Message:   errcode.MessageInvalidCredentials,
+}</pre></div>
+      </div>
+    </div>
+
+    <div class="rule">
+      <h3>Comment เท่าที่จำเป็น ไม่เกิน 1 บรรทัด — อธิบาย <em>why</em> ไม่ใช่ <em>what</em></h3>
+      <p class="why">เขียนเหตุผล workaround หรือ constraint ที่โค้ดแสดงเองไม่ได้ เป็นประโยคสั้นตัวพิมพ์เล็กบรรทัดเดียว (รวม doc comment) — godoc เฉพาะ exported symbol ที่กฎไม่ได้อยู่ใน signature · คำอธิบายยาวไปอยู่ README/docs</p>
       <div class="panes">
         <div class="pane bad"><span class="tag">อย่าทำ</span>
 <pre><span class="cm">// loop over accounts</span>
@@ -313,11 +399,33 @@ section{scroll-margin-top:24px}
     result = <span class="kw">append</span>(result, a.ToEntity())
 }</pre></div>
         <div class="pane good"><span class="tag">ทำแบบนี้</span>
-<pre><span class="cm">// express orders skip the nightly batch; route them
-// to the priority queue so same-day delivery holds</span>
+<pre><span class="cm">// express orders skip the nightly batch so same-day delivery holds</span>
 <span class="kw">if</span> isExpress {
     order.Queue = expressQueue
 }</pre></div>
+      </div>
+    </div>
+
+    <div class="rule">
+      <h3>Test แบ่ง Arrange / Act / Assert เสมอ</h3>
+      <p class="why">ทุก test case ทุก stack มี marker ครบ 3 ช่วง — รูปร่างเหมือนกันหมด scan แล้วรู้ทันทีว่าเตรียมอะไร เรียกอะไร คาดหวังอะไร</p>
+      <div class="panes">
+        <div class="pane bad"><span class="tag">อย่าทำ</span>
+<pre>t.Run(<span class="str">"should reject empty ids"</span>, <span class="kw">func</span>(t *testing.T) {
+    _, err := uc.Get(ctx, <span class="kw">nil</span>)
+    assert.Error(t, err)
+})</pre></div>
+        <div class="pane good"><span class="tag">ทำแบบนี้</span>
+<pre>t.Run(<span class="str">"should reject empty ids"</span>, <span class="kw">func</span>(t *testing.T) {
+    <span class="cm">// Arrange</span>
+    <span class="kw">var</span> ids []<span class="kw">string</span>
+
+    <span class="cm">// Act</span>
+    _, err := uc.Get(ctx, ids)
+
+    <span class="cm">// Assert</span>
+    assert.Error(t, err)
+})</pre></div>
       </div>
     </div>
 
@@ -404,7 +512,20 @@ section{scroll-margin-top:24px}
   </div>
 </section>
 
-<footer>source: <a href="https://github.com/wonpanu/ai-harness" target="_blank" rel="noopener">AGENTS.md @ github.com/wonpanu/ai-harness</a> (CLAUDE.md symlinks here; install via make install) · updated 2026-08-26</footer>
+<section id="output-style">
+  <p class="eyebrow">Output style · plugin i-have-adhd</p>
+  <h2>รูปแบบคำตอบ</h2>
+  <p class="sub">กฎจาก <a href="https://github.com/ayghri/i-have-adhd" target="_blank" rel="noopener">i-have-adhd</a> เปิดตลอด ไม่ต้องเรียกเอง — Claude Code โหลด ruleset ฉบับเต็มทุก session ผ่าน flag <code>.i-have-adhd-always</code> (install.sh สร้างให้) ส่วน tool ที่ไม่มี hook ได้ฉบับย่อจาก AGENTS.md · orchestrator ใช้กับทุกอย่างที่พูดกับ user ส่วน worker รายงานหา orchestrator แบบสั้นของตัวเอง</p>
+  <div class="practice">
+    <div><b>1-3 · เริ่มด้วย action</b><p>บรรทัดแรกคือคำตอบหรือสิ่งที่ทำได้เลย (command, path, snippet) · งานหลายขั้นเขียนเป็นเลขข้อ หนึ่งข้อหนึ่ง action · จบด้วย next action เดียวที่ทำได้ใน 2 นาที</p></div>
+    <div><b>4-5 · จบทีละเรื่อง</b><p>ปิดเรื่องแรกก่อนค่อยยกเรื่องใหม่ · ทวน progress ทุก turn ("step 3 of 5 done")</p></div>
+    <div><b>6-7 · เวลาและผลเป็นรูปธรรม</b><p>ประเมินเวลาเป็นหน่วยจริง ไม่ใช่ "a bit" · หลังแก้แล้วโชว์ว่าตอนนี้อะไรใช้ได้</p></div>
+    <div><b>8-10 · ตัดของเกิน</b><p>Error บอก ตำแหน่ง-สาเหตุ-วิธีแก้ ไม่ดราม่า · list ไม่เกิน 5 ข้อ · ไม่มี preamble, recap, closer</p></div>
+    <div><b>ข้อยกเว้น</b><p>ขอให้อธิบาย → อธิบายเต็ม · action ทำลายข้อมูล → ถามก่อน · แก้พลาด 3 รอบ → หยุดแล้วบอก assumption ที่น่าสงสัย · โจทย์กำกวม → ถามสั้น ๆ 1 คำถาม</p></div>
+  </div>
+</section>
+
+<footer>source: <a href="https://github.com/wonpanu/ai-harness" target="_blank" rel="noopener">AGENTS.md @ github.com/wonpanu/ai-harness</a> (CLAUDE.md symlinks here; install via make install) · updated 2026-09-23</footer>
 </div>
 
 <script>
@@ -418,11 +539,11 @@ const DATA = {
     "Default คือ solo — งานจบใน turn เดียว (แก้ 1-2 ไฟล์, ตอบคำถาม, edit เล็ก) ไม่ delegate",
     "Decision สำคัญ: ส่ง peer + deep-reasoner ทำคู่ขนาน แล้วสังเคราะห์โดยไม่ให้เห็นคำตอบกัน",
     "รักษา context ของตัวเองให้ lean"]},
-  deep: {name:"deep-reasoner", meta:{model:"claude-opus-5", effort:"xhigh"}, points:[
+  deep: {name:"deep-reasoner", meta:{model:"claude-opus-5-5", effort:"xhigh"}, points:[
     "Architecture, debug ซับซ้อน, ออกแบบ algorithm, วิเคราะห์ trade-off",
     "งานที่ต้องคิดลึกและกินหลาย tool call",
     "คืนข้อสรุปกระชับพร้อมใช้ — decision, evidence สำคัญ, alternative ที่ตัดทิ้ง"]},
-  fast: {name:"fast-worker", meta:{model:"claude-opus-5", effort:"medium"}, points:[
+  fast: {name:"fast-worker", meta:{model:"claude-sonnet-5", effort:"medium"}, points:[
     "งานสเปคชัดแต่เยอะ/ซ้ำ: rename หลายไฟล์, boilerplate, test scaffold",
     "ทำตามสเปคเป๊ะ — ไม่ redesign ไม่ขยาย scope",
     "Verify ด้วย check ที่ถูก (typecheck, targeted test) เมื่อมีให้ใช้"]},
@@ -442,7 +563,7 @@ const DATA = {
     "รับคำสั่ง commit จาก orchestrator หรือ worker ตัวอื่นเมื่องานเสร็จ",
     "อ่าน diff จริงก่อนเขียน message — เจอของไม่ตรงคำสั่งให้ flag ไม่ใช่ commit ทิ้งไป",
     "Stage เฉพาะไฟล์ที่เกี่ยว ตาม convention ของ repo — ไม่แก้โค้ด ไม่ push ถ้าไม่ได้สั่ง"]},
-  rev:  {name:"senior-lead-reviewer", meta:{model:"claude-opus-5 · xhigh — fresh context", lens:"maintainability · tech-debt · operability"}, points:[
+  rev:  {name:"senior-lead-reviewer", meta:{model:"claude-opus-5-5 · xhigh — fresh context", lens:"maintainability · tech-debt · operability"}, points:[
     "Review งานก่อน merge/ship: plan, diff, design",
     "คนละ lens กับ peer (correctness) และ ponytail (over-engineering)",
     "ได้รับ PRD เพื่อ review ให้ตรง acceptance criteria จริง"]},

@@ -18,22 +18,12 @@ fi
 
 ln -sf "$HARNESS_DIR/AGENTS.md" "$CLAUDE_DIR/CLAUDE.md"
 
-# model config: defaults from models.env, personal overrides from models.local.env
-[ -f "$HARNESS_DIR/models.env" ] && . "$HARNESS_DIR/models.env"
-[ -f "$HARNESS_DIR/models.local.env" ] && . "$HARNESS_DIR/models.local.env"
+# i-have-adhd plugin: flag makes its SessionStart hook load the full ruleset every session
+touch "$CLAUDE_DIR/.i-have-adhd-always"
 
-# agents are GENERATED (not symlinked) so model/effort can be substituted per machine
+# agents symlinked like skills — edit agents/*.md frontmatter to change model/effort
 for agent in "$HARNESS_DIR"/agents/*.md; do
-    name=$(basename "$agent" .md)
-    prefix=$(printf '%s' "$name" | tr 'a-z-' 'A-Z_')
-    model=$(eval "printf '%s' \"\${${prefix}_MODEL:-}\"")
-    effort=$(eval "printf '%s' \"\${${prefix}_EFFORT:-}\"")
-    target="$CLAUDE_DIR/agents/$name.md"
-    rm -f "$target"
-    cp "$agent" "$target"
-    # ponytail: substitute only keys already present in the frontmatter
-    [ -n "$model" ] && sed "s|^model:.*|model: $model|" "$target" > "$target.tmp" && mv "$target.tmp" "$target"
-    [ -n "$effort" ] && sed "s|^effort:.*|effort: $effort|" "$target" > "$target.tmp" && mv "$target.tmp" "$target"
+    ln -sf "$agent" "$CLAUDE_DIR/agents/$(basename "$agent")"
 done
 
 for skill in "$HARNESS_DIR"/skills/*/; do
@@ -43,5 +33,5 @@ for skill in "$HARNESS_DIR"/skills/*/; do
     ln -sfn "${skill%/}" "$CLAUDE_DIR/skills/$name"
 done
 
-echo "installed: CLAUDE.md -> AGENTS.md, $(ls "$HARNESS_DIR"/agents/*.md | wc -l | tr -d ' ') agents (generated from models.env), $(ls -d "$HARNESS_DIR"/skills/*/ | wc -l | tr -d ' ') skills into $CLAUDE_DIR"
+echo "installed: CLAUDE.md -> AGENTS.md, $(ls "$HARNESS_DIR"/agents/*.md | wc -l | tr -d ' ') agents, $(ls -d "$HARNESS_DIR"/skills/*/ | wc -l | tr -d ' ') skills into $CLAUDE_DIR"
 echo "other AI tools: point them at $HARNESS_DIR/AGENTS.md (most read AGENTS.md from a project root automatically)"

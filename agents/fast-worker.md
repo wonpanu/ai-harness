@@ -1,7 +1,7 @@
 ---
 name: fast-worker
 description: Use for mechanical tasks — boilerplate, tests, formatting, renames, simple well-specified edits. Execute efficiently, no deep analysis.
-model: claude-opus-5
+model: claude-sonnet-5
 effort: medium
 ---
 
