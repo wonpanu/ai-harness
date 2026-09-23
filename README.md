@@ -58,17 +58,15 @@ docs (`grill-with-docs`) **before** the PRD is drafted.
 
 ## New machine
 
-Tell any AI agent: *"clone github.com/wonpanu/ai-harness and set this machine up from its README"*. The steps it should run (~10 min, logins are the only manual part):
+Tell any AI agent: *"clone github.com/wonpanu/ai-harness and run its bootstrap"*. One command, then four logins:
 
-1. `git clone git@github.com:wonpanu/ai-harness.git ~/ai-harness && cd ~/ai-harness && make install` — symlinks CLAUDE.md, agents/, skills/ into `~/.claude` and `~/.codex/{AGENTS.md,config.toml}`. A second Claude profile (e.g. `~/.claude-fenrir`, `CLAUDE_CONFIG_DIR`) gets the same with `CLAUDE_DIR=~/.claude-fenrir ./install.sh`; its `settings.json` and `skills/` are symlinks to `~/.claude`'s so plugins and hooks are shared.
-2. Claude Code plugins (both always-on via hooks):
-   ```sh
-   claude plugin marketplace add DietrichGebert/ponytail && claude plugin install ponytail@ponytail
-   claude plugin marketplace add ayghri/i-have-adhd    && claude plugin install i-have-adhd@i-have-adhd
-   ```
-3. Codex CLI: `npm i -g @openai/codex && codex login` (ChatGPT Plus is enough — gpt-6-astra/sol/luna all verified on Plus). Roles come from `codex/config.toml`, already linked.
-4. Orca (agent manager, runs Claude Code + Codex side by side): download from https://www.onorca.dev, launch once — it writes its own hooks (`~/.orca/agent-hooks/*.sh`, registered on every Claude Code hook event in `~/.claude/settings.json`). Nothing in this repo to configure.
-5. Session model is set in `~/.claude/settings.json` (`"model": "fable[1m]"`, `modelSettings` for effort) — not versioned here; set it via `/model` on first run.
+```sh
+git clone git@github.com:wonpanu/ai-harness.git ~/ai-harness && cd ~/ai-harness && PROFILES="fenrir" ./bootstrap.sh
+```
+
+`bootstrap.sh` (idempotent, ~3 min) installs node/jq/gh/claude/codex via brew+npm, merges [claude/settings.json](claude/settings.json) (model, effort, plugins, TUI prefs — no secrets, no machine paths) over `~/.claude/settings.json`, installs the [claude/statusline-command.sh](claude/statusline-command.sh), adds the ponytail + i-have-adhd plugins, then runs `install.sh` for `~/.claude`, `~/.codex` and each `PROFILES` entry (`~/.claude-<name>`, sharing settings and skills with `~/.claude`).
+
+Manual after that: `claude` (sign in) · `codex login` (ChatGPT Plus) · `gh auth login` · **Orca** — download from https://www.onorca.dev, add the Claude and Codex accounts in-app; it writes its own hooks into `~/.claude/settings.json` and `~/.orca/agent-hooks`. Account tokens live in Orca's app data and are never versioned here.
 
 Parked: [docs/pi-agent.md](docs/pi-agent.md) — pi coding agent evaluation, not adopted.
 
@@ -99,7 +97,7 @@ Parked: [docs/pi-agent.md](docs/pi-agent.md) — pi coding agent evaluation, not
 
 ```sh
 git clone git@github.com:wonpanu/ai-harness.git ~/ai-harness
-cd ~/ai-harness && make install   # later: make update (pull + re-link)
+cd ~/ai-harness && make install   # harness only; new machine: ./bootstrap.sh (see below)
 claude plugin marketplace add ayghri/i-have-adhd && claude plugin install i-have-adhd@i-have-adhd   # always-on via .i-have-adhd-always (install.sh); short form in AGENTS.md
 npx skills add ayghri/i-have-adhd -g -a cursor -y   # same skill for Cursor (lands in ~/.agents/skills)
 ```
