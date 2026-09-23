@@ -18,21 +18,21 @@ Open `PLAYBOOK.html` for the interactive version (flow diagram with clickable no
 ```mermaid
 flowchart LR
     REQ([Requirement]) --> ORCH
-    ORCH{"Orchestrator<br/>session model · PRD gate"}
+    ORCH{"Orchestrator<br/>fable / gpt-6-astra · PRD gate"}
     ORCH -->|"solo (default)"| SYN(( ))
-    ORCH -->|reasoning-heavy| DEEP["deep-reasoner<br/>opus-5-5 · xhigh"]
-    ORCH -->|mechanical bulk| FAST["fast-worker<br/>sonnet-5 · medium"]
+    ORCH -->|reasoning-heavy| DEEP["deep-reasoner<br/>opus-5-5 / gpt-6-sol · xhigh"]
+    ORCH -->|mechanical bulk| FAST["fast-worker<br/>sonnet-5 / gpt-6-luna · medium"]
     ORCH -->|multi-file search| EXP["Explore<br/>read-only"]
     ORCH -->|high-stakes 2nd opinion| PEER["Peer<br/>session model · fresh ctx"]
-    ORCH -->|internet research| WEB["web-searcher<br/>haiku-4.5"]
-    ORCH -->|commit on instruction| COMMIT["code-committer<br/>haiku-4.5"]
+    ORCH -->|internet research| WEB["web-searcher<br/>haiku-4.5 / gpt-6-luna"]
+    ORCH -->|commit on instruction| COMMIT["code-committer<br/>haiku-4.5 / gpt-6-luna"]
     DEEP --> SYN
     FAST --> SYN
     EXP --> SYN
     PEER --> SYN
     WEB --> SYN
     COMMIT --> SYN
-    SYN -->|synthesize| REV["senior-lead-reviewer<br/>opus-5-5 · xhigh · fresh ctx"]
+    SYN -->|synthesize| REV["senior-lead-reviewer<br/>opus-5-5 / gpt-6-sol · xhigh · fresh ctx"]
     REV --> SHIP([Ship])
 ```
 
@@ -43,16 +43,16 @@ docs (`grill-with-docs`) **before** the PRD is drafted.
 
 ## Agents
 
-| Agent | Model · effort | Role |
-|---|---|---|
-| **Orchestrator** | session model | The main loop. Plans, decomposes, synthesizes; writes the PRD (goal + acceptance criteria + context) before any delegation. Does one-turn work itself — delegates only when a condition below clearly applies. |
-| **deep-reasoner** | opus-5-5 · xhigh | Reasoning-heavy phases: architecture, complex debugging, algorithm design, trade-off analysis. Returns a concise conclusion — decision, key evidence, rejected alternatives. |
-| **fast-worker** | sonnet-5 · medium | Mechanical, well-specified bulk work: multi-file renames, boilerplate, test scaffolds. Executes the spec exactly, no scope expansion; verifies with a cheap check. |
-| **Explore** (built-in) | inherits session | Read-only search across many files/directories when reading exceeds answering. Locates code, returns conclusions — never reviews or edits. |
-| **Peer** | session model · fresh context | An engineer on par with deep-reasoner, from a different perspective — a peer, not a reviewer. Works the same high-stakes problem independently; the orchestrator synthesizes without showing either the other's answer. |
-| **web-searcher** | haiku-4.5 | Internet research: docs, library versions, error messages, current facts. Prefers primary sources, cross-checks surprises, returns answer + source URLs; says so when sources conflict — never guesses. |
-| **code-committer** | haiku-4.5 | Commits finished work on instruction from the orchestrator or another worker. Reads the actual diff before writing the message, stages only relevant files, matches repo convention. Never edits code; pushes only when explicitly told. |
-| **senior-lead-reviewer** | opus-5-5 · xhigh · fresh context | Reviews work about to merge/ship (plans, diffs, designs) through a maintainability / tech-debt / operability lens — distinct from peer (correctness) and ponytail (over-engineering). Receives the PRD so review targets the real acceptance criteria. |
+| Agent | Claude · effort | OpenAI (Codex) | Role |
+|---|---|---|---|
+| **Orchestrator** | session model (fable · high) | gpt-6-astra · high | The main loop. Plans, decomposes, synthesizes; writes the PRD (goal + acceptance criteria + context) before any delegation. Does one-turn work itself — delegates only when a condition below clearly applies. |
+| **deep-reasoner** | opus-5-5 · xhigh | gpt-6-sol · xhigh | Reasoning-heavy phases: architecture, complex debugging, algorithm design, trade-off analysis. Returns a concise conclusion — decision, key evidence, rejected alternatives. |
+| **fast-worker** | sonnet-5 · medium | gpt-6-luna · medium | Mechanical, well-specified bulk work: multi-file renames, boilerplate, test scaffolds. Executes the spec exactly, no scope expansion; verifies with a cheap check. |
+| **Explore** (built-in) | inherits session | — (Claude Code only) | Read-only search across many files/directories when reading exceeds answering. Locates code, returns conclusions — never reviews or edits. |
+| **Peer** | session model · fresh context | gpt-6-astra · fresh context | An engineer on par with deep-reasoner, from a different perspective — a peer, not a reviewer. Works the same high-stakes problem independently; the orchestrator synthesizes without showing either the other's answer. |
+| **web-searcher** | haiku-4.5 | gpt-6-luna · low | Internet research: docs, library versions, error messages, current facts. Prefers primary sources, cross-checks surprises, returns answer + source URLs; says so when sources conflict — never guesses. |
+| **code-committer** | haiku-4.5 | gpt-6-luna · low | Commits finished work on instruction from the orchestrator or another worker. Reads the actual diff before writing the message, stages only relevant files, matches repo convention. Never edits code; pushes only when explicitly told. |
+| **senior-lead-reviewer** | opus-5-5 · xhigh · fresh context | gpt-6-sol · xhigh | Reviews work about to merge/ship (plans, diffs, designs) through a maintainability / tech-debt / operability lens — distinct from peer (correctness) and ponytail (over-engineering). Receives the PRD so review targets the real acceptance criteria. |
 
 **Codex CLI:** `install.sh` also links `~/.codex/AGENTS.md` → `AGENTS.md` and `~/.codex/config.toml` → [codex/config.toml](codex/config.toml), which defines the same roles as `[agents.*]` on the OpenAI tier map (astra ≈ Fable, sol ≈ Opus, luna ≈ Sonnet/Haiku).
 
