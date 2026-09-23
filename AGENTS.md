@@ -24,7 +24,7 @@ You (the session model) are the orchestrator. Plan, decompose, synthesize.
 Reasoning-heavy phases → deep-reasoner role (Opus 5.5, effort xhigh)
 Mechanical work → fast-worker role (Sonnet 5, effort medium)
 Internet research (docs, versions, error messages, current facts) → web-searcher role (Haiku 4.5)
-Committing finished work on instruction → code-committer role (Haiku 4.5) — never modifies code, pushes only when told
+Committing finished work on instruction → code-committer role (Haiku 4.5) — never modifies code, never pushes to main — branch + PR when told to ship
 Other agent (a fresh instance of the current session model — same model as you, separate context) is a cracked engineer on par with deep-reasoner, from a different perspective. Treat as a peer, not a reviewer.
 High-stakes decisions: task the peer on the same problem in parallel, synthesize the best of both, without showing either the other's answer. Keep your own context lean.
 
