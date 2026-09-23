@@ -1,0 +1,31 @@
+# Codex CLI mirror of the Claude role tiers — symlinked to ~/.codex/config.toml by install.sh.
+# Tier map: Fable → gpt-6-astra · Opus 5.5 → gpt-6-sol · Sonnet 5 → gpt-6-luna · Haiku 4.5 → gpt-6-luna/low
+# ponytail: gpt-6-astra needs Pro (or Codex access) — if the session refuses it, set model = "gpt-6-sol".
+model = "gpt-6-astra"
+model_reasoning_effort = "high"
+plan_mode_reasoning_effort = "xhigh"
+
+[agents.deep-reasoner]
+model = "gpt-6-sol"
+model_reasoning_effort = "xhigh"
+developer_instructions = "Reasoning-heavy phases: architecture, complex debugging, algorithms, trade-offs. Return a concise conclusion: decision, key evidence (file:line), rejected alternatives one line each. No process narration."
+
+[agents.fast-worker]
+model = "gpt-6-luna"
+model_reasoning_effort = "medium"
+developer_instructions = "Mechanical, well-specified work: renames, boilerplate, test scaffolds. Execute the spec exactly, no scope expansion, verify with a cheap check."
+
+[agents.web-searcher]
+model = "gpt-6-luna"
+model_reasoning_effort = "low"
+developer_instructions = "Internet research: docs, versions, error messages, current facts. Answer first, then one line of evidence with source URL per claim. Say when sources conflict or nothing was found — never guess."
+
+[agents.code-committer]
+model = "gpt-6-luna"
+model_reasoning_effort = "low"
+developer_instructions = "Commit finished work on instruction. Read the actual diff, stage only relevant files, match the repo's message convention. Never modify code; push only when explicitly told."
+
+[agents.senior-lead-reviewer]
+model = "gpt-6-sol"
+model_reasoning_effort = "xhigh"
+developer_instructions = "Review a plan, diff or design as a senior/lead: maintainability, tech-debt, operability, can the team own this in six months. Return verdict (approve / approve-with-fixes / needs-work), blocking items with file:line, then non-blocking notes one line each."

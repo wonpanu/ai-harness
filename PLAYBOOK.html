@@ -533,17 +533,17 @@ const DATA = {
   req:  {name:"Requirement", meta:{}, points:[
     "งานที่เข้ามาทุกรูปแบบ: feature, fix, คำถาม, plan",
     "จุดแรกคือ orchestrator เสมอ — ไม่มีการ route ตรงไปหา agent"]},
-  orch: {name:"Orchestrator", meta:{model:"session model ปัจจุบัน", role:"plan · decompose · synthesize"}, points:[
+  orch: {name:"Orchestrator", meta:{model:"session model ปัจจุบัน", codex:"gpt-6-astra · high", role:"plan · decompose · synthesize"}, points:[
     "PRD gate: เขียน goal + acceptance criteria + context ก่อน delegate ทุกครั้ง — ทุก worker และ reviewer ได้รับ",
     "Domain term กำกวม → รัน grill-with-docs เทียบศัพท์กับ docs ของโปรเจกต์ก่อนร่าง PRD",
     "Default คือ solo — งานจบใน turn เดียว (แก้ 1-2 ไฟล์, ตอบคำถาม, edit เล็ก) ไม่ delegate",
     "Decision สำคัญ: ส่ง peer + deep-reasoner ทำคู่ขนาน แล้วสังเคราะห์โดยไม่ให้เห็นคำตอบกัน",
     "รักษา context ของตัวเองให้ lean"]},
-  deep: {name:"deep-reasoner", meta:{model:"claude-opus-5-5", effort:"xhigh"}, points:[
+  deep: {name:"deep-reasoner", meta:{model:"claude-opus-5-5", effort:"xhigh", codex:"gpt-6-sol · xhigh"}, points:[
     "Architecture, debug ซับซ้อน, ออกแบบ algorithm, วิเคราะห์ trade-off",
     "งานที่ต้องคิดลึกและกินหลาย tool call",
     "คืนข้อสรุปกระชับพร้อมใช้ — decision, evidence สำคัญ, alternative ที่ตัดทิ้ง"]},
-  fast: {name:"fast-worker", meta:{model:"claude-sonnet-5", effort:"medium"}, points:[
+  fast: {name:"fast-worker", meta:{model:"claude-sonnet-5", effort:"medium", codex:"gpt-6-luna · medium"}, points:[
     "งานสเปคชัดแต่เยอะ/ซ้ำ: rename หลายไฟล์, boilerplate, test scaffold",
     "ทำตามสเปคเป๊ะ — ไม่ redesign ไม่ขยาย scope",
     "Verify ด้วย check ที่ถูก (typecheck, targeted test) เมื่อมีให้ใช้"]},
@@ -555,15 +555,15 @@ const DATA = {
     "วิศวกรระดับเดียวกับ deep-reasoner จากคนละมุมมอง",
     "เป็น peer ไม่ใช่ reviewer — ทำโจทย์เดียวกันอย่างอิสระ",
     "ใช้กับ decision สำคัญที่ผิดแล้วแพง"]},
-  websearch: {name:"web-searcher", meta:{model:"claude-haiku-4-5", scope:"internet research"}, points:[
+  websearch: {name:"web-searcher", meta:{model:"claude-haiku-4-5", codex:"gpt-6-luna · low", scope:"internet research"}, points:[
     "ค้นข้อมูลจาก internet: docs, เวอร์ชัน library, error message, ข้อเท็จจริงปัจจุบัน",
     "ยึด official docs/primary source และ cross-check เรื่องที่ surprising กับแหล่งที่สอง",
     "คืนคำตอบก่อน ตามด้วย evidence + source URL — หาไม่เจอหรือแหล่งขัดกันต้องบอกตรง ๆ ห้ามเดา"]},
-  committer: {name:"code-committer", meta:{model:"claude-haiku-4-5", scope:"git commit only"}, points:[
+  committer: {name:"code-committer", meta:{model:"claude-haiku-4-5", codex:"gpt-6-luna · low", scope:"git commit only"}, points:[
     "รับคำสั่ง commit จาก orchestrator หรือ worker ตัวอื่นเมื่องานเสร็จ",
     "อ่าน diff จริงก่อนเขียน message — เจอของไม่ตรงคำสั่งให้ flag ไม่ใช่ commit ทิ้งไป",
     "Stage เฉพาะไฟล์ที่เกี่ยว ตาม convention ของ repo — ไม่แก้โค้ด ไม่ push ถ้าไม่ได้สั่ง"]},
-  rev:  {name:"senior-lead-reviewer", meta:{model:"claude-opus-5-5 · xhigh — fresh context", lens:"maintainability · tech-debt · operability"}, points:[
+  rev:  {name:"senior-lead-reviewer", meta:{model:"claude-opus-5-5 · xhigh — fresh context", codex:"gpt-6-sol · xhigh", lens:"maintainability · tech-debt · operability"}, points:[
     "Review งานก่อน merge/ship: plan, diff, design",
     "คนละ lens กับ peer (correctness) และ ponytail (over-engineering)",
     "ได้รับ PRD เพื่อ review ให้ตรง acceptance criteria จริง"]},

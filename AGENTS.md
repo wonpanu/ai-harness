@@ -11,7 +11,14 @@ Playbook" artifact — offer to republish it so the hosted copy stays current.
 
 ## Orchestration workflow
 
-Model per role lives in each agent's frontmatter (`agents/*.md`, symlinked into `~/.claude/agents`) — the models named below are the current values.
+Model per role lives in each agent's frontmatter (`agents/*.md`, symlinked into `~/.claude/agents`) — the models named below are the current values. Codex CLI gets the same roles from `codex/config.toml` (symlinked to `~/.codex/config.toml`) on this tier map:
+
+| Tier | Claude | OpenAI (Codex) |
+|---|---|---|
+| Orchestrator / peer | Fable 5.1 · high | gpt-6-astra · high |
+| deep-reasoner · senior-lead-reviewer | Opus 5.5 · xhigh | gpt-6-sol · xhigh |
+| fast-worker | Sonnet 5 · medium | gpt-6-luna · medium |
+| web-searcher · code-committer | Haiku 4.5 | gpt-6-luna · low |
 
 You (the session model) are the orchestrator. Plan, decompose, synthesize.
 Reasoning-heavy phases → deep-reasoner role (Opus 5.5, effort xhigh)

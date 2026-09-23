@@ -26,6 +26,12 @@ for agent in "$HARNESS_DIR"/agents/*.md; do
     ln -sf "$agent" "$CLAUDE_DIR/agents/$(basename "$agent")"
 done
 
+# Codex CLI: same rules + role/model tiers mirrored in codex/config.toml
+mkdir -p "$HOME/.codex"
+ln -sf "$HARNESS_DIR/AGENTS.md" "$HOME/.codex/AGENTS.md"
+[ -f "$HOME/.codex/config.toml" ] && [ ! -L "$HOME/.codex/config.toml" ] && cp "$HOME/.codex/config.toml" "$HOME/.codex/config.toml.bak"
+ln -sf "$HARNESS_DIR/codex/config.toml" "$HOME/.codex/config.toml"
+
 for skill in "$HARNESS_DIR"/skills/*/; do
     name=$(basename "$skill")
     # replace a real directory from an old copy-based install with the symlink
@@ -33,5 +39,5 @@ for skill in "$HARNESS_DIR"/skills/*/; do
     ln -sfn "${skill%/}" "$CLAUDE_DIR/skills/$name"
 done
 
-echo "installed: CLAUDE.md -> AGENTS.md, $(ls "$HARNESS_DIR"/agents/*.md | wc -l | tr -d ' ') agents, $(ls -d "$HARNESS_DIR"/skills/*/ | wc -l | tr -d ' ') skills into $CLAUDE_DIR"
+echo "installed: CLAUDE.md -> AGENTS.md, $(ls "$HARNESS_DIR"/agents/*.md | wc -l | tr -d ' ') agents, $(ls -d "$HARNESS_DIR"/skills/*/ | wc -l | tr -d ' ') skills into $CLAUDE_DIR; codex: ~/.codex/AGENTS.md + config.toml"
 echo "other AI tools: point them at $HARNESS_DIR/AGENTS.md (most read AGENTS.md from a project root automatically)"

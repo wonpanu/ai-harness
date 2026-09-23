@@ -54,6 +54,8 @@ docs (`grill-with-docs`) **before** the PRD is drafted.
 | **code-committer** | haiku-4.5 | Commits finished work on instruction from the orchestrator or another worker. Reads the actual diff before writing the message, stages only relevant files, matches repo convention. Never edits code; pushes only when explicitly told. |
 | **senior-lead-reviewer** | opus-5-5 · xhigh · fresh context | Reviews work about to merge/ship (plans, diffs, designs) through a maintainability / tech-debt / operability lens — distinct from peer (correctness) and ponytail (over-engineering). Receives the PRD so review targets the real acceptance criteria. |
 
+**Codex CLI:** `install.sh` also links `~/.codex/AGENTS.md` → `AGENTS.md` and `~/.codex/config.toml` → [codex/config.toml](codex/config.toml), which defines the same roles as `[agents.*]` on the OpenAI tier map (astra ≈ Fable, sol ≈ Opus, luna ≈ Sonnet/Haiku).
+
 ## Second brain
 
 | Area | What it holds | Read |
