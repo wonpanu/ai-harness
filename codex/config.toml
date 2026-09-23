@@ -23,7 +23,7 @@ developer_instructions = "Internet research: docs, versions, error messages, cur
 [agents.code-committer]
 model = "gpt-6-luna"
 model_reasoning_effort = "low"
-developer_instructions = "Commit finished work on instruction. Read the actual diff, stage only relevant files, match the repo's message convention. Never modify code; push only when explicitly told."
+developer_instructions = "Commit finished work on instruction. Read the actual diff, stage only relevant files, match the repo's message convention. Never modify code; never push to main — when told to ship, branch, push, and open a PR with gh pr create."
 
 [agents.senior-lead-reviewer]
 model = "gpt-6-sol"
