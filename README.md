@@ -13,6 +13,16 @@ tools without apply each role's discipline inline.
 
 Open `PLAYBOOK.html` for the interactive version (flow diagram with clickable nodes).
 
+## Install
+
+Copy/paste into your CLI prompt on the new machine:
+
+```text
+Set this machine up from https://github.com/wonpanu/ai-harness, refer to the repo's INSTALL.md for instructions.
+```
+
+Or 🔗 [check the installation instructions](INSTALL.md). It asks which providers to connect (Claude, OpenAI, or both), runs `bootstrap.sh`, then walks the logins through Orca. Model tiers are fixed by the repo.
+
 ## Flow
 
 ```mermaid
@@ -56,22 +66,6 @@ docs (`grill-with-docs`) **before** the PRD is drafted.
 
 **Codex CLI:** `install.sh` also links `~/.codex/AGENTS.md` → `AGENTS.md` and `~/.codex/config.toml` → [codex/config.toml](codex/config.toml), which defines the same roles as `[agents.*]` on the OpenAI tier map (astra ≈ Fable, sol ≈ Opus, luna ≈ Sonnet/Haiku).
 
-## New machine
-
-Paste this into any AI coding agent on the new machine (it needs a shell and a browser you can reach):
-
-```text
-Set this machine up from https://github.com/wonpanu/ai-harness.
-1. Clone it to ~/ai-harness and read README.md and bootstrap.sh before running anything.
-2. Ask me one question, multi-select: which AI providers to connect — Claude, OpenAI, or both. Do not ask about model choices: model tiers are fixed by the repo (agents/*.md, codex/config.toml, claude/settings.json) — apply them as-is.
-3. Run ./bootstrap.sh. If I chose more than one Claude account, run it with PROFILES="<one short name per extra account>" and tell me the CLAUDE_CONFIG_DIR to use for each.
-4. Then walk me through the logins in this order, one at a time, waiting for me to confirm each: (a) install Orca from https://www.onorca.dev and open it; (b) in Orca, add an account for each provider I chose — Claude first, then OpenAI; (c) `claude` sign-in per profile; (d) `codex login` if OpenAI was chosen; (e) `gh auth login`.
-5. Verify: `claude --version`, `codex --version` (if chosen), `ls -l ~/.claude/agents ~/.codex/config.toml` show symlinks into ~/ai-harness, and Orca's hooks exist in ~/.orca/agent-hooks. Report what works and what is left.
-Never print or ask for account names, emails, or tokens; refer to accounts only as "your Claude account" / "your OpenAI account".
-```
-
-What `bootstrap.sh` does (idempotent, ~3 min): installs node/jq/gh/claude/codex via brew+npm, then applies both providers' config — Claude: merges [claude/settings.json](claude/settings.json) (model, effort, plugins, TUI prefs — no secrets, no machine paths) over `~/.claude/settings.json` and installs [claude/statusline-command.sh](claude/statusline-command.sh); OpenAI: symlinks [codex/config.toml](codex/config.toml) (session model + `[agents.*]` roles) to `~/.codex/config.toml` — adds the ponytail + i-have-adhd plugins, and runs `install.sh` for `~/.claude`, `~/.codex` and each `PROFILES` entry (`~/.claude-<name>`, sharing settings and skills with `~/.claude`). Logins and the Orca app are the only manual steps; Orca writes its own hooks into `~/.claude/settings.json` and `~/.orca/agent-hooks`, and account tokens stay in Orca's app data, never in this repo.
-
 ## Second brain
 
 | Area | What it holds | Read |
@@ -94,21 +88,6 @@ What `bootstrap.sh` does (idempotent, ~3 min): installs node/jq/gh/claude/codex 
 - `install.sh` — symlinks everything into `~/.claude` (see Install)
 - `agents/` — subagent definitions: `deep-reasoner` (opus-5-5/xhigh), `fast-worker` (sonnet-5/medium), `web-searcher` (haiku-4.5), `code-committer` (haiku-4.5), `senior-lead-reviewer` (opus-5-5/xhigh)
 - `skills/` — on-demand skills: `go-backend-style`, `react-frontend-style` (each with EXAMPLES.md), `tailwindcss-style`, `tanstack-query-style`, `frontier-mode`, `creating-skills`
-
-## Install
-
-```sh
-git clone git@github.com:wonpanu/ai-harness.git ~/ai-harness
-cd ~/ai-harness && make install   # harness only; new machine: ./bootstrap.sh (see below)
-claude plugin marketplace add ayghri/i-have-adhd && claude plugin install i-have-adhd@i-have-adhd   # always-on via .i-have-adhd-always (install.sh); short form in AGENTS.md
-npx skills add ayghri/i-have-adhd -g -a cursor -y   # same skill for Cursor (lands in ~/.agents/skills)
-```
-
-`CLAUDE.md`, agents and skills are symlinked, so `git pull` updates them live. A pre-existing regular-file `CLAUDE.md` is backed up to
-`CLAUDE.md.bak` first. Install into a different profile with
-`CLAUDE_DIR=~/.claude-x ~/ai-harness/install.sh`.
-
-**Customize models:** edit `model:` / `effort:` in `agents/*.md` — the symlink makes it live at once.
 
 ## License
 
