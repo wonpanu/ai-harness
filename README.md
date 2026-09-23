@@ -56,6 +56,22 @@ docs (`grill-with-docs`) **before** the PRD is drafted.
 
 **Codex CLI:** `install.sh` also links `~/.codex/AGENTS.md` → `AGENTS.md` and `~/.codex/config.toml` → [codex/config.toml](codex/config.toml), which defines the same roles as `[agents.*]` on the OpenAI tier map (astra ≈ Fable, sol ≈ Opus, luna ≈ Sonnet/Haiku).
 
+## New machine
+
+Tell any AI agent: *"clone github.com/wonpanu/ai-harness and set this machine up from its README"*. The steps it should run (~10 min, logins are the only manual part):
+
+1. `git clone git@github.com:wonpanu/ai-harness.git ~/ai-harness && cd ~/ai-harness && make install` — symlinks CLAUDE.md, agents/, skills/ into `~/.claude` and `~/.codex/{AGENTS.md,config.toml}`. A second Claude profile (e.g. `~/.claude-fenrir`, `CLAUDE_CONFIG_DIR`) gets the same with `CLAUDE_DIR=~/.claude-fenrir ./install.sh`; its `settings.json` and `skills/` are symlinks to `~/.claude`'s so plugins and hooks are shared.
+2. Claude Code plugins (both always-on via hooks):
+   ```sh
+   claude plugin marketplace add DietrichGebert/ponytail && claude plugin install ponytail@ponytail
+   claude plugin marketplace add ayghri/i-have-adhd    && claude plugin install i-have-adhd@i-have-adhd
+   ```
+3. Codex CLI: `npm i -g @openai/codex && codex login` (ChatGPT Plus is enough — gpt-6-astra/sol/luna all verified on Plus). Roles come from `codex/config.toml`, already linked.
+4. Orca (agent manager, runs Claude Code + Codex side by side): download from https://www.onorca.dev, launch once — it writes its own hooks (`~/.orca/agent-hooks/*.sh`, registered on every Claude Code hook event in `~/.claude/settings.json`). Nothing in this repo to configure.
+5. Session model is set in `~/.claude/settings.json` (`"model": "fable[1m]"`, `modelSettings` for effort) — not versioned here; set it via `/model` on first run.
+
+Parked: [docs/pi-agent.md](docs/pi-agent.md) — pi coding agent evaluation, not adopted.
+
 ## Second brain
 
 | Area | What it holds | Read |
