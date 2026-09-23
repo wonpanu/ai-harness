@@ -72,8 +72,6 @@ Never print or ask for account names, emails, or tokens; refer to accounts only 
 
 What `bootstrap.sh` does (idempotent, ~3 min): installs node/jq/gh/claude/codex via brew+npm, merges [claude/settings.json](claude/settings.json) (model, effort, plugins, TUI prefs — no secrets, no machine paths) over `~/.claude/settings.json`, installs [claude/statusline-command.sh](claude/statusline-command.sh), adds the ponytail + i-have-adhd plugins, then runs `install.sh` for `~/.claude`, `~/.codex` and each `PROFILES` entry (`~/.claude-<name>`, sharing settings and skills with `~/.claude`). Logins and the Orca app are the only manual steps; Orca writes its own hooks into `~/.claude/settings.json` and `~/.orca/agent-hooks`, and account tokens stay in Orca's app data, never in this repo.
 
-Parked: [docs/pi-agent.md](docs/pi-agent.md) — pi coding agent evaluation, not adopted.
-
 ## Second brain
 
 | Area | What it holds | Read |
