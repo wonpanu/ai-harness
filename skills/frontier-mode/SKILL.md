@@ -1,6 +1,6 @@
 ---
 name: frontier-mode
-description: Frontier-model discipline scaffold for weaker/cheaper models (e.g. Opus 5). Enforces the reasoning habits a top-tier model does naturally — falsify assumptions, verify before claiming, fan out when uncertain. Use when user says "frontier mode", "/frontier-mode", "think like a frontier model", "max quality", or wants frontier-level rigor on a non-frontier model.
+description: Frontier-model discipline scaffold for weaker/cheaper models (e.g. Sonnet 5, Haiku 4.5). Enforces the reasoning habits a top-tier model does naturally — falsify assumptions, verify before claiming, fan out when uncertain. Use when user says "frontier mode", "/frontier-mode", "think like a frontier model", "max quality", or wants frontier-level rigor on a non-frontier model.
 ---
 
 # Frontier mode
