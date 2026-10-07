@@ -13,16 +13,9 @@
   "enabledPlugins": {
     "gopls-lsp@claude-plugins-official": true,
     "skill-creator@claude-plugins-official": true,
-    "ponytail@ponytail": true,
     "i-have-adhd@i-have-adhd": true
   },
   "extraKnownMarketplaces": {
-    "ponytail": {
-      "source": {
-        "source": "github",
-        "repo": "DietrichGebert/ponytail"
-      }
-    },
     "i-have-adhd": {
       "source": {
         "source": "github",
@@ -43,5 +36,26 @@
   "statusLine": {
     "type": "command",
     "command": "~/.claude/statusline-command.sh"
+  },
+  "permissions": {
+    "deny": [
+      "Bash(git push origin main)",
+      "Bash(git push origin main:*)",
+      "Bash(git push -f:*)",
+      "Bash(git push --force:*)",
+      "Bash(git push --force-with-lease origin main:*)"
+    ]
+  },
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo 'harness: non-trivial task -> invoke the harness-mode skill, match a playbook, copy its steps into the todo list before any other work. Behavior change -> tdd skill, red before green.'"
+          }
+        ]
+      }
+    ]
   }
 }

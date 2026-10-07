@@ -42,6 +42,8 @@ Concrete avoid/prefer code for every rule: see [EXAMPLES.md](EXAMPLES.md) — re
 
 ## Comments & tests
 
-- Comments only when necessary, one line max: explain why (rationale, workaround, constraint) in lowercase fragments — never what the next line does.
-- Godoc only on exported symbols whose rule isn't visible in the signature, also one line.
+- Comments: default none. One line max, only for a business rule or external constraint the code cannot show (client reads `projects[0]`, legacy quirk mirrored, workaround) — never how a technique works, what a struct holds, or a restatement of the name.
+- Godoc only on exported symbols whose rule isn't visible in the signature, also one line. Handler doc: one line naming the route.
+- Test `// Arrange` / `// Act` / `// Assert` markers stay bare unless the arrangement itself is the surprise (`// Arrange — a closed pool stands in for a dead connection`).
+- Last step of any change: a comment pass over the diff, deleting every comment that fails the rules above.
 - Tests: external test package, `t.Run("should …")` subtests, `// Arrange` / `// Act` / `// Assert` markers in every case, tiny local helpers (`intPtr`) over inline noise.

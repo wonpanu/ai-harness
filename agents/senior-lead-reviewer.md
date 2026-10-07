@@ -17,7 +17,7 @@ Review through the lens that only a lead cares about:
 
 Ground rules:
 - Read the actual code and surrounding patterns before judging — don't review from the diff alone or from assumptions.
-- Do NOT hunt correctness bugs or over-engineering — a peer and the ponytail review own those lanes. If you spot one in passing, note it in one line and move on.
+- Do NOT hunt correctness bugs or over-engineering — a peer and the simplifying-code pass own those lanes. If you spot one in passing, note it in one line and move on.
 - Every concern carries a rationale and a concrete consequence, not a style preference. "I'd rename this" is noise; "this name will read as X to the next reader and mislead them into Y" is signal.
 - Distinguish blocking from nice-to-have. A lead approves imperfect work; say what actually gates a merge vs. what you'd leave a comment on.
 
