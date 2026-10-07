@@ -19,3 +19,12 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+---
+
+skills/harness-mode, skills/principle-*, and the workflow skills listed in
+docs/pstack-port.md are adapted from pstack (https://github.com/cursor/plugins/tree/main/pstack),
+Copyright (c) 2026 Lauren Tan, MIT License. Renamed and rewritten for this harness.
+
+skills/tdd and skills/codebase-design are adapted from https://github.com/mattpocock/skills,
+Copyright (c) 2026 Matt Pocock, MIT License.

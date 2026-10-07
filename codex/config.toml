@@ -1,31 +1,36 @@
 # Codex CLI mirror of the Claude role tiers — symlinked to ~/.codex/config.toml by install.sh.
 # Tier map: Fable → gpt-6-astra · Opus 5.5 → gpt-6-sol · Sonnet 5 → gpt-6-luna · Haiku 4.5 → gpt-6-luna/low
-# ponytail: gpt-6-astra needs Pro (or Codex access) — if the session refuses it, set model = "gpt-6-sol".
+# gpt-6-astra needs Pro (or Codex access) — if the session refuses it, set model = "gpt-6-sol".
+# Codex accepts only description/config_file under [agents.*]; model, effort and instructions live in codex/agents/*.toml.
+# config_file resolves against the running CODEX_HOME, so paths are anchored at ~/ai-harness (INSTALL.md step 1).
 model = "gpt-6-astra"
 model_reasoning_effort = "high"
 plan_mode_reasoning_effort = "xhigh"
 
 [agents.deep-reasoner]
-model = "gpt-6-sol"
-model_reasoning_effort = "xhigh"
-developer_instructions = "Reasoning-heavy phases: architecture, complex debugging, algorithms, trade-offs. Return a concise conclusion: decision, key evidence (file:line), rejected alternatives one line each. No process narration."
+description = "Use for reasoning-heavy phases: architecture, complex debugging, algorithm design, trade-off analysis. Returns a concise conclusion the orchestrator can act on."
+config_file = "~/ai-harness/codex/agents/deep-reasoner.toml"
 
 [agents.fast-worker]
-model = "gpt-6-luna"
-model_reasoning_effort = "medium"
-developer_instructions = "Mechanical, well-specified work: renames, boilerplate, test scaffolds. Execute the spec exactly, no scope expansion, verify with a cheap check."
+description = "Use for mechanical, well-specified work: boilerplate, tests, formatting, renames. Executes the spec exactly, no deep analysis."
+config_file = "~/ai-harness/codex/agents/fast-worker.toml"
 
 [agents.web-searcher]
-model = "gpt-6-luna"
-model_reasoning_effort = "low"
-developer_instructions = "Internet research: docs, versions, error messages, current facts. Answer first, then one line of evidence with source URL per claim. Say when sources conflict or nothing was found — never guess."
+description = "Use for internet research: documentation lookups, library and version checks, error-message searches, current facts. Returns concise findings with source URLs."
+config_file = "~/ai-harness/codex/agents/web-searcher.toml"
 
 [agents.code-committer]
-model = "gpt-6-luna"
-model_reasoning_effort = "low"
-developer_instructions = "Commit finished work on instruction. Read the actual diff, stage only relevant files, match the repo's message convention. Never modify code; never push to main — when told to ship, branch, push, and open a PR with gh pr create."
+description = "Use to commit finished work on instruction. Never modifies code; never pushes to main, ships via a branch and PR when told to push."
+config_file = "~/ai-harness/codex/agents/code-committer.toml"
 
 [agents.senior-lead-reviewer]
-model = "gpt-6-sol"
-model_reasoning_effort = "xhigh"
-developer_instructions = "Review a plan, diff or design as a senior/lead: maintainability, tech-debt, operability, can the team own this in six months. Return verdict (approve / approve-with-fixes / needs-work), blocking items with file:line, then non-blocking notes one line each."
+description = "Use to review a plan, diff, or design through a senior-lead lens: maintainability, tech-debt, operability. Distinct from a correctness peer and from over-engineering review. Returns a concise verdict."
+config_file = "~/ai-harness/codex/agents/senior-lead-reviewer.toml"
+
+[agents.harness-agent]
+description = "Routing target for /harness-mode: works in the harness style, playbook steps copied into the todo list, principles cited, work verified against the real artifact."
+config_file = "~/ai-harness/codex/agents/harness-agent.toml"
+
+[agents.comment-reviewer]
+description = "Read-only comment reviewer for the no-comments skill. Flags comments that fail the harness rule and code that needs reshaping. Never edits code."
+config_file = "~/ai-harness/codex/agents/comment-reviewer.toml"

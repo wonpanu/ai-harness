@@ -17,16 +17,24 @@ python3 - "$HARNESS_DIR/claude/settings.json" "$HOME/.claude/settings.json" <<'P
 import json,sys,os
 snap=json.load(open(sys.argv[1])); path=sys.argv[2]
 live=json.load(open(path)) if os.path.exists(path) else {}
+# permissions and hooks are unioned, not replaced: the machine keeps its own allow/deny rules and Orca's hooks
+snap_permissions=snap.pop("permissions",{}); snap_hooks=snap.pop("hooks",{})
 live.update(snap)
+live_permissions=live.setdefault("permissions",{})
+for key,rules in snap_permissions.items():
+    merged=live_permissions.setdefault(key,[])
+    merged.extend(rule for rule in rules if rule not in merged)
+live_hooks=live.setdefault("hooks",{})
+for event,entries in snap_hooks.items():
+    merged=live_hooks.setdefault(event,[])
+    merged.extend(entry for entry in entries if entry not in merged)
 live["statusLine"]["command"]=os.path.expanduser(live["statusLine"]["command"])
 json.dump(live,open(path,"w"),indent=2); open(path,"a").write("\n")
 PY
 cp "$HARNESS_DIR/claude/statusline-command.sh" "$HOME/.claude/statusline-command.sh" && chmod +x "$HOME/.claude/statusline-command.sh"
 
-# plugins (both always-on via SessionStart hooks; enabledPlugins comes from the snapshot above)
-claude plugin marketplace add DietrichGebert/ponytail >/dev/null 2>&1 || true
-claude plugin marketplace add ayghri/i-have-adhd      >/dev/null 2>&1 || true
-claude plugin install ponytail@ponytail       >/dev/null 2>&1 || true
+# plugin (always-on via SessionStart hook; enabledPlugins comes from the snapshot above)
+claude plugin marketplace add ayghri/i-have-adhd >/dev/null 2>&1 || true
 claude plugin install i-have-adhd@i-have-adhd >/dev/null 2>&1 || true
 
 # harness symlinks: ~/.claude, ~/.codex, plus optional extra profiles that share settings/skills with ~/.claude

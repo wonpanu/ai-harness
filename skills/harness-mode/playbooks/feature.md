@@ -1,0 +1,22 @@
+### Feature
+
+**You own the design. Plan, review, verify.** Delegate implementation. Stay in the lead.
+
+1. `how` over the affected subsystem. If a domain term in the request could mean something else in this project, align it first (`grill-with-docs`, or the project's domain docs by hand) so the step 4 PRD carries the project's meaning.
+2. `architect` for parallel design exploration.
+3. Write the throughput checkpoint as four todo items. A dimension that genuinely does not apply (single file, no fan-out) keeps its item with `n/a: <reason>` rather than being dropped:
+   - **Blocking first steps.** Gates run before fan-out.
+   - **Independent workstreams.** Disjoint files, services, or layers parallelize. Shared writes serialize.
+   - **Shared mutable state.** Default to splitting the target (the **separate-before-serializing-shared-state** principle skill). Serialize only for real invariants.
+   - **Smallest safe decomposition.** If one worker is best, name why.
+   - **Test seams.** Name the public boundaries the **tdd** skill will test at, one line each. They go into every delegate brief.
+4. Delegate code-writing to `harness-agent` (`deep-reasoner` for the hardest changes: cross-cutting design, gnarly concurrency, subtle algorithms). The brief is the PRD (AGENTS.md "PRD before starting"), and every delegate and reviewer gets the same one: goal, acceptance criteria, file paths, the named data shape and its organizing structure per **principle-model-the-domain** (a state machine over scattered booleans, a table or registry over branching, a typed model over repeated shape assumptions) chosen before the delegate writes logic, the step 2 design pick, and the matching stack style skill from AGENTS.md. When the implementation admits multiple valid shapes (error handling, abstraction layer, test structure), delegate via the **arena** skill instead so the runners surface the alternatives and the cross-judge guards the pick. Delegation is mandatory, with no skip-with-reason escape, and Laziness Protocol does not override it (the gain is review separation, not lines saved). The one exception is AGENTS.md "When to delegate": a change you can finish yourself in one turn (one or two file edits) stays with you and gets its review separation from `/code-review` on the diff. A subagent that cannot spawn its own subagents satisfies this by owning the diff directly with the same review separation. No "standing by" reply that waits on a nested agent. The delegate works through the **tdd** skill, mandatory: seams agreed in step 2 are listed in the brief, and each slice is red (one failing test at the seam, literal expected value) → green (minimal code) before the next slice starts. Refactoring waits for the review stage (**simplifying-code** over the diff). No speculative code ahead of a failing test. Comments per AGENTS.md "Code style" (default none, one-line why only). Tests carry `// Arrange`, `// Act`, `// Assert` markers. Surgical edits, re-ground against the source for upstream-derived files. Port shared-primitive improvements to all consumers and verify each. Commit liberally.
+5. Verify on the matching surface via the control skill (`run` for CLIs, servers, and Electron apps; `claude-in-chrome` for browser UIs). "Inconclusive" or wrong-surface is not a pass. Flag it.
+6. Rebase into small, ordered commits. Stack follow-ups.
+   Use the **sequence-verifiable-units** principle skill, building, verifying, and committing each small unit before the next.
+7. If the design is contested, `interrogate` before shipping.
+8. Run **Opening a PR** (`playbooks/opening-a-pr.md`).
+
+Code-coupled work (one feature, one migration) goes to a single owner with the checkpoint inline. That owner fans out internally after the blocking phase. Parent-level fan-out is for slices that produce independent artifacts (audits, cross-subsystem investigations, competing experiments). Rewrite the checkpoint at phase boundaries. Spawn a fresh owner with consolidated scope (the PRD, every later directive, the prior owner's report and branch) rather than chaining `SendMessage` follow-ups onto the old one.
+
+**Reply** in the harness output style (AGENTS.md "Output style", i-have-adhd). Lead with what you built. Then what you chose and why, the throughput checkpoint, and open decisions. Tables for design alternatives. Unslop and technical-writing apply to the PR body and docs, not to this reply.
