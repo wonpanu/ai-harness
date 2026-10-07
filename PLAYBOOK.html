@@ -1,200 +1,541 @@
 <title>AI Orchestrator Playbook</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;700&display=swap">
 <style>
+/* Wisesight One Voice: white page, Gray-100 data surfaces, black statements, one red accent, 12-column grid on an 8px scale */
 :root{
-  --bg:#F2F4F3; --surface:#FFFFFF; --surface2:#E9EEEC; --ink:#1B2420; --muted:#5B6963;
-  --line:#D5DDD9; --accent:#0E7C66; --accent-soft:#DCEEE9;
-  --c-orch:#0E7C66; --c-deep:#4A5BC4; --c-fast:#A96A00; --c-explore:#3E7F98; --c-peer:#A34D8C; --c-rev:#6B5CA8;
-  --bad:#B3382E; --bad-bg:#FBEDEB; --good:#2E7D4F; --good-bg:#EAF4EE;
-  --code-bg:#1C2422; --code-ink:#DCE6E1; --code-cm:#7E948B; --code-kw:#8FD4C2; --code-str:#E3C185;
+  color-scheme:light;
+  --ws-red:#850219;
+  --ws-black:#101820;
+  --ws-gray:#CDCFDB;
+  --ws-surface-white:#FFFFFF;
+  --ws-surface-gray:#F2F3F6;
+  --ws-surface-black:#101820;
+  --ws-text:#101820;
+  --ws-text-muted:#3C3E47;
+  --ws-text-on-red:#FFFFFF;
+  --ws-chart-neutral:#CDCFDB;
+  --ws-chart-emphasis:#101820;
+  --ws-chart-other:#B8BCC8;
+  --ws-chart-gridline:#E6E7EC;
+  --ws-chart-cat-1:#3A4F7A;
+  --ws-chart-cat-2:#1F6B5A;
+  --ws-chart-cat-3:#E8893A;
+  --ws-chart-cat-4:#5B4B8A;
+  --ws-chart-cat-5:#2677D9;
+  --ws-chart-cat-6:#C15A7A;
+  --ws-radius-sm:5px;
+  --ws-radius-md:10px;
+  --ws-radius-pill:9999px;
+  --ws-shadow:0px 4px 12px 0px rgba(16, 24, 32, 0.18);
+  --ws-space-1:8px;
+  --ws-space-2:16px;
+  --ws-space-3:24px;
+  --ws-space-4:32px;
+  --ws-space-6:48px;
+  --ws-space-8:64px;
+  --ws-font-formal:'Sarabun', "Thonburi", "Leelawadee UI", system-ui, sans-serif;
+  --font-code:ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --code-ink:#FFFFFF;
+  --code-comment:var(--ws-gray);
+  --code-keyword:#E8893A;
+  --code-string:#6FC9A4;
+  --page-gutter:var(--ws-space-6);
 }
-/* single light theme by design — dark hosts still get the explicit light ground */
+@media (max-width:900px){:root{--page-gutter:var(--ws-space-4)}}
+@media (max-width:640px){:root{--page-gutter:var(--ws-space-2)}}
+/* single light theme by design: the brand's approved backgrounds are set explicitly, so dark hosts still get this ground */
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
 @media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
-body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.6 "IBM Plex Sans","IBM Plex Sans Thai",system-ui,sans-serif}
-.wrap{max-width:1040px;margin:0 auto;padding:48px 24px 80px;display:flex;flex-direction:column;gap:56px}
-header h1{font-family:"Bricolage Grotesque","IBM Plex Sans Thai","IBM Plex Sans",sans-serif;font-weight:700;font-size:clamp(2rem,5vw,3rem);margin:0 0 8px;text-wrap:balance;letter-spacing:-.01em}
-header p{color:var(--muted);max-width:62ch;margin:0}
-.eyebrow{font-size:.72rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0 0 6px}
-h2{font-family:"Bricolage Grotesque","IBM Plex Sans Thai","IBM Plex Sans",sans-serif;font-weight:700;font-size:1.5rem;margin:0 0 4px;letter-spacing:-.01em;text-wrap:balance}
-h2.stack{font-size:1.15rem;margin:36px 0 12px}
+body{margin:0;background:var(--ws-surface-white);color:var(--ws-text);font:400 16px/1.65 var(--ws-font-formal);-webkit-font-smoothing:antialiased}
+[hidden]{display:none !important}
+p{margin:0}
+h1,h2,h3,h4{margin:0;color:var(--ws-text);text-wrap:balance}
+:focus-visible{outline:2px solid var(--ws-black);outline-offset:2px}
+code{font-family:var(--font-code);font-size:.88em;color:var(--ws-text)}
+a{color:inherit}
+button{font-family:inherit;color:inherit;background:transparent}
+.visually-hidden{position:absolute;width:1px;height:1px;margin:-1px;padding:0;border:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+
+.page{max-width:1360px;margin-inline:auto;padding-inline:var(--page-gutter);padding-block:var(--ws-space-8) 80px;display:flex;flex-direction:column;gap:80px}
+@media (max-width:640px){.page{gap:var(--ws-space-8);padding-block:var(--ws-space-6) var(--ws-space-8)}}
+section{scroll-margin-top:var(--ws-space-3)}
+
+.grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:var(--ws-space-3)}
+.grid>*{min-width:0;grid-column:span 12}
+.grid>.span-3{grid-column:span 3}
+.grid>.span-4{grid-column:span 4}
+.grid>.span-6{grid-column:span 6}
+.grid>.span-8{grid-column:span 8}
+@media (max-width:1100px){
+  .grid>.span-3{grid-column:span 6}
+  .grid>.span-4,.grid>.span-8{grid-column:span 12}
+}
+@media (max-width:640px){
+  .grid{gap:var(--ws-space-2)}
+  .grid>.span-3,.grid>.span-6{grid-column:span 12}
+}
+
+.page-title{font-weight:700;font-size:48px;line-height:1.15;letter-spacing:-.01em}
+@media (max-width:640px){.page-title{font-size:32px}}
+h2{font-weight:700;font-size:28px;line-height:1.25}
+h2.stack{font-size:18px;line-height:1.35;margin:var(--ws-space-6) 0 var(--ws-space-2)}
 .sub+h2.stack{margin-top:0}
-.note{color:var(--muted);font-size:.88rem;margin-top:10px;max-width:62ch}
-.eyebrow a,.note a,footer a{color:var(--accent);text-decoration:none;border-bottom:1px solid transparent}
-.eyebrow a:hover,.note a:hover,footer a:hover,.eyebrow a:focus-visible,.note a:focus-visible,footer a:focus-visible{border-bottom-color:var(--accent);outline:none}
-.sub{color:var(--muted);margin:0 0 20px;max-width:66ch}
-/* diagram */
-.diagram-card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px 12px 8px;overflow-x:auto}
-svg{display:block;min-width:820px;width:100%;height:auto}
-.node rect{fill:var(--surface2);stroke:var(--line);stroke-width:1.5;rx:10;transition:stroke .15s}
-.node text{fill:var(--ink);font:600 14px "IBM Plex Sans",sans-serif}
-.node .role{fill:var(--muted);font:500 10.5px "IBM Plex Mono",monospace}
-.node{cursor:pointer}
-.node:hover rect{stroke:var(--nc)}
-.node.active rect{stroke:var(--nc);stroke-width:2.5}
-.node .dot{fill:var(--nc)}
-.edge{stroke:var(--line);stroke-width:1.8;fill:none}
-.edge.hot{stroke:var(--accent);stroke-dasharray:5 5;animation:flow 1.2s linear infinite}
-@media (prefers-reduced-motion: reduce){.edge.hot{animation:none}}
-@keyframes flow{to{stroke-dashoffset:-10}}
-.elabel{fill:var(--muted);font:500 10.5px "IBM Plex Mono",monospace}
-/* detail panel */
-.detail{margin-top:16px;border-top:1px solid var(--line);padding:18px 10px 12px;display:grid;grid-template-columns:minmax(170px,220px) 1fr;gap:8px 28px;min-height:172px;align-content:start}
-.detail h3{grid-column:1/-1;margin:0;font-size:1.05rem;display:flex;align-items:center;gap:10px}
-.detail h3 .chip{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--nc,var(--accent))}
-.meta{display:flex;flex-direction:column;gap:6px;font-family:"IBM Plex Mono",monospace;font-size:.82rem}
-.meta span b{color:var(--muted);font-weight:500;margin-right:6px}
-.detail ul{margin:0;padding-left:18px;color:var(--ink)}
-.detail li{margin:3px 0}
-.detail li::marker{color:var(--accent)}
+h3{font-weight:700;font-size:20px;line-height:1.35}
+h4{font-weight:700;font-size:18px;line-height:1.35}
+.eyebrow{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ws-red);margin:0 0 var(--ws-space-1)}
+.eyebrow a{text-decoration:none;border-bottom:1px solid transparent}
+.eyebrow a:hover,.eyebrow a:focus-visible{border-bottom-color:currentColor}
+.lead{font-size:18px;line-height:1.65;color:var(--ws-text-muted);max-width:66ch;margin-top:var(--ws-space-2)}
+.lead strong{color:var(--ws-text)}
+.sub{color:var(--ws-text-muted);margin:var(--ws-space-1) 0 var(--ws-space-3);max-width:70ch}
+.note{color:var(--ws-text-muted);font-size:14px;line-height:1.6;margin-top:var(--ws-space-2);max-width:72ch}
+.note b{color:var(--ws-text);margin-right:var(--ws-space-1)}
+.note a,.sub a,footer a,.lead a{text-decoration:underline;text-decoration-color:var(--ws-gray);text-underline-offset:3px}
+.note a:hover,.sub a:hover,footer a:hover,.lead a:hover{text-decoration-color:var(--ws-text)}
+.nav-cards{margin-top:40px}
+.nav-cards a{display:flex;flex-direction:column;gap:var(--ws-space-1);padding:var(--ws-space-2);background:var(--ws-surface-white);border:1px solid var(--ws-gray);border-radius:var(--ws-radius-md);text-decoration:none;color:var(--ws-text);transition:border-color .15s,box-shadow .15s}
+.nav-cards a:hover,.nav-cards a:focus-visible{border-color:var(--ws-black);box-shadow:var(--ws-shadow);outline:none}
+.nav-cards b{display:flex;justify-content:space-between;gap:var(--ws-space-1);font-size:16px;line-height:1.4}
+.nav-cards b::after{content:"↓";font-weight:400;color:var(--ws-text-muted)}
+.nav-cards span{font-size:14px;line-height:1.5;color:var(--ws-text-muted)}
+@media (max-width:640px){.grid.nav-cards>a{grid-column:span 6}}
+.tier-key{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:var(--ws-space-1);font-size:14px;color:var(--ws-text-muted)}
+.tier-key li{display:flex;align-items:center;gap:var(--ws-space-1)}
+.tier-key i{flex:none;width:16px;height:16px;background:var(--swatch)}
+.tier-key.is-inline{flex-direction:row;flex-wrap:wrap;gap:var(--ws-space-1) var(--ws-space-2);font-size:12px}
+.tier-key.is-inline i{width:8px;height:16px}
+.panel-label{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ws-text-muted)}
+.storyboard{margin-top:var(--ws-space-1)}
+.storyboard svg{display:block;overflow:visible}
+.storyboard text{font-family:var(--ws-font-formal)}
+.story-link{outline:none;cursor:pointer}
+.story-card{fill:var(--ws-surface-white);stroke:var(--ws-gray);stroke-width:1;transition:stroke .15s}
+.story-link:hover .story-card,.story-link:focus-visible .story-card{stroke:var(--ws-black);stroke-width:2}
+.story-panel{fill:var(--ws-surface-gray)}
+.story-title{font-weight:700;fill:var(--ws-text)}
+.story-line{fill:var(--ws-text-muted)}
+.story-line.is-emphasis{fill:var(--ws-text);font-weight:700}
+.story-chevron{fill:var(--ws-chart-other)}
+.story-rail{stroke:var(--ws-gray);stroke-width:1}
+.story-rail-label{font-size:12px;font-weight:700;letter-spacing:.04em;fill:var(--ws-text-muted)}
+.story-tick{fill:none;stroke:var(--ws-gray);stroke-width:1;stroke-dasharray:4 4}
+.story-pill,.story-badge{outline:none;cursor:help}
+.story-pill rect{fill:var(--ws-surface-white);stroke:var(--ws-gray)}
+.story-pill:hover rect,.story-pill:focus-visible rect{stroke:var(--ws-black);stroke-width:2}
+.story-pill text{font-size:12px;font-weight:700;fill:var(--ws-text)}
+.story-badge rect{fill:var(--ws-black)}
+.story-badge:hover rect:first-child,.story-badge:focus-visible rect:first-child{stroke:var(--ws-gray);stroke-width:3}
+.story-badge text{font-size:12px;font-weight:700;fill:var(--ws-surface-white)}
+.story-badge .story-lock-body{fill:var(--ws-surface-white)}
+.story-badge .story-lock-shackle{fill:none;stroke:var(--ws-surface-white);stroke-width:1.5}
+.storyboard.is-armed .story-reveal{opacity:0;transform:translateY(16px)}
+.storyboard.is-armed.is-revealed .story-reveal{opacity:1;transform:none;transition:opacity .48s ease,transform .48s ease;transition-delay:calc(var(--reveal-index) * 120ms)}
+@media (prefers-reduced-motion: reduce){.storyboard .story-reveal{opacity:1 !important;transform:none !important;transition:none !important}}
+
+.player-bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--ws-space-2);margin-bottom:var(--ws-space-2)}
+.segmented{display:flex;flex-wrap:wrap;gap:var(--ws-space-1);padding:var(--ws-space-1);background:var(--ws-surface-gray);border-radius:var(--ws-radius-md)}
+.segmented button{font:500 14px/1.5 var(--ws-font-formal);padding:var(--ws-space-1) var(--ws-space-2);border:0;border-radius:var(--ws-radius-sm);background:transparent;color:var(--ws-text);cursor:pointer}
+.segmented button:hover{background:var(--ws-surface-white)}
+.segmented button[aria-pressed="true"]{background:var(--ws-red);color:var(--ws-text-on-red);font-weight:700}
+.player-controls{display:flex;flex-wrap:wrap;align-items:center;gap:var(--ws-space-1)}
+.control-button{display:inline-flex;align-items:center;justify-content:center;gap:var(--ws-space-1);min-width:40px;height:40px;padding:0 var(--ws-space-1);border:1px solid var(--ws-gray);border-radius:var(--ws-radius-sm);background:var(--ws-surface-white);color:var(--ws-text);font:500 14px var(--ws-font-formal);cursor:pointer}
+.control-button:hover{border-color:var(--ws-black)}
+.control-button.is-primary{min-width:96px;padding:0 var(--ws-space-2);background:var(--ws-black);border-color:var(--ws-black);color:var(--ws-surface-white)}
+.control-button svg{width:16px;height:16px;fill:currentColor}
+.player-counter{font-size:14px;color:var(--ws-text-muted);font-variant-numeric:tabular-nums;margin-left:var(--ws-space-1)}
+
+.diagram-card{background:var(--ws-surface-gray);border-radius:var(--ws-radius-md);padding:var(--ws-space-1) var(--ws-space-1) var(--ws-space-2)}
+.scene{position:relative;height:560px}
+@media (max-width:640px){.scene{height:480px}}
+.scene canvas{display:block;width:100%;height:100%;cursor:grab;touch-action:pan-y;outline:none}
+.scene:has(.scene-nodes button:focus-visible){outline:2px solid var(--ws-black);outline-offset:-2px;border-radius:var(--ws-radius-sm)}
+.scene-status{position:absolute;inset:0;display:grid;place-items:center;color:var(--ws-text-muted);font-size:14px;pointer-events:none}
+.scene-bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--ws-space-1) var(--ws-space-2);padding:var(--ws-space-1) var(--ws-space-1) 0}
+.scene-hint{min-width:0;font-size:12px;line-height:1.5;color:var(--ws-text-muted)}
+.hint-coarse{display:none}
+@media (pointer:coarse){.hint-fine{display:none}.hint-coarse{display:inline}}
+.scene-reset{font:500 14px var(--ws-font-formal);color:var(--ws-text);background:var(--ws-surface-white);border:1px solid var(--ws-gray);border-radius:var(--ws-radius-sm);padding:var(--ws-space-1) var(--ws-space-2);cursor:pointer}
+.scene-reset:hover{border-color:var(--ws-black)}
+.scene-legend{padding:var(--ws-space-1) var(--ws-space-1) 0}
+.diagram-fallback{background:var(--ws-surface-white);border-radius:var(--ws-radius-sm)}
+.fallback-reason{font-size:14px;color:var(--ws-text-muted);padding:var(--ws-space-2) var(--ws-space-2) 0}
+.fallback-scroll{overflow-x:auto;padding:var(--ws-space-2)}
+.fallback-scroll svg{display:block;min-width:720px;width:100%;height:auto}
+.fallback-scroll .node .card{fill:var(--ws-surface-white);stroke:var(--ws-gray);stroke-width:1}
+.fallback-scroll .node .tier{fill:var(--nc)}
+.fallback-scroll .node text{fill:var(--ws-text);font:700 14px var(--ws-font-formal)}
+.fallback-scroll .node .role{fill:var(--ws-text-muted);font:400 11px var(--ws-font-formal)}
+.fallback-scroll .node.is-emphasis .card{fill:var(--ws-black);stroke:var(--ws-black)}
+.fallback-scroll .node.is-emphasis text{fill:var(--ws-surface-white)}
+.fallback-scroll .node.is-emphasis .role{fill:var(--ws-gray)}
+.fallback-scroll .node{cursor:pointer}
+.fallback-scroll .node:hover .card{stroke:var(--ws-black)}
+.fallback-scroll .node.active .card{stroke:var(--ws-black);stroke-width:2.5}
+.fallback-scroll .edge{stroke:var(--ws-chart-other);stroke-width:1.5;fill:none}
+.fallback-scroll .edge.solo{stroke:var(--ws-red);stroke-width:3}
+.fallback-scroll .elabel{fill:var(--ws-text-muted);font:500 11px var(--ws-font-formal)}
+.fallback-scroll .elabel-solo-pill{fill:var(--ws-red)}
+.fallback-scroll .elabel-solo{fill:var(--ws-text-on-red);font:700 11px var(--ws-font-formal)}
+.fallback-scroll .merge-point{fill:var(--ws-black)}
+.fallback-scroll svg.is-playing .node:not(.is-step){opacity:.3}
+.fallback-scroll svg.is-playing .edge:not(.is-step){opacity:.35}
+.fallback-scroll svg.is-playing .elabel,.fallback-scroll svg.is-playing:not(.is-solo-step) .elabel-solo-pill,.fallback-scroll svg.is-playing:not(.is-solo-step) .elabel-solo{opacity:.35}
+.fallback-scroll .edge.is-step:not(.solo){stroke:var(--ws-black);stroke-width:2.5}
+
+.steps-panel{display:flex;flex-direction:column;gap:var(--ws-space-2);min-height:0}
+.steps-head{display:flex;flex-direction:column;gap:var(--ws-space-1);padding-bottom:var(--ws-space-2);border-bottom:1px solid var(--ws-gray)}
+.steps-head p{font-size:14px;color:var(--ws-text-muted)}
+.steps-list{position:relative;list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:var(--ws-space-1);max-height:560px;overflow-y:auto}
+@media (max-width:1100px){.steps-list{max-height:none}}
+.step{display:flex;flex-direction:column;gap:var(--ws-space-1);padding:var(--ws-space-1);border:1px solid transparent;border-radius:var(--ws-radius-sm)}
+.step.is-current{border-color:var(--ws-black);background:var(--ws-surface-white)}
+.step-button{display:grid;grid-template-columns:24px minmax(0,1fr);gap:var(--ws-space-2);align-items:start;width:100%;padding:0;border:0;background:transparent;text-align:left;font:inherit;color:var(--ws-text-muted);cursor:pointer}
+.step-button:hover .step-text{color:var(--ws-text)}
+.step-number{width:24px;height:24px;display:grid;place-items:center;border:1px solid var(--ws-gray);border-radius:var(--ws-radius-pill);font-size:12px;font-weight:700;color:var(--ws-text);background:var(--ws-surface-white);font-variant-numeric:tabular-nums}
+.step.is-done .step-number{background:var(--ws-surface-gray);border-color:var(--ws-surface-gray)}
+.step.is-current .step-number{background:var(--ws-black);border-color:var(--ws-black);color:var(--ws-surface-white)}
+.step-text{font-size:14px;line-height:1.55}
+.step.is-current .step-text{color:var(--ws-text);font-weight:500}
+.step-meta{display:flex;flex-wrap:wrap;align-items:center;gap:var(--ws-space-1);padding-left:40px}
+.step-actors{font-size:12px;color:var(--ws-text-muted);width:100%}
+.skill-chip{font:500 12px/24px var(--ws-font-formal);padding:0 var(--ws-space-1);border:0;border-radius:var(--ws-radius-pill);background:var(--ws-surface-gray);color:var(--ws-text);text-decoration:none}
+button.skill-chip{cursor:pointer}
+button.skill-chip:hover{background:var(--ws-black);color:var(--ws-surface-white)}
+.skill-chip.is-static{color:var(--ws-text-muted)}
+
+.detail{border-top:1px solid var(--ws-gray);padding-top:var(--ws-space-3);display:grid;grid-template-columns:minmax(160px,240px) minmax(0,1fr);gap:var(--ws-space-1) var(--ws-space-4);min-height:176px;align-content:start}
+.detail h3{grid-column:1/-1;display:flex;align-items:center;gap:var(--ws-space-1);font-size:18px}
+.detail h3 .chip{display:inline-block;width:16px;height:16px;background:var(--nc,var(--ws-black))}
+.meta{display:flex;flex-direction:column;gap:var(--ws-space-1);font-size:14px}
+.meta span b{color:var(--ws-text-muted);font-weight:500;margin-right:var(--ws-space-1)}
+.detail ul{margin:0;padding-left:var(--ws-space-3);color:var(--ws-text-muted)}
+.detail li+li{margin-top:var(--ws-space-1)}
+.detail li::marker{color:var(--ws-black)}
 @media (max-width:640px){.detail{grid-template-columns:1fr}}
-/* code rules */
-.rules{display:flex;flex-direction:column;gap:28px}
-.rule{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px 24px}
-.rule h3{margin:0 0 4px;font-size:1.08rem}
-.rule .why{color:var(--muted);margin:0 0 16px;max-width:66ch;font-size:.95rem}
-.panes{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-@media (max-width:760px){.panes{grid-template-columns:1fr}}
-.pane{border-radius:10px;overflow:hidden;border:1px solid var(--line);display:flex;flex-direction:column}
+
+.chart-card{display:flex;flex-direction:column;gap:var(--ws-space-2);padding:var(--ws-space-3);background:var(--ws-surface-white);border:1px solid var(--ws-gray);border-radius:var(--ws-radius-md)}
+@media (max-width:640px){.chart-card{padding:var(--ws-space-2)}}
+.chart-title{font-size:18px;line-height:1.4}
+.chart-note{font-size:14px;line-height:1.55;color:var(--ws-text-muted)}
+.chart-scroll{overflow-x:auto}
+.chart-svg{display:block}
+.chart-svg text{font-family:var(--ws-font-formal);font-size:12px;fill:var(--ws-text-muted)}
+.chart-svg .axis-label{fill:var(--ws-text-muted)}
+.chart-svg .strong-label{fill:var(--ws-text);font-weight:700}
+.chart-svg .gridline{stroke:var(--ws-chart-gridline);stroke-width:1}
+.chart-svg .baseline{stroke:var(--ws-chart-other);stroke-width:1}
+.matrix-band{fill:var(--ws-surface-gray)}
+.matrix-dot{fill:var(--ws-chart-neutral)}
+.matrix-dot.is-selected{fill:var(--ws-chart-emphasis)}
+.matrix-dot.is-hovered{stroke:var(--ws-black);stroke-width:2}
+.matrix-row-label.is-selected{fill:var(--ws-text);font-weight:700}
+.matrix-column{cursor:pointer;outline:none}
+.matrix-column .matrix-column-label{fill:var(--ws-text-muted)}
+.matrix-column:hover .matrix-column-label,.matrix-column.is-selected .matrix-column-label{fill:var(--ws-text);font-weight:700}
+.matrix-column:focus-visible .matrix-column-hit{stroke:var(--ws-black);stroke-width:2}
+.matrix-total.is-selected{fill:var(--ws-text);font-weight:700}
+.size-key{display:flex;flex-wrap:wrap;align-items:center;gap:var(--ws-space-1) var(--ws-space-2);font-size:12px;color:var(--ws-text-muted)}
+.size-key svg{display:block}
+.skill-panel h3{font-size:20px}
+.skill-panel-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.skill-panel-list li{display:flex;justify-content:space-between;gap:var(--ws-space-2);padding-block:var(--ws-space-1);border-top:1px solid var(--ws-chart-gridline);font-size:14px}
+.skill-panel-list li span:last-child{font-variant-numeric:tabular-nums;color:var(--ws-text-muted)}
+.skill-panel-empty{font-size:14px;color:var(--ws-text-muted)}
+.tier-map{margin:0;display:flex;flex-direction:column}
+.tier-map div{display:flex;flex-direction:column;gap:0;padding-block:var(--ws-space-1);border-top:1px solid var(--ws-chart-gridline)}
+.tier-map dt{font-size:14px;font-weight:700;color:var(--ws-text)}
+.tier-map dd{margin:0;font-size:14px;color:var(--ws-text-muted)}
+.table-view{display:block}
+.size-key-item{display:inline-flex;align-items:center;gap:var(--ws-space-1)}
+.table-view summary{cursor:pointer;font-size:14px;font-weight:500;color:var(--ws-text)}
+.table-view[open] summary{margin-bottom:var(--ws-space-2)}
+.table-scroll{overflow-x:auto}
+.table-view table{border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums}
+.table-view th,.table-view td{padding:var(--ws-space-1);border-bottom:1px solid var(--ws-chart-gridline);text-align:center;white-space:nowrap}
+.table-view th:first-child,.table-view td:first-child{text-align:left}
+.table-view th{font-weight:700;color:var(--ws-text)}
+.chart-tooltip{position:fixed;z-index:10;left:0;top:0;max-width:320px;pointer-events:none;padding:var(--ws-space-1) var(--ws-space-2);background:var(--ws-surface-white);color:var(--ws-text);border:1px solid var(--ws-gray);border-radius:var(--ws-radius-sm);box-shadow:var(--ws-shadow);font-size:12px;line-height:1.5}
+
+.rules{display:flex;flex-direction:column;gap:var(--ws-space-3)}
+.rule{background:var(--ws-surface-white);border:1px solid var(--ws-gray);border-radius:var(--ws-radius-md);padding:var(--ws-space-3)}
+.rule h3{margin:0 0 var(--ws-space-1);font-size:18px}
+.rule .why{color:var(--ws-text-muted);margin:0 0 var(--ws-space-2);max-width:70ch;font-size:16px}
+.panes{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:var(--ws-space-2)}
+@media (max-width:760px){.panes{grid-template-columns:minmax(0,1fr)}}
+.pane{border-radius:var(--ws-radius-sm);overflow:hidden;border:1px solid var(--ws-gray);display:flex;flex-direction:column;min-width:0}
 .pane pre{flex:1}
-.pane .tag{font:600 .72rem "IBM Plex Sans",sans-serif;letter-spacing:.1em;text-transform:uppercase;padding:6px 12px;display:block}
-.pane.bad .tag{background:var(--bad-bg);color:var(--bad)}
-.pane.good .tag{background:var(--good-bg);color:var(--good)}
-pre{margin:0;padding:14px 16px;background:var(--code-bg);color:var(--code-ink);font:400 .8rem/1.55 "IBM Plex Mono",monospace;overflow-x:auto}
-.cm{color:var(--code-cm)} .kw{color:var(--code-kw)} .str{color:var(--code-str)}
-/* practice list */
-.practice{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:8px 24px}
-.practice div{padding:16px 0;border-bottom:1px solid var(--line)}
+.pane .tag{display:flex;align-items:center;gap:var(--ws-space-1);font-size:12px;font-weight:700;letter-spacing:.06em;padding:var(--ws-space-1) var(--ws-space-2);background:var(--ws-surface-white)}
+.pane.bad .tag{color:var(--ws-text-muted)}
+.pane.bad .tag::before{content:"✕";font-size:14px}
+.pane.good .tag{color:var(--ws-text)}
+.pane.good .tag::before{content:"✓";font-size:14px}
+pre{margin:0;padding:var(--ws-space-2);background:var(--ws-surface-black);color:var(--code-ink);font:400 13px/1.6 var(--font-code);overflow-x:auto}
+.cm{color:var(--code-comment)}
+.kw{color:var(--code-keyword)}
+.str{color:var(--code-string)}
+.practice{background:var(--ws-surface-white);border:1px solid var(--ws-gray);border-radius:var(--ws-radius-md);padding:0 var(--ws-space-3)}
+.practice div{padding:var(--ws-space-2) 0;border-bottom:1px solid var(--ws-chart-gridline)}
 .practice div:last-child{border-bottom:none}
-.practice b{display:block;margin-bottom:2px}
-.practice p{margin:0;color:var(--muted);font-size:.95rem;max-width:70ch}
-footer{color:var(--muted);font-size:.82rem;font-family:"IBM Plex Mono",monospace}
-/* frontier mode */
-.fable{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
-.fable>div{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 20px}
-.fable i{font:700 .78rem "IBM Plex Mono",monospace;font-style:normal;color:var(--accent);display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border:1.5px solid var(--accent);border-radius:50%;margin-bottom:8px}
-.fable b{display:block;margin-bottom:2px}
-.fable p{margin:0;color:var(--muted);font-size:.92rem}
-.checklist{margin-top:14px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 20px}
-.checklist b{display:block;margin-bottom:10px;font-size:.92rem}
-.checklist pre{border-radius:8px}
-/* second brain nav */
-.brain{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:24px}
-.brain a{display:block;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;text-decoration:none;color:var(--ink);transition:border-color .15s, transform .15s}
-.brain a:hover,.brain a:focus-visible{border-color:var(--accent);transform:translateY(-2px);outline:none}
-.brain a b{display:block;font-size:.92rem}
-.brain a span{color:var(--muted);font-size:.78rem}
-.brain a i{font-style:normal;display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--bc,var(--accent));margin-right:7px}
-section{scroll-margin-top:24px}
+.practice b{display:block;margin-bottom:0;color:var(--ws-text)}
+.practice p{margin:0;color:var(--ws-text-muted);font-size:16px;max-width:76ch}
+.fable{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:var(--ws-space-3)}
+.fable>div{grid-column:span 4;min-width:0;background:var(--ws-surface-white);border:1px solid var(--ws-gray);border-radius:var(--ws-radius-md);padding:var(--ws-space-3)}
+.fable>div:nth-child(n+4){grid-column:span 6}
+@media (max-width:1100px){.fable>div,.fable>div:nth-child(n+4){grid-column:span 6}.fable>div:last-child:nth-child(odd){grid-column:span 12}}
+@media (max-width:640px){.fable>div,.fable>div:nth-child(n+4),.fable>div:last-child:nth-child(odd){grid-column:span 12}}
+.fable i{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;margin-bottom:var(--ws-space-1);border:1px solid var(--ws-black);border-radius:var(--ws-radius-pill);font:700 14px var(--ws-font-formal);font-style:normal;color:var(--ws-text)}
+.fable b{display:block;color:var(--ws-text)}
+.fable p{margin:0;color:var(--ws-text-muted);font-size:16px}
+.checklist{margin-top:var(--ws-space-3);background:var(--ws-surface-white);border:1px solid var(--ws-gray);border-radius:var(--ws-radius-md);padding:var(--ws-space-3)}
+.checklist b{display:block;margin-bottom:var(--ws-space-2);font-size:16px}
+.checklist pre{border-radius:var(--ws-radius-sm)}
+footer{color:var(--ws-text-muted);font-size:14px;padding-top:var(--ws-space-3);border-top:1px solid var(--ws-gray)}
 </style>
 
-<div class="wrap">
+<div class="page">
 <header>
   <p class="eyebrow"><a href="https://github.com/wonpanu/ai-harness" target="_blank" rel="noopener">AGENTS.md · github.com/wonpanu/ai-harness ↗</a></p>
-  <h1>AI Orchestrator Playbook</h1>
-  <p>ผังการทำงานของทุก session <strong>บนเครื่องนี้</strong>: orchestrator ตัวเดียว route งานไปยัง agent ที่กำหนดไว้ ผ่าน PRD gate พร้อมกฎ code style ที่กลั่นจาก production services จริง — คลิก node ในไดอะแกรมเพื่อดูรายละเอียด</p>
-  <p class="note">⚠ config ทั้งหมดเป็นไฟล์ local (CLAUDE.md, agents/, skills/) — ไม่ sync ตาม account ใช้เครื่องอื่น clone จาก <a href="https://github.com/wonpanu/ai-harness" target="_blank" rel="noopener">github.com/wonpanu/ai-harness</a> — AI เจ้าอื่น (Codex, Cursor, Gemini CLI) ใช้ส่วน portable ผ่าน AGENTS.md ใน repo ได้</p>
-  <nav class="brain" aria-label="กระโดดไปแต่ละส่วน">
-    <a href="#workflow" style="--bc:var(--c-orch)"><b><i></i>ผังการทำงาน</b><span>orchestrator + agents 6 ตัว</span></a>
-    <a href="#code-style" style="--bc:var(--c-deep)"><b><i></i>กฎการเขียนโค้ด</b><span>universal + Go + React skill</span></a>
-    <a href="#fable" style="--bc:var(--c-peer)"><b><i></i>Frontier mode</b><span>discipline 5 ช่วง + checklist</span></a>
-    <a href="#creating" style="--bc:var(--c-explore)"><b><i></i>Creating skills</b><span>เลือก pattern ตาม use case</span></a>
-    <a href="#practice" style="--bc:var(--c-rev)"><b><i></i>กฎการทำงาน</b><span>PRD gate · docs-first · grill</span></a>
+  <h1 class="page-title">AI Orchestrator Playbook</h1>
+  <p class="lead">orchestrator ตัวเดียว route ทุกงานบนเครื่องนี้ไปยัง agent ที่ใช่ ผ่าน PRD gate และกฎ code style ชุดเดียว</p>
+  <p class="note"><b>หมายเหตุ</b>config เป็นไฟล์ local ไม่ sync ตาม account — เครื่องอื่น clone จาก <a href="https://github.com/wonpanu/ai-harness" target="_blank" rel="noopener">github.com/wonpanu/ai-harness</a></p>
+  <nav class="nav-cards grid" aria-label="กระโดดไปแต่ละส่วน">
+    <a class="span-3" href="#overview"><b>ภาพรวม</b><span>งาน 5 ขั้น</span></a>
+    <a class="span-3" href="#workflow"><b>ผังการทำงาน</b><span>agents 3D · เล่นตัวอย่าง</span></a>
+    <a class="span-3" href="#routing"><b>ภาพรวมการ route</b><span>playbook → skill · model</span></a>
+    <a class="span-3" href="#code-style"><b>กฎการเขียนโค้ด</b><span>universal · Go · React</span></a>
+    <a class="span-3" href="#fable"><b>Frontier mode</b><span>5 ช่วง + checklist</span></a>
+    <a class="span-3" href="#simplifying"><b>Simplifying code</b><span>5 มุม · behavior เดิม</span></a>
+    <a class="span-3" href="#creating"><b>Creating skills</b><span>เลือก pattern ให้ตรง</span></a>
+    <a class="span-3" href="#practice"><b>กฎการทำงาน</b><span>PRD · docs-first · grill</span></a>
   </nav>
 </header>
+
+<section id="overview">
+  <p class="eyebrow">Overview</p>
+  <h2>ภาพรวม</h2>
+  <p class="sub">ai-harness = repo เดียวที่เป็นกฎ, คนทำงาน และความรู้ของ AI agent ทุกตัว — ติดตั้งด้วย symlink, แก้ที่เดียวใช้ทุกที่</p>
+  <div class="storyboard" id="storyboard"></div>
+</section>
 
 <section id="workflow">
   <p class="eyebrow">Orchestration</p>
   <h2>ผังการทำงาน</h2>
-  <p class="sub">เส้นทาง default คือ <strong>solo</strong> — orchestrator ทำงานที่จบใน turn เดียวด้วยตัวเอง จะ delegate เฉพาะเมื่อเข้าเงื่อนไขของ node ด้านล่างอย่างชัดเจน</p>
-  <div class="diagram-card">
-    <svg viewBox="0 0 900 484" role="img" aria-label="Orchestration workflow diagram">
-      <!-- edges -->
-      <path class="edge" d="M118 186 H160"/>
-      <path class="edge hot" id="e-solo" d="M320 186 C 420 186 480 186 568 186"/>
-      <path class="edge" d="M320 160 C 400 120 420 62 468 62"/>
-      <path class="edge" d="M320 172 C 390 150 410 124 468 124"/>
-      <path class="edge" d="M320 200 C 390 222 410 248 468 248"/>
-      <path class="edge" d="M320 212 C 400 252 420 310 468 310"/>
-      <path class="edge" d="M320 216 C 400 280 420 372 468 372"/>
-      <path class="edge" d="M320 220 C 400 310 420 434 468 434"/>
-      <path class="edge" d="M628 62  C 660 62 640 150 568 176"/>
-      <path class="edge" d="M628 124 C 656 124 636 160 568 180"/>
-      <path class="edge" d="M628 248 C 656 248 636 212 568 192"/>
-      <path class="edge" d="M628 310 C 660 310 640 222 568 196"/>
-      <path class="edge" d="M628 372 C 668 372 648 232 568 198"/>
-      <path class="edge" d="M628 434 C 676 434 654 242 568 200"/>
-      <path class="edge" d="M648 186 H 690"/>
-      <path class="edge" d="M836 186 H 878"/>
-      <text class="elabel" x="380" y="176" text-anchor="middle">solo (default)</text>
-      <text class="elabel" x="386" y="84">delegate</text>
-      <text class="elabel" x="654" y="150">synthesize</text>
+  <p class="sub">เส้นทาง default คือ <strong>solo</strong> — orchestrator ทำงานที่จบใน turn เดียวด้วยตัวเอง จะ delegate เฉพาะเมื่อเข้าเงื่อนไขของ node ด้านล่างอย่างชัดเจน · เลือกตัวอย่างงานเพื่อดูว่างานแต่ละแบบเดินผ่าน agent และ skill ไหนทีละขั้น</p>
+  <div class="player-bar">
+    <div class="segmented" id="scenario-tabs" role="group" aria-label="ตัวอย่างงาน">
+      <button type="button" id="scenario-tab-bug-fix" data-scenario-id="bug-fix" aria-pressed="true">แก้บั๊ก</button>
+      <button type="button" id="scenario-tab-feature" data-scenario-id="feature" aria-pressed="false">ฟีเจอร์ใหม่</button>
+      <button type="button" id="scenario-tab-investigation" data-scenario-id="investigation" aria-pressed="false">ถามว่าระบบทำงานยังไง</button>
+      <button type="button" id="scenario-tab-shipping" data-scenario-id="shipping" aria-pressed="false">ship PR</button>
+    </div>
+    <div class="player-controls">
+      <button type="button" class="control-button" id="scenario-previous" aria-label="ขั้นก่อนหน้า" title="ขั้นก่อนหน้า"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 2h2v12H3zM14 2v12L6 8z"/></svg></button>
+      <button type="button" class="control-button is-primary" id="scenario-toggle"><svg viewBox="0 0 16 16" aria-hidden="true"><path id="scenario-toggle-icon" d="M4 2l10 6-10 6z"/></svg><span id="scenario-toggle-label">เล่น</span></button>
+      <button type="button" class="control-button" id="scenario-next" aria-label="ขั้นถัดไป" title="ขั้นถัดไป"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M11 2h2v12h-2zM2 2v12l8-6z"/></svg></button>
+      <p class="player-counter" id="scenario-counter"></p>
+    </div>
+  </div>
+  <p class="visually-hidden" id="scenario-announcer" aria-live="polite"></p>
+  <div class="grid">
+    <div class="diagram-card span-8">
+      <div class="scene" id="scene">
+        <ul class="scene-nodes visually-hidden" id="scene-node-list" aria-label="node ในผังการทำงาน — Tab หรือลูกศรเพื่อเลื่อน, Enter เพื่อเปิดรายละเอียด"></ul>
+        <canvas id="scene-canvas" role="img" aria-label="ผังการทำงานแบบ 3 มิติ: Requirement เข้า Orchestrator ซึ่งทำเองแบบ solo หรือ delegate ไปยัง agent 8 ตัว แล้ว synthesize ผ่าน senior-lead-reviewer ก่อน Ship"></canvas>
+        <p class="scene-status" id="scene-status">กำลังโหลดผัง 3D…</p>
+      </div>
+      <div class="scene-bar" id="scene-bar">
+        <p class="scene-hint"><span class="hint-fine">ลากเพื่อหมุน · shift + ลากเพื่อเลื่อน · คลิกในผังแล้ว scroll เพื่อซูม · Tab / ลูกศร เลือก node</span><span class="hint-coarse">ปัดซ้าย-ขวาเพื่อหมุน · สองนิ้วเพื่อซูมและเลื่อน · แตะ card เพื่อดูรายละเอียด</span></p>
+        <button type="button" class="scene-reset" id="scene-reset">รีเซ็ตมุมมอง</button>
+      </div>
+      <div class="diagram-fallback" id="diagram-fallback" hidden>
+        <p class="fallback-reason" id="fallback-reason"></p>
+        <div class="fallback-scroll">
+      <svg viewBox="0 0 924 608" role="img" aria-label="Orchestration workflow diagram">
+        <path class="edge" data-edge="req>orch" d="M118 186 H160"/>
+        <path class="edge solo" data-edge="orch>merge" d="M320 186 C 420 186 480 186 568 186"/>
+        <path class="edge" data-edge="orch>deep" d="M320 160 C 400 120 420 62 468 62"/>
+        <path class="edge" data-edge="orch>fast" d="M320 172 C 390 150 410 124 468 124"/>
+        <path class="edge" data-edge="orch>explore" d="M320 200 C 390 222 410 248 468 248"/>
+        <path class="edge" data-edge="orch>peer" d="M320 212 C 400 252 420 310 468 310"/>
+        <path class="edge" data-edge="orch>websearch" d="M320 216 C 400 280 420 372 468 372"/>
+        <path class="edge" data-edge="orch>committer" d="M320 220 C 400 310 420 434 468 434"/>
+        <path class="edge" data-edge="orch>ha" d="M320 222 C 400 340 420 496 468 496"/>
+        <path class="edge" data-edge="orch>cr" d="M320 224 C 400 370 420 558 468 558"/>
+        <path class="edge" data-edge="ha>merge" d="M628 496 C 684 496 660 250 568 202"/>
+        <path class="edge" data-edge="cr>merge" d="M628 558 C 692 558 666 256 568 204"/>
+        <path class="edge" data-edge="deep>merge" d="M628 62  C 660 62 640 150 568 176"/>
+        <path class="edge" data-edge="fast>merge" d="M628 124 C 656 124 636 160 568 180"/>
+        <path class="edge" data-edge="explore>merge" d="M628 248 C 656 248 636 212 568 192"/>
+        <path class="edge" data-edge="peer>merge" d="M628 310 C 660 310 640 222 568 196"/>
+        <path class="edge" data-edge="websearch>merge" d="M628 372 C 668 372 648 232 568 198"/>
+        <path class="edge" data-edge="committer>merge" d="M628 434 C 676 434 654 242 568 200"/>
+        <path class="edge" data-edge="merge>rev" d="M572 186 H 664"/>
+        <path class="edge" data-edge="rev>ship" d="M836 186 H 856"/>
+        <rect class="elabel-solo-pill" x="328" y="160" width="104" height="18" rx="9"/>
+        <text class="elabel-solo" x="380" y="173" text-anchor="middle">solo (default)</text>
+        <text class="elabel" x="386" y="84">delegate</text>
+        <text class="elabel" x="644" y="146">synthesize</text>
+        <g class="node" data-id="req" data-role="input" style="--nc:var(--ws-gray)">
+          <rect class="card" x="8" y="160" width="110" height="52" rx="5"/>
+          <path class="tier" d="M13 160 H16 V212 H13 A5 5 0 0 1 8 207 V165 A5 5 0 0 1 13 160 Z"/>
+          <text x="67" y="183" text-anchor="middle">Requirement</text>
+          <text class="role" x="67" y="199" text-anchor="middle">input</text>
+        </g>
+        <g class="node is-emphasis" data-id="orch" data-role="session model · PRD gate · harness-mode" style="--nc:var(--ws-black)">
+          <rect class="card" x="160" y="148" width="160" height="76" rx="5"/>
+          <text x="240" y="175" text-anchor="middle">Orchestrator</text>
+          <text class="role" x="240" y="191" text-anchor="middle">session model · PRD gate</text>
+          <text class="role" x="240" y="207" text-anchor="middle">harness-mode</text>
+        </g>
+        <g class="node" data-id="deep" data-role="opus-5-5 · xhigh" style="--nc:var(--ws-chart-cat-1)">
+          <rect class="card" x="468" y="36" width="160" height="52" rx="5"/>
+          <path class="tier" d="M473 36 H476 V88 H473 A5 5 0 0 1 468 83 V41 A5 5 0 0 1 473 36 Z"/>
+          <text x="552" y="59" text-anchor="middle">deep-reasoner</text>
+          <text class="role" x="552" y="75" text-anchor="middle">opus-5-5 · xhigh</text>
+        </g>
+        <g class="node" data-id="fast" data-role="sonnet-5 · medium" style="--nc:var(--ws-chart-cat-2)">
+          <rect class="card" x="468" y="98" width="160" height="52" rx="5"/>
+          <path class="tier" d="M473 98 H476 V150 H473 A5 5 0 0 1 468 145 V103 A5 5 0 0 1 473 98 Z"/>
+          <text x="552" y="121" text-anchor="middle">fast-worker</text>
+          <text class="role" x="552" y="137" text-anchor="middle">sonnet-5 · medium</text>
+        </g>
+        <g class="node" data-id="explore" data-role="read-only search" style="--nc:var(--ws-chart-cat-4)">
+          <rect class="card" x="468" y="222" width="160" height="52" rx="5"/>
+          <path class="tier" d="M473 222 H476 V274 H473 A5 5 0 0 1 468 269 V227 A5 5 0 0 1 473 222 Z"/>
+          <text x="552" y="245" text-anchor="middle">Explore</text>
+          <text class="role" x="552" y="261" text-anchor="middle">read-only search</text>
+        </g>
+        <g class="node" data-id="peer" data-role="session model · fresh ctx" style="--nc:var(--ws-chart-cat-5)">
+          <rect class="card" x="468" y="284" width="160" height="52" rx="5"/>
+          <path class="tier" d="M473 284 H476 V336 H473 A5 5 0 0 1 468 331 V289 A5 5 0 0 1 473 284 Z"/>
+          <text x="552" y="307" text-anchor="middle">Peer</text>
+          <text class="role" x="552" y="323" text-anchor="middle">session model · fresh ctx</text>
+        </g>
+        <g class="node" data-id="websearch" data-role="haiku-4.5 · internet" style="--nc:var(--ws-chart-cat-3)">
+          <rect class="card" x="468" y="346" width="160" height="52" rx="5"/>
+          <path class="tier" d="M473 346 H476 V398 H473 A5 5 0 0 1 468 393 V351 A5 5 0 0 1 473 346 Z"/>
+          <text x="552" y="369" text-anchor="middle">web-searcher</text>
+          <text class="role" x="552" y="385" text-anchor="middle">haiku-4.5 · internet</text>
+        </g>
+        <g class="node" data-id="committer" data-role="haiku-4.5 · git only" style="--nc:var(--ws-chart-cat-3)">
+          <rect class="card" x="468" y="408" width="160" height="52" rx="5"/>
+          <path class="tier" d="M473 408 H476 V460 H473 A5 5 0 0 1 468 455 V413 A5 5 0 0 1 473 408 Z"/>
+          <text x="552" y="431" text-anchor="middle">code-committer</text>
+          <text class="role" x="552" y="447" text-anchor="middle">haiku-4.5 · git only</text>
+        </g>
+        <g class="node" data-id="ha" data-role="session model · playbook step" style="--nc:var(--ws-chart-cat-5)">
+          <rect class="card" x="468" y="470" width="160" height="52" rx="5"/>
+          <path class="tier" d="M473 470 H476 V522 H473 A5 5 0 0 1 468 517 V475 A5 5 0 0 1 473 470 Z"/>
+          <text x="552" y="493" text-anchor="middle">harness-agent</text>
+          <text class="role" x="552" y="509" text-anchor="middle">session model · playbook step</text>
+        </g>
+        <g class="node" data-id="cr" data-role="sonnet-5 · read-only" style="--nc:var(--ws-chart-cat-2)">
+          <rect class="card" x="468" y="532" width="160" height="52" rx="5"/>
+          <path class="tier" d="M473 532 H476 V584 H473 A5 5 0 0 1 468 579 V537 A5 5 0 0 1 473 532 Z"/>
+          <text x="552" y="555" text-anchor="middle">comment-reviewer</text>
+          <text class="role" x="552" y="571" text-anchor="middle">sonnet-5 · read-only</text>
+        </g>
+        <g class="node" data-id="rev" data-role="opus-5-5 · xhigh" style="--nc:var(--ws-chart-cat-1)">
+          <rect class="card" x="664" y="160" width="172" height="52" rx="5"/>
+          <path class="tier" d="M669 160 H672 V212 H669 A5 5 0 0 1 664 207 V165 A5 5 0 0 1 669 160 Z"/>
+          <text x="754" y="183" text-anchor="middle">senior-lead-reviewer</text>
+          <text class="role" x="754" y="199" text-anchor="middle">opus-5-5 · xhigh</text>
+        </g>
+        <g class="node" data-id="ship" data-role="" style="--nc:var(--ws-gray)">
+          <rect class="card" x="856" y="160" width="60" height="52" rx="5"/>
+          <path class="tier" d="M861 160 H864 V212 H861 A5 5 0 0 1 856 207 V165 A5 5 0 0 1 861 160 Z"/>
+          <text x="890" y="191" text-anchor="middle">Ship</text>
+        </g>
+        <circle class="merge-point" cx="568" cy="186" r="4"/>
+      </svg>
+        </div>
+      </div>
+      <ul class="tier-key is-inline scene-legend" aria-label="สีของ tier">
+        <li><i style="--swatch:var(--ws-black)"></i>orchestrator</li>
+        <li><i style="--swatch:var(--ws-chart-cat-1)"></i>Opus 5.5 · xhigh</li>
+        <li><i style="--swatch:var(--ws-chart-cat-2)"></i>Sonnet 5 · medium</li>
+        <li><i style="--swatch:var(--ws-chart-cat-3)"></i>Haiku 4.5</li>
+        <li><i style="--swatch:var(--ws-chart-cat-4)"></i>Explore · read-only</li>
+        <li><i style="--swatch:var(--ws-chart-cat-5)"></i>session model · fresh context</li>
+        <li><i style="--swatch:var(--ws-red)"></i>solo (default)</li>
+      </ul>
+    </div>
+    <aside class="steps-panel span-4" aria-labelledby="scenario-title">
+      <div class="steps-head">
+        <p class="panel-label">Playbook ที่ใช้</p>
+        <h3 id="scenario-title">Bug fix</h3>
+        <p><code id="scenario-file">skills/harness-mode/playbooks/bug-fix.md</code></p>
+      </div>
+      <ol class="steps-list" id="scenario-steps"></ol>
+    </aside>
+    <div class="detail" id="detail" aria-live="polite"></div>
+  </div>
+</section>
 
-      <!-- requirement -->
-      <g class="node" data-id="req" style="--nc:var(--muted)">
-        <rect x="8" y="160" width="110" height="52"/>
-        <text x="63" y="183" text-anchor="middle">Requirement</text>
-        <text class="role" x="63" y="200" text-anchor="middle">input</text>
-      </g>
-      <!-- orchestrator -->
-      <g class="node" data-id="orch" style="--nc:var(--c-orch)">
-        <rect x="160" y="148" width="160" height="76"/>
-        <circle class="dot" cx="176" cy="166" r="4"/>
-        <text x="240" y="180" text-anchor="middle">Orchestrator</text>
-        <text class="role" x="240" y="198" text-anchor="middle">session model · PRD gate</text>
-      </g>
-      <!-- agents -->
-      <g class="node" data-id="deep" style="--nc:var(--c-deep)">
-        <rect x="468" y="36" width="160" height="52"/>
-        <circle class="dot" cx="484" cy="54" r="4"/>
-        <text x="548" y="58" text-anchor="middle">deep-reasoner</text>
-        <text class="role" x="548" y="76" text-anchor="middle">opus-5-5 · xhigh</text>
-      </g>
-      <g class="node" data-id="fast" style="--nc:var(--c-fast)">
-        <rect x="468" y="98" width="160" height="52"/>
-        <circle class="dot" cx="484" cy="116" r="4"/>
-        <text x="548" y="120" text-anchor="middle">fast-worker</text>
-        <text class="role" x="548" y="138" text-anchor="middle">sonnet-5 · medium</text>
-      </g>
-      <g class="node" data-id="explore" style="--nc:var(--c-explore)">
-        <rect x="468" y="222" width="160" height="52"/>
-        <circle class="dot" cx="484" cy="240" r="4"/>
-        <text x="548" y="244" text-anchor="middle">Explore</text>
-        <text class="role" x="548" y="262" text-anchor="middle">read-only search</text>
-      </g>
-      <g class="node" data-id="peer" style="--nc:var(--c-peer)">
-        <rect x="468" y="284" width="160" height="52"/>
-        <circle class="dot" cx="484" cy="302" r="4"/>
-        <text x="548" y="306" text-anchor="middle">Peer</text>
-        <text class="role" x="548" y="324" text-anchor="middle">session model · fresh ctx</text>
-      </g>
-      <g class="node" data-id="websearch" style="--nc:var(--c-explore)">
-        <rect x="468" y="346" width="160" height="52"/>
-        <circle class="dot" cx="484" cy="364" r="4"/>
-        <text x="548" y="368" text-anchor="middle">web-searcher</text>
-        <text class="role" x="548" y="386" text-anchor="middle">haiku-4.5 · internet</text>
-      </g>
-      <g class="node" data-id="committer" style="--nc:var(--c-fast)">
-        <rect x="468" y="408" width="160" height="52"/>
-        <circle class="dot" cx="484" cy="426" r="4"/>
-        <text x="548" y="430" text-anchor="middle">code-committer</text>
-        <text class="role" x="548" y="448" text-anchor="middle">haiku-4.5 · git only</text>
-      </g>
-      <!-- reviewer + ship -->
-      <g class="node" data-id="rev" style="--nc:var(--c-rev)">
-        <rect x="690" y="160" width="146" height="52"/>
-        <circle class="dot" cx="706" cy="178" r="4"/>
-        <text x="763" y="182" text-anchor="middle">senior-lead-reviewer</text>
-        <text class="role" x="763" y="199" text-anchor="middle">opus-5-5 · xhigh</text>
-      </g>
-      <g class="node" data-id="ship" style="--nc:var(--good)">
-        <rect x="878" y="160" width="16" height="52" rx="6"/>
-      </g>
-      <!-- merge point -->
-      <circle cx="568" cy="186" r="4" fill="var(--accent)"/>
-    </svg>
-    <div class="detail" id="detail"></div>
+<section id="routing">
+  <p class="eyebrow">Routing · skills/harness-mode/playbooks</p>
+  <h2>ภาพรวมการ route</h2>
+  <p class="sub">playbook แต่ละตัวเรียก workflow skill ไหน และแต่ละบทบาทได้ model กับ effort เท่าไร · จำนวนครั้งนับจากการค้นชื่อ skill ใน <code>playbooks/*.md</code> ทั้ง 23 ไฟล์ (7 ต.ค. 2026)</p>
+  <div class="grid">
+    <div class="chart-card span-8">
+      <h3 class="chart-title" id="matrix-title">Playbook → skill</h3>
+      <p class="chart-note">แถว = playbook · คอลัมน์ = workflow skill · ขนาดจุด = จำนวนครั้งที่ playbook เอ่ยชื่อ skill · คลิกหัวคอลัมน์ (หรือ Tab แล้ว Enter, ลูกศรซ้าย-ขวา) เพื่อเน้น playbook ที่เรียก skill นั้น</p>
+      <div class="size-key" id="matrix-size-key" aria-hidden="true"></div>
+      <div class="chart-scroll" id="matrix-container"></div>
+    </div>
+    <aside class="chart-card span-4 skill-panel" aria-live="polite">
+      <p class="panel-label">skill ที่เลือก</p>
+      <h3 id="skill-panel-title">technical-writing</h3>
+      <p class="chart-note" id="skill-panel-summary"></p>
+      <ol class="skill-panel-list" id="skill-panel-list"></ol>
+      <p class="chart-note" id="skill-panel-gaps"></p>
+    </aside>
+    <details class="table-view chart-card span-12">
+      <summary>ดูข้อมูล playbook → skill เป็นตาราง</summary>
+      <div class="table-scroll" id="matrix-table"></div>
+    </details>
+    <div class="chart-card span-8">
+      <h3 class="chart-title">งานคิดหนักได้ effort สูงสุด งาน git และค้นเว็บได้ต่ำสุด</h3>
+      <p class="chart-note">แกนนอน = reasoning effort (low = 1 ถึง xhigh = 4) · ป้ายท้ายแท่ง = model ฝั่ง Codex · Haiku 4.5 ไม่มีระดับ effort แท่งของ web-searcher และ code-committer จึงใช้ค่าฝั่ง Codex (low)</p>
+      <div id="tier-container"></div>
+    </div>
+    <aside class="chart-card span-4">
+      <p class="panel-label">Tier map · AGENTS.md</p>
+      <h3>Claude ↔ Codex</h3>
+      <dl class="tier-map">
+        <div><dt>Orchestrator · peer · harness-agent</dt><dd>Fable 5.1 · high ↔ gpt-6-astra · high</dd></div>
+        <div><dt>deep-reasoner · senior-lead-reviewer</dt><dd>Opus 5.5 · xhigh ↔ gpt-6-sol · xhigh</dd></div>
+        <div><dt>fast-worker · comment-reviewer</dt><dd>Sonnet 5 · medium ↔ gpt-6-luna · medium</dd></div>
+        <div><dt>web-searcher · code-committer</dt><dd>Haiku 4.5 ↔ gpt-6-luna · low</dd></div>
+        <div><dt>cross-model second opinion</dt><dd><code>codex exec</code> gpt-6-sol · xhigh สำหรับ panel ใน arena, architect, interrogate</dd></div>
+      </dl>
+    </aside>
+  </div>
+  <div class="chart-tooltip" id="chart-tooltip" aria-hidden="true" hidden></div>
+</section>
+
+<section id="harness-mode">
+  <p class="eyebrow">Task routing · skill harness-mode</p>
+  <h2>Playbook ต่อ task</h2>
+  <p class="sub">เปิดตลอด (AGENTS.md "Task routing") — งานที่ไม่ trivial ทุกชิ้น orchestrator อ่าน <code>skills/harness-mode/SKILL.md</code> จับ task เข้า playbook แล้ว copy steps ลง todo list ตรงตัว ข้อที่ไม่ทำยังอยู่ในลิสต์พร้อม <code>skip: เหตุผล</code> · steps เรียก skill อื่นตามจังหวะ · ตอบจบด้วยบรรทัด <code>principles: …</code> เฉพาะข้อที่เปลี่ยน decision จริง (อ่าน leaf skill ก่อน cite) · ดัดแปลงจาก <a href="https://github.com/cursor/plugins/tree/main/pstack" target="_blank" rel="noopener">pstack</a> — mapping อยู่ที่ <code>docs/pstack-port.md</code></p>
+  <div class="practice">
+    <div><b>Playbooks (23)</b><p>investigation · bug-fix (ใช้ diagnose) · perf-issue · hillclimb · runtime-forensics · trace-forensics · feature (tdd เมื่อขอ) · refactoring · prototype · visual-parity · authoring-a-skill · eval · babysit · shipping · autonomous-run · orchestrate · autopilot-full · autopilot-stack · session-pickup · pause-safely (handoff) · multi-phase-plan (to-prd, to-issues) · worktree-cleanup · opening-a-pr — ไม่มีอันไหนตรง → skill figure-it-out ออกแบบ playbook เฉพาะงาน</p></div>
+    <div><b>TDD ท่าบังคับ</b><p>ทุก behavior change (feature, bug fix) ผ่าน skill tdd เสมอ: ตกลง seam กับ user ก่อน → red (test ที่ fail หนึ่งตัวที่ seam, expected เป็น literal จากแหล่งอิสระ) → green (โค้ดน้อยสุดที่ผ่าน) ทีละ slice → refactor เฉพาะตอน review ผ่าน simplifying-code · ไม่มี implementation ก่อน failing test · ข้ามได้แค่กรณีไม่มี local test path ถูก ๆ และต้องเขียน skip: เหตุผล ใน todo · codebase-design ให้ศัพท์ seam/module/interface · ดัดแปลงจาก mattpocock/skills (MIT)</p></div>
+    <div><b>เข้าใจก่อนแก้</b><p><code>how</code> เดินผ่านว่า subsystem ทำงานอย่างไร · <code>why</code> หาเหตุผลที่สร้างแบบนี้จาก git, tracker, docs, MCP · <code>teach</code> รวมสองอย่างเป็นคำอธิบายทีละ diagram · <code>recall</code> ดึง context ล่าสุดจาก transcript · <code>blast-radius</code> งานเล็กที่อาจกระทบอะไรบ้าง พิสูจน์ด้วยการรันจริง</p></div>
+    <div><b>ออกแบบและ fan-out</b><p><code>architect</code> ตั้ง caller usage, types, module shape ก่อนโค้ดข้าม boundary · <code>arena</code> N รอบคู่ขนานโจทย์เดียว แล้ว graft ส่วนดีที่สุด · <code>swarm</code> N worker คนละ slice รายงานเดียว · panel = deep-reasoner + harness-agent + Codex (<code>codex exec</code> gpt-6-sol) — ต่าง model family เห็นตรงกัน = สัญญาณแรง</p></div>
+    <div><b>Review และตัวเลข</b><p><code>interrogate</code> หลาย model พยายามหัก diff รวม lens code-quality และ senior-lead-reviewer · <code>benchmark-checklist</code> ตรวจตัวเลขที่วัดได้ก่อนรายงาน (limiter, tuning, repeat runs) · <code>no-comments</code> → comment-reviewer ก่อน review · <code>simplifying-code</code> ก่อน commit</p></div>
+    <div><b>เรียนรู้เป็นโครงสร้าง</b><p>แก้ซ้ำเรื่องเดิม = ต้องแก้ที่ repo ไม่ใช่ prompt ใหม่ · <code>reflect</code> หลัง session ที่ได้บทเรียน → เสนอ skill edit แยก Accepted/Rejected/Backlog · <code>correct</code> เมื่อโดนแก้เรื่องเดียวกันครั้งที่สอง → ขุด class ความผิดจาก history แล้วแก้ที่ระดับสูงสุดที่ได้ (architecture → types/lint/CI → test → docs) พร้อมตาราง rule ↔ enforcer ใน AGENTS.md · <code>automate-me</code> ร่าง -mode ของตัวเองจาก history · <code>show-me-your-work</code> decision log แบบ TSV เมื่อ user ปล่อยให้ทำแล้วมา review ทีหลัง</p></div>
+    <div><b>งานเขียน</b><p>คำตอบใน chat = i-have-adhd (ด้านล่าง) · artifact ที่เขียนออก (docs, PR body, commit message, skill) ผ่าน <code>unslop</code> (ลบ AI tell) แล้ว <code>technical-writing</code> (Diátaxis + Google style) · <code>bro</code> แปลข้อความล่าสุดเป็นภาษาคน · <code>harness-help</code> ถามว่าใช้ playbook/skill ไหนดี</p></div>
+  </div>
+  <h2 class="stack">Principles · 24 skill ข้อละกฎเดียว</h2>
+  <div class="practice">
+    <div><b>Core</b><p>laziness-protocol (ลบก่อน เปลี่ยนน้อยสุดที่แก้ปัญหาได้) · foundational-thinking (เลือก data structure ก่อนเขียน logic) · redesign-from-first-principles · attack-the-premise (แก้ 2 ครั้งพังเหมือนกัน → ตั้งคำถามกับ premise) · subtract-before-you-add · minimize-reader-load · outcome-oriented-execution · experience-first · exhaust-the-design-space (2-3 prototype เทียบกัน) · build-the-lever (สร้าง tool ที่ทำ/พิสูจน์แทนทำมือ)</p></div>
+    <div><b>Architecture</b><p>model-the-domain (โครงสร้างแทน conditional กระจาย) · boundary-discipline (guard ที่ขอบระบบ ข้างใน trust type) · type-system-discipline (illegal state ต้องแทนไม่ได้) · make-operations-idempotent · migrate-callers-then-delete-legacy-apis · separate-before-serializing-shared-state</p></div>
+    <div><b>Verification</b><p>prove-it-works (ตรวจกับ artifact จริง ไม่ใช่ "compile ผ่าน") · fix-root-causes (reproduce ก่อน ถาม why จนถึงต้นเหตุ) · sequence-verifiable-units (หน่วยเล็กที่จบด้วย check) · test-behavior-not-implementation (เรียกแบบ user เรียก assert ค่า literal) · explain-the-number (รู้ว่าอะไร limit ตัวเลขก่อนเชื่อ)</p></div>
+    <div><b>Delegation · Meta</b><p>guard-the-context-window (ของเยอะไป subagent เก็บแต่สรุป) · never-block-on-the-human (งาน reversible ทำเลยแล้วรายงาน) · encode-lessons-in-structure (คำสั่งซ้ำครั้งที่สอง → lint/flag/script แทนข้อความ)</p></div>
   </div>
 </section>
 
@@ -389,8 +730,8 @@ err = bcrypt.CompareHashAndPassword(hash, pw)
     </div>
 
     <div class="rule">
-      <h3>Comment เท่าที่จำเป็น ไม่เกิน 1 บรรทัด — อธิบาย <em>why</em> ไม่ใช่ <em>what</em></h3>
-      <p class="why">เขียนเหตุผล workaround หรือ constraint ที่โค้ดแสดงเองไม่ได้ เป็นประโยคสั้นตัวพิมพ์เล็กบรรทัดเดียว (รวม doc comment) — godoc เฉพาะ exported symbol ที่กฎไม่ได้อยู่ใน signature · คำอธิบายยาวไปอยู่ README/docs</p>
+      <h3>Comment: ค่าเริ่มต้นคือไม่มี — เขียนเฉพาะ business rule / constraint ภายนอกที่โค้ดแสดงเองไม่ได้ ไม่เกิน 1 บรรทัด</h3>
+      <p class="why">ใส่ได้เมื่อเป็นกฎธุรกิจหรือข้อจำกัดจากระบบอื่นเท่านั้น (client อ่าน <code>projects[0]</code>, ล้อ quirk ของ legacy, workaround) — ห้ามอธิบายว่าเทคนิคทำงานยังไง (<code>to_jsonb</code> คืออะไร), type เก็บอะไร, หรือทวนชื่อ symbol · doc comment ก็ 1 บรรทัด · marker <code>// Arrange</code> ในเทสต์ปล่อยเปล่าไว้ เว้นแต่การ arrange นั้นคือจุดพิเศษ · ก่อนส่งงานไล่ diff ลบ comment ที่ไม่เข้ากฎทิ้ง เป้าคือน้อยกว่า 1 comment ต่อฟังก์ชัน · คำอธิบายยาวไปอยู่ README/docs/Bruno</p>
       <div class="panes">
         <div class="pane bad"><span class="tag">อย่าทำ</span>
 <pre><span class="cm">// loop over accounts</span>
@@ -487,6 +828,28 @@ err = bcrypt.CompareHashAndPassword(hash, pw)
   </div>
 </section>
 
+<section id="simplifying">
+  <p class="eyebrow">Skill · /simplifying-code</p>
+  <h2>Simplifying code</h2>
+  <p class="sub">รอบเก็บงานหลังแก้โค้ดทุกครั้งก่อนรายงานว่าเสร็จ — ทำให้โค้ดที่เพิ่งแก้อ่านง่ายขึ้นโดย <strong>ไม่เปลี่ยน behavior</strong> ใช้ได้กับ agent ทุกเจ้าที่รัน git และแก้ไฟล์ได้ (link เข้า <code>~/.claude/skills</code> และ <code>~/.agents/skills</code>) · ไม่ล่า correctness bug เจอแล้วรายงานหนึ่งบรรทัด ไม่แก้</p>
+  <div class="fable">
+    <div><i>1</i><b>Scope</b><p>เก็บ diff ทั้ง committed และ uncommitted รวมไฟล์ untracked ซึ่งไม่โผล่ใน diff · อ่านทั้ง function ที่ครอบจุดแก้ ไม่ใช่แค่ hunk</p></div>
+    <div><i>2</i><b>Baseline</b><p>รัน check ที่ถูกที่สุดก่อนแตะโค้ด แล้วจดผลไว้ · ไม่มี check → แก้เฉพาะสิ่งที่ verify ได้ด้วยการอ่าน</p></div>
+    <div><i>3</i><b>Review 5 มุม</b><p>Readability · Simplification · Reuse · Altitude · Efficiency — ทุก finding ต้องมี file:line และต้นทุนที่จับต้องได้ ไม่มีต้นทุน = ความชอบส่วนตัว ตัดทิ้ง</p></div>
+    <div><i>4</i><b>Apply</b><p>แก้ทีละข้อ รัน check ซ้ำทุกครั้ง · ถ้าแตะ computation หรือสลับไปใช้ helper เดิม ให้รันโค้ดเก่ากับใหม่บน edge input แล้วเทียบ output ที่พิมพ์ออกมา เพราะ test ผ่านพิสูจน์ได้แค่สิ่งที่ test ครอบคลุม · ผลต่าง → ถอยกลับแล้วบันทึกว่า skip · ห้ามแก้ assertion ของ test ห้าม reformat บรรทัดที่ไม่ได้แตะ</p></div>
+    <div><i>5</i><b>Report</b><p>Fixed / Skipped พร้อมเหตุผล / Out of lane · โค้ดสะอาดอยู่แล้วให้รายงานว่าไม่มี finding ห้ามแต่งขึ้นมาเติม</p></div>
+  </div>
+  <div class="checklist">
+    <b>Checklist ที่ agent ต้อง copy ลง response แล้วติ๊กตามจริง:</b>
+<pre>Simplifying pass:
+- [ ] 1. Scope: diff gathered, changed files listed
+- [ ] 2. Baseline check run, result recorded
+- [ ] 3. Five angles reviewed; every finding has file:line and a concrete cost
+- [ ] 4. Fixes applied one at a time; check re-run, edge inputs compared, behavior identical
+- [ ] 5. Report printed: fixed / skipped / out of lane</pre>
+  </div>
+</section>
+
 <section id="creating">
   <p class="eyebrow">Skill · /creating-skills</p>
   <h2>Creating skills</h2>
@@ -508,7 +871,8 @@ err = bcrypt.CompareHashAndPassword(hash, pw)
     <div><b>Docs-first</b><p>ยึด practice ที่ถูกที่สุดแม้ขัด convention ปัจจุบัน — การเปลี่ยน pattern ต้องเสนอและแก้ docs ก่อนลงมือ implement</p></div>
     <div><b>Pattern ไม่ใช่ copy</b><p>Reference repo ให้ pattern (state management, hook structure, return shape) — ตั้งชื่อใหม่ทั้งหมดให้สื่อหน้าที่ใน repo ของเราเอง</p></div>
     <div><b>Verify ไม่ใช่จำ</b><p>ก่อน assert ว่า "ส่วนอื่นถูก practice แล้ว" ต้อง explore โค้ดจริง อย่าเชื่อความจำ</p></div>
-    <div><b>Grill ก่อนเริ่ม</b><p>Challenge สมมติฐานผ่าน AskUserQuestion ทีละคำถามก่อนเริ่มงาน เคาะ decision เป็นข้อ ๆ</p></div>
+    <div><b>Grill ก่อนเริ่ม</b><p>Challenge สมมติฐานผ่าน AskUserQuestion ทีละคำถามก่อนเริ่มงาน เคาะ decision เป็นข้อ ๆ — ถ้าคำตอบคือข้อเท็จจริงที่รันดูได้ (behavior, timing, output) ให้ prototype แทนการถาม</p></div>
+    <div><b>กฎที่ไม่มีอะไรบังคับจะโดนลืม</b><p>โดนแก้เรื่องเดียวกันซ้ำ → รัน correct เพื่อแก้ที่ repo (lint, type, test, hook) ไม่ใช่ prompt เพิ่ม · ตาราง rule ↔ enforcer อยู่ใน AGENTS.md "Task routing"</p></div>
   </div>
 </section>
 
@@ -525,7 +889,7 @@ err = bcrypt.CompareHashAndPassword(hash, pw)
   </div>
 </section>
 
-<footer>source: <a href="https://github.com/wonpanu/ai-harness" target="_blank" rel="noopener">AGENTS.md @ github.com/wonpanu/ai-harness</a> (CLAUDE.md symlinks here; install via make install) · updated 2026-09-23</footer>
+<footer>source: <a href="https://github.com/wonpanu/ai-harness" target="_blank" rel="noopener">AGENTS.md @ github.com/wonpanu/ai-harness</a> (CLAUDE.md symlinks here; install via make install) · updated 2026-10-07</footer>
 </div>
 
 <script>
@@ -538,6 +902,8 @@ const DATA = {
     "Domain term กำกวม → รัน grill-with-docs เทียบศัพท์กับ docs ของโปรเจกต์ก่อนร่าง PRD",
     "Default คือ solo — งานจบใน turn เดียว (แก้ 1-2 ไฟล์, ตอบคำถาม, edit เล็ก) ไม่ delegate",
     "Decision สำคัญ: ส่ง peer + deep-reasoner ทำคู่ขนาน แล้วสังเคราะห์โดยไม่ให้เห็นคำตอบกัน",
+    "harness-mode เปิดตลอด: งานที่ไม่ trivial → อ่าน skills/harness-mode/SKILL.md จับ playbook แล้ว copy steps ลง todo list ตรงตัว",
+    "TDD บังคับ: red → green ต่อ slice ก่อน refactor — Feature step 4, Bug fix step 3",
     "รักษา context ของตัวเองให้ lean"]},
   deep: {name:"deep-reasoner", meta:{model:"claude-opus-5-5", effort:"xhigh", codex:"gpt-6-sol · xhigh"}, points:[
     "Architecture, debug ซับซ้อน, ออกแบบ algorithm, วิเคราะห์ trade-off",
@@ -565,25 +931,1647 @@ const DATA = {
     "Stage เฉพาะไฟล์ที่เกี่ยว ตาม convention ของ repo — ไม่แก้โค้ด ไม่ push main — สั่ง ship = branch + PR"]},
   rev:  {name:"senior-lead-reviewer", meta:{model:"claude-opus-5-5 · xhigh — fresh context", codex:"gpt-6-sol · xhigh", lens:"maintainability · tech-debt · operability"}, points:[
     "Review งานก่อน merge/ship: plan, diff, design",
-    "คนละ lens กับ peer (correctness) และ ponytail (over-engineering)",
+    "คนละ lens กับ peer (correctness) และ simplifying-code (over-engineering)",
     "ได้รับ PRD เพื่อ review ให้ตรง acceptance criteria จริง"]},
-  ship: {name:"Ship", meta:{}, points:["Merge, ship หรือส่งมอบ — ผ่านการสังเคราะห์และ review แล้ว"]}
+  ha: {name:"harness-agent", meta:{model:"session model — fresh context", codex:"gpt-6-astra · high", scope:"code delegate ใน playbook step"}, points:[
+    "ตัวเขียนโค้ดที่ playbook ของ harness-mode สั่ง spawn — fresh ต่อ task, รับ PRD + brief ครบทุกครั้ง",
+    "อ่าน skills/harness-mode/SKILL.md ทั้งไฟล์รวม principles index ก่อนเริ่ม — ใช้ general-purpose แทนจะข้ามขั้นนี้แล้วเพี้ยน",
+    "งานยากสุด (cross-cutting design, concurrency, algorithm ละเอียด) ไป deep-reasoner แทน"]},
+  cr: {name:"comment-reviewer", meta:{model:"claude-sonnet-5", effort:"medium", codex:"gpt-6-luna · medium", mode:"read-only"}, points:[
+    "skill no-comments spawn ก่อน review: ไล่ทุก comment ใน diff เทียบกฎ AGENTS.md (ค่าเริ่มต้นคือไม่มี)",
+    "เหลือเฉพาะ: license header, พฤติกรรม external dependency ที่โค้ดแสดงไม่ได้, doc comment ของ public API, link issue/RFC",
+    "โค้ดที่ต้องมี comment ถึงจะเข้าใจ → ติด NEEDS RESHAPE ที่ symbol นั้น — รายงานอย่างเดียว ไม่แก้โค้ด"]},
+  ship: {name:"Ship", meta:{}, points:["Merge, ship หรือส่งมอบ — ผ่านการสังเคราะห์และ review แล้ว · ผ่าน branch + PR เสมอ ไม่ push main"]}
 };
+const NODE_SELECT_EVENT = "workflow-node-select";
 const detail = document.getElementById("detail");
 function render(id){
-  const d = DATA[id];
-  const node = document.querySelector(`.node[data-id="${id}"]`);
-  document.querySelectorAll(".node").forEach(n=>n.classList.toggle("active", n===node));
-  const meta = Object.entries(d.meta).map(([k,v])=>`<span><b>${k}</b>${v}</span>`).join("");
+  const nodeData = DATA[id];
+  const svgNode = document.querySelector(`.node[data-id="${id}"]`);
+  document.querySelectorAll(".node").forEach((node) => node.classList.toggle("active", node === svgNode));
+  const metaMarkup = Object.entries(nodeData.meta).map(([key, value]) => `<span><b>${key}</b>${value}</span>`).join("");
   detail.innerHTML =
-    `<h3><span class="chip" style="--nc:${getComputedStyle(node).getPropertyValue("--nc")}"></span>${d.name}</h3>
-     <div class="meta">${meta || "<span><b>—</b></span>"}</div>
-     <ul>${d.points.map(p=>`<li>${p}</li>`).join("")}</ul>`;
+    `<h3><span class="chip" style="--nc:${getComputedStyle(svgNode).getPropertyValue("--nc")}"></span>${nodeData.name}</h3>
+     <div class="meta">${metaMarkup || "<span><b>—</b></span>"}</div>
+     <ul>${nodeData.points.map((point) => `<li>${point}</li>`).join("")}</ul>`;
+  document.dispatchEvent(new CustomEvent(NODE_SELECT_EVENT, { detail: id }));
 }
-document.querySelectorAll(".node").forEach(n=>{
-  n.addEventListener("click", ()=>render(n.dataset.id));
-  n.setAttribute("tabindex","0");
-  n.addEventListener("keydown", e=>{ if(e.key==="Enter"||e.key===" "){e.preventDefault();render(n.dataset.id);} });
+document.querySelectorAll(".node").forEach((node) => {
+  node.addEventListener("click", () => render(node.dataset.id));
+  node.setAttribute("tabindex", "0");
+  node.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    event.preventDefault();
+    render(node.dataset.id);
+  });
 });
 render("orch");
+
+const SCENE_LOAD_TIMEOUT_MILLISECONDS = 8000;
+const sceneLoad = { state: "loading" };
+function showFallbackDiagram(reason) {
+  if (sceneLoad.state === "fallback") return;
+  sceneLoad.state = "fallback";
+  clearTimeout(sceneLoadTimer);
+  document.getElementById("scene").hidden = true;
+  document.getElementById("scene-bar").hidden = true;
+  document.getElementById("fallback-reason").textContent = reason;
+  document.getElementById("diagram-fallback").hidden = false;
+}
+function markSceneReady() {
+  sceneLoad.state = "ready";
+  clearTimeout(sceneLoadTimer);
+}
+const sceneLoadTimer = setTimeout(() => {
+  if (sceneLoad.state !== "loading") return;
+  showFallbackDiagram("three.js โหลดไม่เสร็จใน 8 วินาที (เครือข่ายช้าหรือ cdnjs ถูกบล็อก) จึงแสดงผังแบบ 2D แทน");
+}, SCENE_LOAD_TIMEOUT_MILLISECONDS);
+
+const ROUTING_SKILLS = ["how", "why", "architect", "arena", "swarm", "interrogate", "blast-radius", "tdd", "no-comments", "simplifying-code", "unslop", "technical-writing", "show-me-your-work", "benchmark-checklist", "code-committer"];
+const ROUTING_MENTIONS = {
+  investigation: { how: 2, why: 1, architect: 1, unslop: 1, "technical-writing": 1 },
+  "bug-fix": { how: 1, why: 1, architect: 2, interrogate: 1, tdd: 2, "simplifying-code": 1, "technical-writing": 1 },
+  "perf-issue": { how: 1, architect: 1, "technical-writing": 1, "benchmark-checklist": 1 },
+  hillclimb: { how: 1, "technical-writing": 1, "show-me-your-work": 1, "benchmark-checklist": 1 },
+  "runtime-forensics": { "technical-writing": 1 },
+  "trace-forensics": { "technical-writing": 1 },
+  feature: { how: 1, architect: 1, arena: 1, interrogate: 1, tdd: 2, "simplifying-code": 1, "technical-writing": 1 },
+  refactoring: { how: 1, architect: 1, "technical-writing": 1 },
+  prototype: { architect: 1, "technical-writing": 1 },
+  "visual-parity": { "technical-writing": 1 },
+  "authoring-a-skill": { unslop: 1, "technical-writing": 1 },
+  eval: { arena: 3, "technical-writing": 1 },
+  babysit: {},
+  shipping: {},
+  "autonomous-run": { "technical-writing": 1, "show-me-your-work": 1 },
+  orchestrate: { arena: 1, swarm: 1, "show-me-your-work": 3 },
+  "autopilot-full": { swarm: 5, "no-comments": 2, "simplifying-code": 2, "show-me-your-work": 1, "code-committer": 1 },
+  "autopilot-stack": { "no-comments": 1, "simplifying-code": 1, "show-me-your-work": 1, "code-committer": 1 },
+  "session-pickup": {},
+  "pause-safely": { "show-me-your-work": 1, "code-committer": 1 },
+  "multi-phase-plan": { how: 1, swarm: 5, interrogate: 1, "no-comments": 1, "simplifying-code": 1, unslop: 1, "technical-writing": 2, "show-me-your-work": 1 },
+  "worktree-cleanup": { arena: 1 },
+  "opening-a-pr": { arena: 2, swarm: 3, interrogate: 1, "no-comments": 2, "simplifying-code": 2, unslop: 1, "technical-writing": 2, "code-committer": 2 },
+};
+const ROUTING_PLAYBOOKS = Object.keys(ROUTING_MENTIONS);
+const countMentions = (playbook, skill) => ROUTING_MENTIONS[playbook][skill] ?? 0;
+const playbooksCalling = (skill) => ROUTING_PLAYBOOKS.filter((playbook) => countMentions(playbook, skill) > 0);
+
+const SCENARIO_STEP_EVENT = "workflow-scenario-step";
+const SCENARIO_STEP_MILLISECONDS = 3200;
+const SCENARIO_HASH_PREFIX = "#scenario-";
+const SCENARIOS = [
+  {
+    id: "bug-fix", playbook: "Bug fix", file: "skills/harness-mode/playbooks/bug-fix.md",
+    steps: [
+      { text: "Reproduce บั๊กเองบน surface จริงก่อน ถามผู้ใช้เฉพาะเมื่อเครื่องมือเข้าไม่ถึง", nodes: ["req", "orch"], edges: ["req>orch"], skills: ["diagnose", "run", "claude-in-chrome"] },
+      { text: "Binary-search หาสาเหตุ: ตั้งสมมติฐานจาก how + why แล้วตัดทิ้งด้วย runtime evidence", nodes: ["orch", "explore", "deep"], edges: ["orch>explore", "orch>deep"], skills: ["how", "why"] },
+      { text: "วางแผน fix ข้าม function ใช้ architect แล้ว delegate ให้ harness-agent เขียนแบบ red → green", nodes: ["orch", "ha"], edges: ["orch>ha"], skills: ["architect", "tdd"] },
+      { text: "Verify บน surface เดิม: repro จากขั้น 1 ต้องผ่าน ผล inconclusive ไม่นับ", nodes: ["ha", "orch"], edges: ["ha>merge"], skills: ["run"] },
+      { text: "Stage commit ให้ failing test ลง history ก่อน fix", nodes: ["orch", "committer"], edges: ["orch>committer"], skills: ["code-committer"] },
+      { text: "เปิด PR: simplifying-code และ no-comments ก่อน review แล้วส่งผ่าน branch + PR", nodes: ["cr", "rev", "ship"], edges: ["orch>cr", "merge>rev", "rev>ship"], skills: ["simplifying-code", "no-comments", "technical-writing", "code-committer"] },
+    ],
+  },
+  {
+    id: "feature", playbook: "Feature", file: "skills/harness-mode/playbooks/feature.md",
+    steps: [
+      { text: "how ไล่ subsystem ที่โดน · ศัพท์กำกวมใช้ grill-with-docs ก่อนร่าง PRD", nodes: ["req", "orch", "explore"], edges: ["req>orch", "orch>explore"], skills: ["how", "grill-with-docs"] },
+      { text: "architect ออกแบบคู่ขนานหลายทาง แล้วเลือกทางเดียว", nodes: ["orch", "deep", "ha"], edges: ["orch>deep", "orch>ha"], skills: ["architect"] },
+      { text: "เขียน throughput checkpoint ลง todo พร้อม test seam ที่ tdd จะใช้", nodes: ["orch"], edges: [], skills: ["tdd"] },
+      { text: "Delegate ให้ harness-agent พร้อม PRD เขียนทีละ slice red → green · หลายทางเลือกใช้ arena", nodes: ["orch", "ha"], edges: ["orch>ha"], skills: ["tdd", "arena"] },
+      { text: "Verify บน surface จริง ผล inconclusive ไม่นับ", nodes: ["ha", "orch"], edges: ["ha>merge"], skills: ["run", "claude-in-chrome"] },
+      { text: "Rebase เป็น commit เล็กเรียงลำดับ แต่ละ commit จบด้วย check", nodes: ["orch", "committer"], edges: ["orch>committer"], skills: ["code-committer"] },
+      { text: "Design ยังมีข้อโต้แย้ง ใช้ interrogate หลาย model ก่อน ship", nodes: ["deep", "ha", "rev"], edges: ["deep>merge", "ha>merge", "merge>rev"], skills: ["interrogate"] },
+      { text: "เปิด PR: simplifying-code, no-comments แล้วเขียน PR ด้วย technical-writing + unslop", nodes: ["cr", "rev", "ship"], edges: ["orch>cr", "merge>rev", "rev>ship"], skills: ["simplifying-code", "no-comments", "technical-writing", "unslop"] },
+    ],
+  },
+  {
+    id: "investigation", playbook: "Investigation", file: "skills/harness-mode/playbooks/investigation.md",
+    steps: [
+      { text: "Route ผ่าน how · ถ้าถามเรื่องเหตุผลให้ใช้ why ด้วย", nodes: ["req", "orch", "explore"], edges: ["req>orch", "orch>explore"], skills: ["how", "why"] },
+      { text: "Throughput checkpoint บรรทัดเดียว: n/a เพราะเป็นงานอ่านอย่างเดียว", nodes: ["orch"], edges: [], skills: [] },
+      { text: "เขียนผลทรง how: Overview, Key Concepts, How It Works, Where Things Live, Gotchas", nodes: ["orch", "explore"], edges: ["explore>merge"], skills: ["how"] },
+      { text: "ตอบแบบ i-have-adhd คำตอบมาก่อน ไม่มี PR · ถ้าลงเป็น doc ใช้ unslop + technical-writing", nodes: ["orch", "ship"], edges: ["orch>merge"], skills: ["unslop", "technical-writing"] },
+    ],
+  },
+  {
+    id: "shipping", playbook: "Shipping", file: "skills/harness-mode/playbooks/shipping.md",
+    steps: [
+      { text: "Verify ทุก PR แยกกัน: deep-reasoner หนึ่งตัวต่อ PR ใน worktree ได้ verdict PASS หรือ FAIL", nodes: ["orch", "deep"], edges: ["orch>deep"], skills: ["run", "claude-in-chrome"] },
+      { text: "Land เฉพาะช่วงที่ verify ต่อเนื่องจาก PR ล่างสุด", nodes: ["orch", "deep"], edges: ["deep>merge"], skills: [] },
+      { text: "เช็คว่า verdict ยังตรงกับ patch ด้วย patch-id ก่อน land", nodes: ["orch"], edges: [], skills: [] },
+      { text: "เตรียมเฉพาะ PR ล่างสุด: rebase บน trunk, push --force-with-lease, retarget", nodes: ["orch"], edges: [], skills: [] },
+      { text: "Land ทีละ PR ด้วย gh pr merge --squash", nodes: ["orch", "ship"], edges: ["rev>ship"], skills: [] },
+      { text: "autoMergeRequest ไม่ได้แปลว่า stack พร้อม ให้เช็คด้วย gh pr view", nodes: ["orch"], edges: [], skills: [] },
+      { text: "หลังทุก merge: fetch trunk แล้วคำนวณ PR ล่างสุดใหม่", nodes: ["orch"], edges: [], skills: [] },
+      { text: "เฝ้า PR ปัจจุบันจน merge หรือ fail ไม่แตะคิวรอบข้าง", nodes: ["orch"], edges: [], skills: ["babysit", "loop"] },
+      { text: "หยุดที่ ceiling: รายงานสิ่งที่ land และ PR ถัดไปที่ยังไม่ verify", nodes: ["orch", "ship"], edges: [], skills: [] },
+    ],
+  },
+];
+
+const scenarioTabs = document.getElementById("scenario-tabs");
+const scenarioTabButtons = [...scenarioTabs.querySelectorAll("button")];
+const scenarioStepsList = document.getElementById("scenario-steps");
+const scenarioTitle = document.getElementById("scenario-title");
+const scenarioFile = document.getElementById("scenario-file");
+const scenarioCounter = document.getElementById("scenario-counter");
+const scenarioAnnouncer = document.getElementById("scenario-announcer");
+const scenarioToggleButton = document.getElementById("scenario-toggle");
+const scenarioToggleIcon = document.getElementById("scenario-toggle-icon");
+const scenarioToggleLabel = document.getElementById("scenario-toggle-label");
+const fallbackSvg = document.querySelector("#diagram-fallback svg");
+const PLAY_ICON_PATH = "M4 2l10 6-10 6z";
+const PAUSE_ICON_PATH = "M3 2h4v12H3zM9 2h4v12H9z";
+const scenarioState = { scenario: SCENARIOS[0], stepIndex: -1, isPlaying: false, timerId: 0 };
+
+function getActiveScenarioStep() {
+  if (scenarioState.stepIndex < 0) return null;
+  return scenarioState.scenario.steps[scenarioState.stepIndex];
+}
+
+function createSkillChip(skillName) {
+  if (!ROUTING_SKILLS.includes(skillName)) {
+    const staticChip = document.createElement("span");
+    staticChip.className = "skill-chip is-static";
+    staticChip.textContent = skillName;
+    return staticChip;
+  }
+  const chipButton = document.createElement("button");
+  chipButton.type = "button";
+  chipButton.className = "skill-chip";
+  chipButton.dataset.skill = skillName;
+  chipButton.title = `ดูว่า playbook ไหนเรียก ${skillName}`;
+  chipButton.textContent = skillName;
+  return chipButton;
+}
+
+function renderScenarioSteps() {
+  const { scenario } = scenarioState;
+  scenarioTitle.textContent = scenario.playbook;
+  scenarioFile.textContent = scenario.file;
+  scenarioStepsList.replaceChildren(...scenario.steps.map((step, index) => {
+    const stepButton = document.createElement("button");
+    stepButton.type = "button";
+    stepButton.className = "step-button";
+    stepButton.dataset.stepIndex = String(index);
+    const stepNumber = document.createElement("span");
+    stepNumber.className = "step-number";
+    stepNumber.textContent = String(index + 1);
+    const stepText = document.createElement("span");
+    stepText.className = "step-text";
+    stepText.textContent = step.text;
+    stepButton.append(stepNumber, stepText);
+
+    const stepActors = document.createElement("span");
+    stepActors.className = "step-actors";
+    stepActors.textContent = step.nodes.map((nodeId) => DATA[nodeId].name).join(" · ");
+    const stepMeta = document.createElement("div");
+    stepMeta.className = "step-meta";
+    stepMeta.append(stepActors, ...step.skills.map(createSkillChip));
+
+    const stepItem = document.createElement("li");
+    stepItem.className = "step";
+    stepItem.append(stepButton, stepMeta);
+    return stepItem;
+  }));
+}
+
+function showScenarioStep(stepIndex) {
+  scenarioState.stepIndex = stepIndex;
+  const { steps } = scenarioState.scenario;
+  const stepItems = [...scenarioStepsList.children];
+  stepItems.forEach((stepItem, index) => {
+    stepItem.classList.toggle("is-current", index === stepIndex);
+    stepItem.classList.toggle("is-done", index < stepIndex);
+    stepItem.querySelector(".step-button").setAttribute("aria-current", index === stepIndex ? "step" : "false");
+  });
+  const activeStep = getActiveScenarioStep();
+  fallbackSvg.classList.toggle("is-playing", activeStep !== null);
+  fallbackSvg.classList.toggle("is-solo-step", activeStep?.edges.includes(fallbackSvg.querySelector(".edge.solo").dataset.edge) ?? false);
+  for (const node of fallbackSvg.querySelectorAll(".node")) node.classList.toggle("is-step", activeStep?.nodes.includes(node.dataset.id) ?? false);
+  for (const edge of fallbackSvg.querySelectorAll(".edge")) edge.classList.toggle("is-step", activeStep?.edges.includes(edge.dataset.edge) ?? false);
+  document.dispatchEvent(new CustomEvent(SCENARIO_STEP_EVENT, { detail: activeStep }));
+
+  if (activeStep === null) {
+    scenarioCounter.textContent = `${steps.length} ขั้น · กดเล่นเพื่อเดินทีละขั้น`;
+    return;
+  }
+  scenarioCounter.textContent = `ขั้น ${stepIndex + 1} / ${steps.length}`;
+  scenarioAnnouncer.textContent = `ขั้น ${stepIndex + 1} จาก ${steps.length}: ${activeStep.text}`;
+  const currentItem = stepItems[stepIndex];
+  const isAboveView = currentItem.offsetTop < scenarioStepsList.scrollTop;
+  const isBelowView = currentItem.offsetTop + currentItem.offsetHeight > scenarioStepsList.scrollTop + scenarioStepsList.clientHeight;
+  if (isAboveView || isBelowView) scenarioStepsList.scrollTop = currentItem.offsetTop;
+}
+
+function setPlayingState(isPlaying) {
+  scenarioState.isPlaying = isPlaying;
+  scenarioToggleIcon.setAttribute("d", isPlaying ? PAUSE_ICON_PATH : PLAY_ICON_PATH);
+  scenarioToggleLabel.textContent = isPlaying ? "หยุด" : "เล่น";
+  if (isPlaying) return;
+  clearTimeout(scenarioState.timerId);
+}
+
+function scheduleNextStep() {
+  clearTimeout(scenarioState.timerId);
+  scenarioState.timerId = setTimeout(() => {
+    if (!scenarioState.isPlaying) return;
+    const isLastStep = scenarioState.stepIndex >= scenarioState.scenario.steps.length - 1;
+    if (isLastStep) {
+      setPlayingState(false);
+      return;
+    }
+    showScenarioStep(scenarioState.stepIndex + 1);
+    scheduleNextStep();
+  }, SCENARIO_STEP_MILLISECONDS);
+}
+
+function playScenario() {
+  const lastStepIndex = scenarioState.scenario.steps.length - 1;
+  const shouldRestart = scenarioState.stepIndex < 0 || scenarioState.stepIndex >= lastStepIndex;
+  setPlayingState(true);
+  if (shouldRestart) showScenarioStep(0);
+  scheduleNextStep();
+}
+
+function stepScenario(direction) {
+  setPlayingState(false);
+  const lastStepIndex = scenarioState.scenario.steps.length - 1;
+  showScenarioStep(Math.min(Math.max(scenarioState.stepIndex + direction, 0), lastStepIndex));
+}
+
+function selectScenario(scenarioId, shouldPlay) {
+  const scenario = SCENARIOS.find((candidate) => candidate.id === scenarioId);
+  if (scenario === undefined) return;
+  setPlayingState(false);
+  scenarioState.scenario = scenario;
+  for (const tabButton of scenarioTabButtons) tabButton.setAttribute("aria-pressed", String(tabButton.dataset.scenarioId === scenarioId));
+  renderScenarioSteps();
+  showScenarioStep(-1);
+  if (shouldPlay) playScenario();
+}
+
+scenarioTabs.addEventListener("click", (event) => {
+  const tabButton = event.target.closest("button");
+  if (tabButton === null) return;
+  selectScenario(tabButton.dataset.scenarioId, true);
+});
+
+scenarioTabs.addEventListener("keydown", (event) => {
+  const direction = { ArrowRight: 1, ArrowLeft: -1 }[event.key];
+  if (direction === undefined) return;
+  const currentIndex = scenarioTabButtons.indexOf(document.activeElement);
+  if (currentIndex === -1) return;
+  event.preventDefault();
+  scenarioTabButtons[(currentIndex + direction + scenarioTabButtons.length) % scenarioTabButtons.length].focus();
+});
+
+scenarioToggleButton.addEventListener("click", () => {
+  if (scenarioState.isPlaying) {
+    setPlayingState(false);
+    return;
+  }
+  playScenario();
+});
+document.getElementById("scenario-previous").addEventListener("click", () => stepScenario(-1));
+document.getElementById("scenario-next").addEventListener("click", () => stepScenario(1));
+
+scenarioStepsList.addEventListener("click", (event) => {
+  const chipButton = event.target.closest("button.skill-chip");
+  if (chipButton !== null) {
+    selectRoutingSkill(chipButton.dataset.skill);
+    document.getElementById("routing").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+    return;
+  }
+  const stepButton = event.target.closest(".step-button");
+  if (stepButton === null) return;
+  setPlayingState(false);
+  showScenarioStep(Number(stepButton.dataset.stepIndex));
+});
+
+function selectScenarioFromHash() {
+  if (!location.hash.startsWith(SCENARIO_HASH_PREFIX)) return;
+  selectScenario(location.hash.slice(SCENARIO_HASH_PREFIX.length), true);
+}
+window.addEventListener("hashchange", selectScenarioFromHash);
+
+const MATRIX_LABEL_WIDTH = 136;
+const MATRIX_HEADER_HEIGHT = 120;
+const MATRIX_ROW_HEIGHT = 24;
+const MATRIX_FOOTER_HEIGHT = 40;
+const MATRIX_RIGHT_PADDING = 64;
+const MATRIX_CELL_WIDTH_RANGE = [36, 56];
+const MATRIX_MAXIMUM_DOT_RADIUS = 9;
+const MATRIX_LABEL_GAP = 16;
+const MAXIMUM_MENTIONS = Math.max(...ROUTING_PLAYBOOKS.flatMap((playbook) => Object.values(ROUTING_MENTIONS[playbook])));
+const SIZE_KEY_COUNTS = [1, 2, 3, 5];
+const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
+
+const matrixContainer = document.getElementById("matrix-container");
+const chartTooltip = document.getElementById("chart-tooltip");
+const mostCalledSkill = ROUTING_SKILLS.reduce((best, skill) => playbooksCalling(skill).length > playbooksCalling(best).length ? skill : best);
+const routingState = { selectedSkill: mostCalledSkill };
+
+const dotRadiusFor = (mentions) => MATRIX_MAXIMUM_DOT_RADIUS * Math.sqrt(mentions / MAXIMUM_MENTIONS);
+const mentionLabel = (mentions) => `${mentions} mention${mentions === 1 ? "" : "s"}`;
+
+function showChartTooltip(text, anchorX, anchorY) {
+  chartTooltip.textContent = text;
+  chartTooltip.hidden = false;
+  const tooltipWidth = chartTooltip.offsetWidth;
+  const tooltipHeight = chartTooltip.offsetHeight;
+  const left = Math.min(anchorX + 16, window.innerWidth - tooltipWidth - 16);
+  const top = anchorY - tooltipHeight - 16 < 0 ? anchorY + 16 : anchorY - tooltipHeight - 16;
+  chartTooltip.style.transform = `translate(${Math.max(left, 16)}px, ${top}px)`;
+}
+
+function hideChartTooltip() {
+  chartTooltip.hidden = true;
+}
+
+function renderRoutingMatrix() {
+  const availableWidth = matrixContainer.clientWidth;
+  if (availableWidth === 0) return;
+  const fittedCellWidth = (availableWidth - MATRIX_LABEL_WIDTH - MATRIX_RIGHT_PADDING) / ROUTING_SKILLS.length;
+  const cellWidth = Math.min(Math.max(fittedCellWidth, MATRIX_CELL_WIDTH_RANGE[0]), MATRIX_CELL_WIDTH_RANGE[1]);
+  const plotWidth = cellWidth * ROUTING_SKILLS.length;
+  const plotHeight = MATRIX_ROW_HEIGHT * ROUTING_PLAYBOOKS.length;
+  const width = MATRIX_LABEL_WIDTH + plotWidth + MATRIX_RIGHT_PADDING;
+  const height = MATRIX_HEADER_HEIGHT + plotHeight + MATRIX_FOOTER_HEIGHT;
+  const columnCenter = (skillIndex) => MATRIX_LABEL_WIDTH + cellWidth * (skillIndex + 0.5);
+  const rowCenter = (playbookIndex) => MATRIX_HEADER_HEIGHT + MATRIX_ROW_HEIGHT * (playbookIndex + 0.5);
+
+  const rowMarkup = ROUTING_PLAYBOOKS.map((playbook, playbookIndex) => {
+    const centerY = rowCenter(playbookIndex);
+    return `<line class="gridline" x1="${MATRIX_LABEL_WIDTH}" x2="${MATRIX_LABEL_WIDTH + plotWidth}" y1="${centerY}" y2="${centerY}"/>
+      <text class="matrix-row-label" data-playbook="${playbook}" x="${MATRIX_LABEL_WIDTH - MATRIX_LABEL_GAP}" y="${centerY + 4}" text-anchor="end">${playbook}</text>`;
+  }).join("");
+
+  const columnMarkup = ROUTING_SKILLS.map((skill, skillIndex) => {
+    const centerX = columnCenter(skillIndex);
+    const callerCount = playbooksCalling(skill).length;
+    return `<line class="gridline" x1="${centerX}" x2="${centerX}" y1="${MATRIX_HEADER_HEIGHT}" y2="${MATRIX_HEADER_HEIGHT + plotHeight}"/>
+      <g class="matrix-column" data-skill="${skill}" tabindex="0" role="button" aria-pressed="false" aria-label="${skill}: เรียกจาก ${callerCount} playbook">
+        <rect class="matrix-column-hit" x="${centerX - cellWidth / 2}" y="0" width="${cellWidth}" height="${MATRIX_HEADER_HEIGHT - 8}" fill="transparent"/>
+        <text class="matrix-column-label" transform="translate(${centerX + 4} ${MATRIX_HEADER_HEIGHT - 16}) rotate(-50)">${skill}</text>
+      </g>
+      <text class="matrix-total" data-skill="${skill}" x="${centerX}" y="${MATRIX_HEADER_HEIGHT + plotHeight + 28}" text-anchor="middle">${callerCount}</text>`;
+  }).join("");
+
+  const cellMarkup = ROUTING_PLAYBOOKS.flatMap((playbook, playbookIndex) => ROUTING_SKILLS.map((skill, skillIndex) => {
+    const mentions = countMentions(playbook, skill);
+    if (mentions === 0) return "";
+    const centerX = columnCenter(skillIndex);
+    const centerY = rowCenter(playbookIndex);
+    return `<circle class="matrix-dot" data-playbook="${playbook}" data-skill="${skill}" cx="${centerX}" cy="${centerY}" r="${dotRadiusFor(mentions).toFixed(2)}"/>
+      <rect class="matrix-hit" data-playbook="${playbook}" data-skill="${skill}" data-mentions="${mentions}" x="${centerX - cellWidth / 2}" y="${centerY - MATRIX_ROW_HEIGHT / 2}" width="${cellWidth}" height="${MATRIX_ROW_HEIGHT}" fill="transparent"/>`;
+  })).join("");
+
+  matrixContainer.innerHTML =
+    `<svg class="chart-svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="ตาราง playbook ${ROUTING_PLAYBOOKS.length} ตัว กับ workflow skill ${ROUTING_SKILLS.length} ตัว ขนาดจุดคือจำนวนครั้งที่เอ่ยชื่อ skill">
+      <rect class="matrix-band" id="matrix-band" x="0" y="${MATRIX_HEADER_HEIGHT - 4}" width="${cellWidth}" height="${plotHeight + MATRIX_FOOTER_HEIGHT}" rx="5"/>
+      ${rowMarkup}
+      ${columnMarkup}
+      <text class="axis-label" x="${MATRIX_LABEL_WIDTH - MATRIX_LABEL_GAP}" y="${MATRIX_HEADER_HEIGHT + plotHeight + 28}" text-anchor="end">จำนวน playbook ที่เรียก</text>
+      ${cellMarkup}
+    </svg>`;
+  matrixContainer.dataset.cellWidth = String(cellWidth);
+  applyRoutingSelection();
+}
+
+function applyRoutingSelection() {
+  const { selectedSkill } = routingState;
+  const skillIndex = ROUTING_SKILLS.indexOf(selectedSkill);
+  const cellWidth = Number(matrixContainer.dataset.cellWidth);
+  const band = document.getElementById("matrix-band");
+  if (band !== null) band.setAttribute("x", String(MATRIX_LABEL_WIDTH + cellWidth * skillIndex));
+  for (const dot of matrixContainer.querySelectorAll(".matrix-dot")) dot.classList.toggle("is-selected", dot.dataset.skill === selectedSkill);
+  for (const column of matrixContainer.querySelectorAll(".matrix-column")) {
+    const isSelected = column.dataset.skill === selectedSkill;
+    column.classList.toggle("is-selected", isSelected);
+    column.setAttribute("aria-pressed", String(isSelected));
+  }
+  for (const total of matrixContainer.querySelectorAll(".matrix-total")) total.classList.toggle("is-selected", total.dataset.skill === selectedSkill);
+  for (const rowLabel of matrixContainer.querySelectorAll(".matrix-row-label")) rowLabel.classList.toggle("is-selected", countMentions(rowLabel.dataset.playbook, selectedSkill) > 0);
+
+  const callers = playbooksCalling(selectedSkill).sort((first, second) => countMentions(second, selectedSkill) - countMentions(first, selectedSkill));
+  const totalMentions = callers.reduce((sum, playbook) => sum + countMentions(playbook, selectedSkill), 0);
+  document.getElementById("skill-panel-title").textContent = selectedSkill;
+  document.getElementById("skill-panel-summary").textContent = callers.length === 0
+    ? `ไม่มี playbook ไหนเอ่ยชื่อ ${selectedSkill} ตรง ๆ`
+    : `ถูกเรียกจาก ${callers.length} ใน ${ROUTING_PLAYBOOKS.length} playbook · รวม ${mentionLabel(totalMentions)}`;
+  document.getElementById("skill-panel-list").replaceChildren(...callers.map((playbook) => {
+    const item = document.createElement("li");
+    const name = document.createElement("span");
+    name.textContent = playbook;
+    const count = document.createElement("span");
+    count.textContent = mentionLabel(countMentions(playbook, selectedSkill));
+    item.append(name, count);
+    return item;
+  }));
+}
+
+function selectRoutingSkill(skill) {
+  if (!ROUTING_SKILLS.includes(skill)) return;
+  routingState.selectedSkill = skill;
+  applyRoutingSelection();
+}
+
+matrixContainer.addEventListener("click", (event) => {
+  const column = event.target.closest(".matrix-column");
+  if (column !== null) {
+    selectRoutingSkill(column.dataset.skill);
+    return;
+  }
+  const cell = event.target.closest(".matrix-hit");
+  if (cell === null) return;
+  selectRoutingSkill(cell.dataset.skill);
+});
+
+matrixContainer.addEventListener("keydown", (event) => {
+  const column = event.target.closest(".matrix-column");
+  if (column === null) return;
+  if (event.key === "Enter" || event.key === " ") {
+    event.preventDefault();
+    selectRoutingSkill(column.dataset.skill);
+    return;
+  }
+  const direction = { ArrowRight: 1, ArrowLeft: -1 }[event.key];
+  if (direction === undefined) return;
+  event.preventDefault();
+  const nextIndex = (ROUTING_SKILLS.indexOf(column.dataset.skill) + direction + ROUTING_SKILLS.length) % ROUTING_SKILLS.length;
+  const nextSkill = ROUTING_SKILLS[nextIndex];
+  selectRoutingSkill(nextSkill);
+  matrixContainer.querySelector(`.matrix-column[data-skill="${nextSkill}"]`).focus();
+});
+
+matrixContainer.addEventListener("pointermove", (event) => {
+  const cell = event.target.closest(".matrix-hit");
+  for (const dot of matrixContainer.querySelectorAll(".matrix-dot.is-hovered")) dot.classList.remove("is-hovered");
+  if (cell === null) {
+    hideChartTooltip();
+    return;
+  }
+  const { playbook, skill, mentions } = cell.dataset;
+  matrixContainer.querySelector(`.matrix-dot[data-playbook="${playbook}"][data-skill="${skill}"]`).classList.add("is-hovered");
+  showChartTooltip(`${playbook} → ${skill} (${mentionLabel(Number(mentions))})`, event.clientX, event.clientY);
+});
+
+matrixContainer.addEventListener("pointerleave", () => {
+  for (const dot of matrixContainer.querySelectorAll(".matrix-dot.is-hovered")) dot.classList.remove("is-hovered");
+  hideChartTooltip();
+});
+
+document.getElementById("matrix-size-key").innerHTML = SIZE_KEY_COUNTS.map((mentions) => {
+  const radius = dotRadiusFor(mentions);
+  const diameter = Math.ceil(radius * 2) + 2;
+  return `<span class="size-key-item"><svg width="${diameter}" height="${diameter}" aria-hidden="true"><circle cx="${diameter / 2}" cy="${diameter / 2}" r="${radius.toFixed(2)}" style="fill:var(--ws-chart-neutral)"/></svg>${mentionLabel(mentions)}</span>`;
+}).join("");
+
+const matrixTableHeaderCells = ROUTING_SKILLS.map((skill) => `<th scope="col">${skill}</th>`).join("");
+const matrixTableRows = ROUTING_PLAYBOOKS.map((playbook) => {
+  const cells = ROUTING_SKILLS.map((skill) => `<td>${countMentions(playbook, skill) || ""}</td>`).join("");
+  return `<tr><th scope="row">${playbook}</th>${cells}</tr>`;
+}).join("");
+document.getElementById("matrix-table").innerHTML = `<table><thead><tr><th scope="col">playbook</th>${matrixTableHeaderCells}</tr></thead><tbody>${matrixTableRows}</tbody></table>`;
+
+const uncalledSkills = ROUTING_SKILLS.filter((skill) => playbooksCalling(skill).length === 0);
+const playbooksWithoutSkills = ROUTING_PLAYBOOKS.filter((playbook) => Object.keys(ROUTING_MENTIONS[playbook]).length === 0);
+document.getElementById("matrix-title").textContent =
+  `${mostCalledSkill} ถูกเรียกจาก ${playbooksCalling(mostCalledSkill).length} ใน ${ROUTING_PLAYBOOKS.length} playbook มากที่สุด · ${uncalledSkills.join(", ")} ไม่มี playbook ไหนเรียกตรง ๆ`;
+document.getElementById("skill-panel-gaps").textContent =
+  `${uncalledSkills.join(", ")} ถูกเรียกจาก non-negotiables ใน SKILL.md ไม่ใช่จาก playbook · ${playbooksWithoutSkills.join(", ")} ไม่เอ่ยชื่อ workflow skill ชุดนี้เลย`;
+
+const EFFORT_LEVEL_NAMES = ["0", "low", "medium", "high", "xhigh"];
+const MAXIMUM_EFFORT_LEVEL = 4;
+const MODEL_TIERS = [
+  { role: "orchestrator", claudeModel: "Fable 5.1 · high", codexModel: "gpt-6-astra", effortLevel: 3, colorToken: "--ws-chart-emphasis" },
+  { role: "harness-agent", claudeModel: "Fable 5.1 · high", codexModel: "gpt-6-astra", effortLevel: 3, colorToken: "--ws-chart-cat-5" },
+  { role: "peer", claudeModel: "Fable 5.1 · high", codexModel: "gpt-6-astra", effortLevel: 3, colorToken: "--ws-chart-cat-5" },
+  { role: "deep-reasoner", claudeModel: "Opus 5.5 · xhigh", codexModel: "gpt-6-sol", effortLevel: 4, colorToken: "--ws-chart-cat-1" },
+  { role: "senior-lead-reviewer", claudeModel: "Opus 5.5 · xhigh", codexModel: "gpt-6-sol", effortLevel: 4, colorToken: "--ws-chart-cat-1" },
+  { role: "fast-worker", claudeModel: "Sonnet 5 · medium", codexModel: "gpt-6-luna", effortLevel: 2, colorToken: "--ws-chart-cat-2" },
+  { role: "comment-reviewer", claudeModel: "Sonnet 5 · medium", codexModel: "gpt-6-luna", effortLevel: 2, colorToken: "--ws-chart-cat-2" },
+  { role: "web-searcher", claudeModel: "Haiku 4.5", codexModel: "gpt-6-luna", effortLevel: 1, colorToken: "--ws-chart-cat-3" },
+  { role: "code-committer", claudeModel: "Haiku 4.5", codexModel: "gpt-6-luna", effortLevel: 1, colorToken: "--ws-chart-cat-3" },
+];
+const TIER_LABEL_WIDTH = 168;
+const TIER_END_LABEL_WIDTH = 96;
+const TIER_ROW_HEIGHT = 40;
+const TIER_BAR_HEIGHT = 16;
+const TIER_TOP_PADDING = 8;
+const TIER_AXIS_HEIGHT = 32;
+const TIER_BAR_RADIUS = 5;
+const tierContainer = document.getElementById("tier-container");
+
+function renderModelTierChart() {
+  const width = tierContainer.clientWidth;
+  if (width === 0) return;
+  const plotWidth = width - TIER_LABEL_WIDTH - TIER_END_LABEL_WIDTH;
+  const plotHeight = TIER_ROW_HEIGHT * MODEL_TIERS.length;
+  const height = TIER_TOP_PADDING + plotHeight + TIER_AXIS_HEIGHT;
+  const effortToX = (effortLevel) => TIER_LABEL_WIDTH + plotWidth * effortLevel / MAXIMUM_EFFORT_LEVEL;
+
+  const gridMarkup = EFFORT_LEVEL_NAMES.map((levelName, effortLevel) => {
+    const x = effortToX(effortLevel);
+    const lineClass = effortLevel === 0 ? "baseline" : "gridline";
+    return `<line class="${lineClass}" x1="${x}" x2="${x}" y1="${TIER_TOP_PADDING}" y2="${TIER_TOP_PADDING + plotHeight}"/>
+      <text class="axis-label" x="${x}" y="${TIER_TOP_PADDING + plotHeight + 24}" text-anchor="middle">${levelName}</text>`;
+  }).join("");
+
+  const barMarkup = MODEL_TIERS.map((tier, tierIndex) => {
+    const rowTop = TIER_TOP_PADDING + TIER_ROW_HEIGHT * tierIndex;
+    const barTop = rowTop + (TIER_ROW_HEIGHT - TIER_BAR_HEIGHT) / 2;
+    const barStart = effortToX(0);
+    const barEnd = effortToX(tier.effortLevel);
+    const barPath = `M${barStart} ${barTop} H${barEnd - TIER_BAR_RADIUS} A${TIER_BAR_RADIUS} ${TIER_BAR_RADIUS} 0 0 1 ${barEnd} ${barTop + TIER_BAR_RADIUS} V${barTop + TIER_BAR_HEIGHT - TIER_BAR_RADIUS} A${TIER_BAR_RADIUS} ${TIER_BAR_RADIUS} 0 0 1 ${barEnd - TIER_BAR_RADIUS} ${barTop + TIER_BAR_HEIGHT} H${barStart} Z`;
+    const isEmphasis = tier.role === "orchestrator";
+    const tooltipText = `${tier.role} · Claude ${tier.claudeModel} · Codex ${tier.codexModel} · ${EFFORT_LEVEL_NAMES[tier.effortLevel]}`;
+    return `<g class="tier-row" data-tooltip="${tooltipText}">
+      <rect x="0" y="${rowTop}" width="${width}" height="${TIER_ROW_HEIGHT}" fill="transparent"/>
+      <text class="${isEmphasis ? "strong-label" : ""}" x="${TIER_LABEL_WIDTH - 16}" y="${rowTop + 18}" text-anchor="end" style="fill:var(--ws-text)">${tier.role}</text>
+      <text class="axis-label" x="${TIER_LABEL_WIDTH - 16}" y="${rowTop + 33}" text-anchor="end">${tier.claudeModel}</text>
+      <path d="${barPath}" style="fill:var(${tier.colorToken})"/>
+      <text class="${isEmphasis ? "strong-label" : ""}" x="${barEnd + 8}" y="${rowTop + TIER_ROW_HEIGHT / 2 + 4}">${tier.codexModel}</text>
+    </g>`;
+  }).join("");
+
+  tierContainer.innerHTML =
+    `<svg class="chart-svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="ระดับ reasoning effort ต่อบทบาท: deep-reasoner และ senior-lead-reviewer xhigh, orchestrator peer harness-agent high, fast-worker comment-reviewer medium, web-searcher code-committer low">
+      ${gridMarkup}
+      ${barMarkup}
+    </svg>`;
+}
+
+tierContainer.addEventListener("pointermove", (event) => {
+  const row = event.target.closest(".tier-row");
+  if (row === null) {
+    hideChartTooltip();
+    return;
+  }
+  showChartTooltip(row.dataset.tooltip, event.clientX, event.clientY);
+});
+tierContainer.addEventListener("pointerleave", hideChartTooltip);
+
+const chartResizeObserver = new ResizeObserver(() => {
+  renderRoutingMatrix();
+  renderModelTierChart();
+});
+chartResizeObserver.observe(matrixContainer);
+chartResizeObserver.observe(tierContainer);
+
+renderScenarioSteps();
+showScenarioStep(-1);
+selectScenarioFromHash();
+const STORYBOARD_HORIZONTAL_MIN_WIDTH = 1000;
+const STORY_DRAWING_SIZE = [176, 112];
+const STORY_GAP = 48;
+const STORY_CARD_PADDING = 16;
+const STORY_LINE_HEIGHT = 22;
+const STORY_PILL_HEIGHT = 28;
+const STORY_BADGE_HEIGHT = 24;
+const STORY_RAIL_LABEL = "ชั้นที่รองรับ";
+const STORY_REVEAL_FALLBACK_MILLISECONDS = 1500;
+const STORY_TITLE_FONT_SIZE = 18;
+const STORY_LINE_FONT_SIZE = 14;
+const STORY_SMALL_FONT_SIZE = 12;
+const STORY_BEATS = [
+  { title: "งานเข้ามา", lines: ["เริ่มที่ orchestrator"], href: "#workflow", drawing: "inbox" },
+  { title: "กฎเดียวกันทุก session", lines: ["AGENTS.md", "ไม่ต้องพิมพ์ซ้ำ"], emphasizedLine: 1, href: "#practice", drawing: "rules" },
+  { title: "เลือก playbook", lines: ["harness-mode · 23 แบบ", "steps → todo"], href: "#harness-mode", drawing: "playbook" },
+  { title: "ทีมทำงาน", lines: ["โมเดลปักไว้", "tdd red → green"], href: "#routing", drawing: "team" },
+  { title: "ตรวจแล้ว ship", lines: ["ผ่าน PR · ไม่ push main"], href: "#simplifying", drawing: "ship" },
+];
+const STORY_LAYERS = [
+  { label: "กฎ", beatPosition: 1, detail: "AGENTS.md: กฎ delegate, PRD gate, code style, output style" },
+  { label: "route", beatPosition: 2, detail: "skills/harness-mode: จับ task เข้า playbook แล้ว copy steps ลง todo" },
+  { label: "agent", beatPosition: 3, detail: "agents/ + codex/agents/: model และ effort ของแต่ละบทบาท" },
+  { label: "ความรู้", beatPosition: 3.5, detail: "skills/: 24 principle, workflow skill, style ต่อ stack, tdd" },
+];
+const STORY_GUARDS = [
+  { label: "plugin", beatIndex: 1, detail: "plugin i-have-adhd: SessionStart hook กำหนดทรงคำตอบทุก session" },
+  { label: "hook", beatIndex: 2, detail: "UserPromptSubmit hook เตือนให้ copy steps ลง todo ทุก prompt" },
+  { label: "permission", beatIndex: 4, detail: "permissions.deny บล็อก git push origin main และ force push" },
+  { label: "agent tools", beatIndex: 4, detail: "comment-reviewer มีแค่ read tools: รายงานได้ แก้โค้ดไม่ได้" },
+];
+const STORY_TIER_COLOR_TOKENS = ["--ws-chart-cat-1", "--ws-chart-cat-1", "--ws-chart-cat-2", "--ws-chart-cat-2", "--ws-chart-cat-3", "--ws-chart-cat-3", "--ws-chart-cat-4", "--ws-chart-cat-5", "--ws-chart-cat-5"];
+const STORY_DRAWINGS = {
+  inbox: [[20, 14], [40, 40], [60, 66]].map(([x, y]) =>
+    `<rect x="${x}" y="${y}" width="96" height="32" rx="5" style="fill:var(--ws-surface-white);stroke:var(--ws-gray)"/>
+     <rect x="${x + 12}" y="${y + 10}" width="48" height="4" rx="2" style="fill:var(--ws-gray)"/>
+     <rect x="${x + 12}" y="${y + 18}" width="32" height="4" rx="2" style="fill:var(--ws-chart-gridline)"/>`).join(""),
+  rules: `<rect x="14" y="10" width="60" height="92" rx="5" style="fill:var(--ws-surface-white);stroke:var(--ws-black);stroke-width:1.5"/>
+    <path d="M19 10 H69 A5 5 0 0 1 74 15 V26 H14 V15 A5 5 0 0 1 19 10 Z" style="fill:var(--ws-black)"/>
+    ${[40, 52, 64, 76].map((y, index) => `<rect x="24" y="${y}" width="${index % 2 === 0 ? 40 : 28}" height="4" rx="2" style="fill:var(--ws-gray)"/>`).join("")}
+    ${[22, 56, 90].map((y) => `<path d="M74 56 C 96 56 96 ${y} 118 ${y}" style="fill:none;stroke:var(--ws-chart-other);stroke-width:1.5"/>
+      <rect x="118" y="${y - 14}" width="48" height="28" rx="5" style="fill:var(--ws-surface-white);stroke:var(--ws-gray)"/>
+      <rect x="126" y="${y - 2}" width="24" height="4" rx="2" style="fill:var(--ws-black)"/>`).join("")}`,
+  playbook: `${Array.from({ length: 23 }, (_, index) => `<rect x="${8 + (index % 6) * 14}" y="${28 + Math.floor(index / 6) * 14}" width="10" height="10" style="fill:var(${index === 9 ? "--ws-black" : "--ws-gray"})"/>`).join("")}
+    <polygon points="96,48 102,48 110,56 102,64 96,64 104,56" style="fill:var(--ws-chart-other)"/>
+    ${[24, 44, 64, 84].map((y, index) => `<rect x="118" y="${y}" width="10" height="10" style="fill:var(${index < 2 ? "--ws-black" : "--ws-surface-white"});stroke:var(--ws-black)"/>
+      <rect x="134" y="${y + 3}" width="${index % 2 === 0 ? 34 : 24}" height="4" rx="2" style="fill:var(--ws-gray)"/>`).join("")}`,
+  team: `${STORY_TIER_COLOR_TOKENS.map((token, index) => `<path d="M52 56 C 88 56 88 ${7 + index * 12} 124 ${7 + index * 12}" style="fill:none;stroke:var(--ws-gray)"/>
+      <rect x="124" y="${2 + index * 12}" width="10" height="10" style="fill:var(${token})"/>`).join("")}
+    <rect x="12" y="36" width="40" height="40" rx="5" style="fill:var(--ws-black)"/>`,
+  ship: `<line x1="8" y1="84" x2="168" y2="84" style="stroke:var(--ws-black);stroke-width:2"/>
+    <path d="M28 84 C 40 84 40 44 56 44 H112 C 128 44 128 84 140 84" style="fill:none;stroke:var(--ws-chart-other);stroke-width:2"/>
+    <circle cx="70" cy="44" r="5" style="fill:var(--ws-surface-white);stroke:var(--ws-black);stroke-width:1.5"/>
+    <circle cx="96" cy="44" r="5" style="fill:var(--ws-surface-white);stroke:var(--ws-black);stroke-width:1.5"/>
+    <circle cx="140" cy="84" r="6" style="fill:var(--ws-black)"/>
+    <circle cx="150" cy="24" r="12" style="fill:var(--ws-black)"/>
+    <path d="M144 24 l4 4 l8 -8" style="fill:none;stroke:var(--ws-surface-white);stroke-width:2"/>`,
+};
+
+const storyboardContainer = document.getElementById("storyboard");
+const storyTextMeasure = document.createElement("canvas").getContext("2d");
+
+function measureStoryText(text, weight, fontSize) {
+  storyTextMeasure.font = `${weight} ${fontSize}px Sarabun, sans-serif`;
+  return storyTextMeasure.measureText(text).width;
+}
+
+function fitStoryFontSize(text, weight, preferredSize, maximumWidth) {
+  const measuredWidth = measureStoryText(text, weight, preferredSize);
+  if (measuredWidth <= maximumWidth) return preferredSize;
+  return Math.max(12, Math.floor(preferredSize * maximumWidth / measuredWidth));
+}
+
+function layoutStoryHorizontal(width) {
+  const cardWidth = (width - STORY_GAP * (STORY_BEATS.length - 1)) / STORY_BEATS.length;
+  const cardTop = 24;
+  const panelHeight = 176;
+  const cardHeight = STORY_CARD_PADDING + panelHeight + 36 + 28 + STORY_LINE_HEIGHT + 24;
+  const railY = cardTop + cardHeight + 64;
+  const beatCenterX = (beatPosition) => beatPosition * (cardWidth + STORY_GAP) + cardWidth / 2;
+  return {
+    height: railY + STORY_PILL_HEIGHT / 2 + 24,
+    panelHeight,
+    cards: STORY_BEATS.map((_, index) => ({ x: index * (cardWidth + STORY_GAP), y: cardTop, width: cardWidth, height: cardHeight })),
+    chevrons: STORY_BEATS.slice(1).map((_, index) => ({ x: (index + 1) * (cardWidth + STORY_GAP) - STORY_GAP / 2, y: cardTop + STORY_CARD_PADDING + panelHeight / 2, rotation: 0 })),
+    rail: { x1: 112, y1: railY, x2: width, y2: railY, labelX: 0, labelY: railY + 4, labelAnchor: "start" },
+    layers: STORY_LAYERS.map((layer) => {
+      const pillX = beatCenterX(layer.beatPosition);
+      const cardBottom = cardTop + cardHeight;
+      const isBetweenBeats = !Number.isInteger(layer.beatPosition);
+      if (!isBetweenBeats) return { ...layer, pillX, pillY: railY, connector: `M${pillX} ${cardBottom} V${railY - STORY_PILL_HEIGHT / 2}` };
+      const leftX = beatCenterX(Math.floor(layer.beatPosition));
+      const rightX = beatCenterX(Math.ceil(layer.beatPosition));
+      const bracketY = cardBottom + 24;
+      return { ...layer, pillX, pillY: railY, connector: `M${leftX} ${cardBottom} V${bracketY} H${rightX} V${cardBottom} M${pillX} ${bracketY} V${railY - STORY_PILL_HEIGHT / 2}` };
+    }),
+  };
+}
+
+function layoutStoryVertical(width) {
+  const railColumnWidth = 104;
+  const cardWidth = width - railColumnWidth;
+  const top = 48;
+  const panelHeight = 120;
+  const cardHeight = STORY_CARD_PADDING + panelHeight + 36 + 28 + STORY_LINE_HEIGHT + 24;
+  const cardY = (index) => top + index * (cardHeight + STORY_GAP);
+  const beatCenterY = (beatPosition) => cardY(Math.floor(beatPosition)) + (beatPosition % 1) * (cardHeight + STORY_GAP) + cardHeight / 2;
+  const railX = width - railColumnWidth / 2;
+  const lastCardBottom = cardY(STORY_BEATS.length - 1) + cardHeight;
+  return {
+    height: lastCardBottom + 16,
+    panelHeight,
+    cards: STORY_BEATS.map((_, index) => ({ x: 0, y: cardY(index), width: cardWidth, height: cardHeight })),
+    chevrons: STORY_BEATS.slice(1).map((_, index) => ({ x: cardWidth / 2, y: cardY(index + 1) - STORY_GAP / 2, rotation: 90 })),
+    rail: { x1: railX, y1: 32, x2: railX, y2: lastCardBottom, labelX: railX, labelY: 16, labelAnchor: "middle" },
+    layers: STORY_LAYERS.map((layer) => {
+      const pillY = beatCenterY(layer.beatPosition);
+      const pillLeft = railX - measureStoryText(layer.label, 700, STORY_SMALL_FONT_SIZE) / 2 - 16;
+      const isBetweenBeats = !Number.isInteger(layer.beatPosition);
+      if (!isBetweenBeats) return { ...layer, pillX: railX, pillY, connector: `M${cardWidth} ${pillY} H${pillLeft}` };
+      const topY = beatCenterY(Math.floor(layer.beatPosition));
+      const bottomY = beatCenterY(Math.ceil(layer.beatPosition));
+      const bracketX = cardWidth + 16;
+      return { ...layer, pillX: railX, pillY, connector: `M${cardWidth} ${topY} H${bracketX} V${bottomY} H${cardWidth} M${bracketX} ${pillY} H${pillLeft}` };
+    }),
+  };
+}
+
+function renderStoryboard() {
+  const width = storyboardContainer.clientWidth;
+  if (width === 0) return;
+  const isHorizontal = width >= STORYBOARD_HORIZONTAL_MIN_WIDTH;
+  const layout = isHorizontal ? layoutStoryHorizontal(width) : layoutStoryVertical(width);
+
+  const chevronMarkup = layout.chevrons.map((chevron, index) =>
+    `<g class="story-reveal" style="--reveal-index:${index + 0.5}"><polygon class="story-chevron" points="-8,-12 0,-12 8,0 0,12 -8,12 0,0" transform="translate(${chevron.x} ${chevron.y}) rotate(${chevron.rotation})"/></g>`).join("");
+
+  const beatMarkup = STORY_BEATS.map((beat, index) => {
+    const card = layout.cards[index];
+    const panelWidth = card.width - 2 * STORY_CARD_PADDING;
+    const drawingScale = Math.min(panelWidth / STORY_DRAWING_SIZE[0], (layout.panelHeight - 16) / STORY_DRAWING_SIZE[1], 1.5);
+    const drawingX = card.x + STORY_CARD_PADDING + (panelWidth - STORY_DRAWING_SIZE[0] * drawingScale) / 2;
+    const drawingY = card.y + STORY_CARD_PADDING + (layout.panelHeight - STORY_DRAWING_SIZE[1] * drawingScale) / 2;
+    const textX = card.x + STORY_CARD_PADDING;
+    const titleY = card.y + STORY_CARD_PADDING + layout.panelHeight + 36;
+    const titleSize = fitStoryFontSize(beat.title, 700, STORY_TITLE_FONT_SIZE, panelWidth);
+    const lineMarkup = beat.lines.map((line, lineIndex) => {
+      const lineSize = fitStoryFontSize(line, 400, STORY_LINE_FONT_SIZE, panelWidth);
+      const lineClass = lineIndex === beat.emphasizedLine ? "story-line is-emphasis" : "story-line";
+      return `<text class="${lineClass}" x="${textX}" y="${titleY + 28 + lineIndex * STORY_LINE_HEIGHT}" style="font-size:${lineSize}px">${line}</text>`;
+    }).join("");
+
+    let badgeRight = card.x + card.width - STORY_CARD_PADDING;
+    const badgeMarkup = STORY_GUARDS.filter((guard) => guard.beatIndex === index).map((guard) => {
+      const badgeWidth = measureStoryText(guard.label, 700, STORY_SMALL_FONT_SIZE) + 40;
+      const badgeX = badgeRight - badgeWidth;
+      const badgeY = card.y - STORY_BADGE_HEIGHT / 2;
+      badgeRight = badgeX - 8;
+      return `<g class="story-badge" tabindex="0" role="img" aria-label="${guard.label}: ${guard.detail}" data-tooltip="${guard.detail}">
+        <rect x="${badgeX}" y="${badgeY}" width="${badgeWidth}" height="${STORY_BADGE_HEIGHT}" rx="${STORY_BADGE_HEIGHT / 2}"/>
+        <rect class="story-lock-body" x="${badgeX + 12}" y="${badgeY + 11}" width="10" height="7"/>
+        <path class="story-lock-shackle" d="M${badgeX + 14} ${badgeY + 11} V${badgeY + 9} A3 3 0 0 1 ${badgeX + 20} ${badgeY + 9} V${badgeY + 11}"/>
+        <text x="${badgeX + 28}" y="${badgeY + 16}">${guard.label}</text>
+      </g>`;
+    }).join("");
+
+    return `<g class="story-beat story-reveal" style="--reveal-index:${index}">
+      <a class="story-link" href="${beat.href}" aria-label="${beat.title}: ${beat.lines.join(" ")}">
+        <rect class="story-card" x="${card.x}" y="${card.y}" width="${card.width}" height="${card.height}" rx="10"/>
+        <rect class="story-panel" x="${card.x + STORY_CARD_PADDING}" y="${card.y + STORY_CARD_PADDING}" width="${panelWidth}" height="${layout.panelHeight}" rx="5"/>
+        <g transform="translate(${drawingX} ${drawingY}) scale(${drawingScale})" aria-hidden="true">${STORY_DRAWINGS[beat.drawing]}</g>
+        <text class="story-title" x="${textX}" y="${titleY}" style="font-size:${titleSize}px">${beat.title}</text>
+        ${lineMarkup}
+      </a>
+      ${badgeMarkup}
+    </g>`;
+  }).join("");
+
+  const layerMarkup = layout.layers.map((layer) => {
+    const pillWidth = measureStoryText(layer.label, 700, STORY_SMALL_FONT_SIZE) + 32;
+    return `<g class="story-layer story-reveal" style="--reveal-index:${layer.beatPosition}">
+      <path class="story-tick" d="${layer.connector}"/>
+      <g class="story-pill" tabindex="0" role="img" aria-label="${layer.label}: ${layer.detail}" data-tooltip="${layer.detail}">
+        <rect x="${layer.pillX - pillWidth / 2}" y="${layer.pillY - STORY_PILL_HEIGHT / 2}" width="${pillWidth}" height="${STORY_PILL_HEIGHT}" rx="${STORY_PILL_HEIGHT / 2}"/>
+        <text x="${layer.pillX}" y="${layer.pillY + 4}" text-anchor="middle">${layer.label}</text>
+      </g>
+    </g>`;
+  }).join("");
+
+  const { rail } = layout;
+  storyboardContainer.innerHTML =
+    `<svg width="${width}" height="${layout.height}" viewBox="0 0 ${width} ${layout.height}" role="group" aria-label="เส้นทางของงานหนึ่งชิ้นใน ai-harness ${STORY_BEATS.length} ขั้น">
+      <line class="story-rail" x1="${rail.x1}" y1="${rail.y1}" x2="${rail.x2}" y2="${rail.y2}"/>
+      <text class="story-rail-label" x="${rail.labelX}" y="${rail.labelY}" text-anchor="${rail.labelAnchor}">${STORY_RAIL_LABEL}</text>
+      ${chevronMarkup}
+      ${layerMarkup}
+      ${beatMarkup}
+    </svg>`;
+}
+
+function showStoryTooltip(target) {
+  const targetRect = target.getBoundingClientRect();
+  showChartTooltip(target.dataset.tooltip, targetRect.left, targetRect.top);
+}
+
+storyboardContainer.addEventListener("pointerover", (event) => {
+  const target = event.target.closest("[data-tooltip]");
+  if (target === null) return;
+  showStoryTooltip(target);
+});
+storyboardContainer.addEventListener("pointerout", (event) => {
+  if (event.target.closest("[data-tooltip]") === null) return;
+  hideChartTooltip();
+});
+storyboardContainer.addEventListener("click", (event) => {
+  const target = event.target.closest("[data-tooltip]");
+  if (target === null) return;
+  showStoryTooltip(target);
+});
+storyboardContainer.addEventListener("focusin", (event) => {
+  const target = event.target.closest("[data-tooltip]");
+  if (target === null) return;
+  showStoryTooltip(target);
+});
+storyboardContainer.addEventListener("focusout", hideChartTooltip);
+
+renderStoryboard();
+new ResizeObserver(renderStoryboard).observe(storyboardContainer);
+document.fonts.ready.then(renderStoryboard);
+
+const isStoryRevealAllowed = !matchMedia("(prefers-reduced-motion: reduce)").matches && "IntersectionObserver" in window;
+if (isStoryRevealAllowed) {
+  storyboardContainer.classList.add("is-armed");
+  const storyRevealObserver = new IntersectionObserver(([entry]) => {
+    if (!entry.isIntersecting) return;
+    storyboardContainer.classList.add("is-revealed");
+    storyRevealObserver.disconnect();
+  }, { threshold: 0.2 });
+  storyRevealObserver.observe(storyboardContainer);
+  setTimeout(() => {
+    if (storyboardContainer.classList.contains("is-revealed")) return;
+    if (storyboardContainer.getBoundingClientRect().top > window.innerHeight) return;
+    storyboardContainer.classList.add("is-revealed");
+  }, STORY_REVEAL_FALLBACK_MILLISECONDS);
+}
+</script>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdnjs.cloudflare.com/ajax/libs/three.js/0.186.1/three.module.min.js",
+    "https://cdnjs.cloudflare.com/ajax/libs/three.js/0.186.1/three.core.js": "https://cdnjs.cloudflare.com/ajax/libs/three.js/0.186.1/three.core.min.js"
+  }
+}
+</script>
+<script type="module">
+const AGENT_IDS = ["deep", "fast", "explore", "peer", "websearch", "committer", "ha", "cr"];
+const FLOW_ORDER = ["req", "orch", ...AGENT_IDS, "rev", "ship"];
+const EMPHASIS_NODE_ID = "orch";
+const AGENT_CARD_SIZE = [3.2, 0.9];
+const CARD_SIZES = { req: [2.2, 0.9], orch: [3.4, 1.3], rev: [3.4, 0.9], ship: [1.6, 0.9] };
+const CARD_DEPTH = 0.16;
+const CARD_BEVEL = 0.03;
+const CARD_CORNER_RADIUS = 0.12;
+const TIER_BLOCK_WIDTH = 0.3;
+const TEXT_SIDE_PADDING = 0.16;
+const LABEL_PIXELS_PER_UNIT = 128;
+const NAME_FONT_SIZE = 0.32;
+const HUB_NAME_FONT_SIZE = 0.4;
+const ROLE_FONT_SIZE = 0.22;
+const EDGE_LABEL_FONT_SIZE = 0.22;
+const SARABUN_FONT_FAMILY = '"Sarabun", system-ui, sans-serif';
+const PALETTE_TOKENS = {
+  black: "--ws-black",
+  white: "--ws-surface-white",
+  surface: "--ws-surface-gray",
+  gray: "--ws-gray",
+  other: "--ws-chart-other",
+  muted: "--ws-text-muted",
+  red: "--ws-red",
+  onRed: "--ws-text-on-red",
+};
+const MAXIMUM_PIXEL_RATIO = 2;
+const COMPACT_LAYOUT_MAX_ASPECT = 1.2;
+const LAYOUT_PADDING = 0.35;
+const CAMERA_FIELD_OF_VIEW = 26;
+const FIT_MARGIN = 1.04;
+const DEFAULT_AZIMUTH = -0.14;
+const DEFAULT_ELEVATION = 0.14;
+const AZIMUTH_LIMIT = 1.1;
+const ELEVATION_LIMITS = [-0.3, 0.85];
+const ZOOM_LIMITS = [0.45, 1.6];
+const AUTO_ROTATE_AMPLITUDE = 0.18;
+const AUTO_ROTATE_SPEED = 0.22;
+const ROTATE_RADIANS_PER_PIXEL = 0.006;
+const WHEEL_ZOOM_PER_PIXEL = 0.0015;
+const PINCH_WHEEL_MULTIPLIER = 10;
+const MAXIMUM_WHEEL_DELTA = 120;
+const CLICK_MOVE_TOLERANCE = 6;
+const HOVER_LIFT = 0.3;
+const RING_GAP = 0.05;
+const RING_WIDTH = 0.05;
+const DIMMED_OPACITY = 0.22;
+const DIMMED_EDGE_OPACITY = 0.3;
+const EDGE_RADIUS = 0.024;
+const SOLO_EDGE_RADIUS = 0.05;
+const MINIMUM_EDGE_BEND = 0.2;
+const BEAD_RADIUS = 0.1;
+const BEAD_POOL_SIZE = 4;
+const BEAD_TRAVEL_SECONDS = 1.4;
+const BEAD_LOOP_SECONDS = 2.2;
+const ARROW_KEY_STEPS = { ArrowDown: 1, ArrowRight: 1, ArrowUp: -1, ArrowLeft: -1 };
+const SIDE_DIRECTIONS = { right: [1, 0, 0], left: [-1, 0, 0], top: [0, 1, 0], bottom: [0, -1, 0] };
+const EDGE_LABEL_TEXTS = { solo: "solo (default)", delegate: "delegate", synthesize: "synthesize" };
+
+const EDGES = [
+  { from: "req", to: "orch", kind: "flow" },
+  { from: "orch", to: "merge", kind: "solo" },
+  ...AGENT_IDS.map((id) => ({ from: "orch", to: id, kind: "delegate" })),
+  ...AGENT_IDS.map((id) => ({ from: id, to: "merge", kind: "synthesize" })),
+  { from: "merge", to: "rev", kind: "flow" },
+  { from: "rev", to: "ship", kind: "flow" },
+].map((edge) => ({ ...edge, key: `${edge.from}>${edge.to}` }));
+const SOLO_EDGE_KEY = EDGES.find((edge) => edge.kind === "solo").key;
+
+const WIDE_AGENT_ROWS = [4.05, 2.95, 1.85, 0.75, -0.75, -1.85, -2.95, -4.05];
+const WIDE_VERTICAL_EDGE_KEYS = new Set(["req>orch", "rev>ship"]);
+const WIDE_LAYOUT = {
+  placements: {
+    req: { position: [-5, 2.05, 0] },
+    orch: { position: [-5, 0, 0] },
+    rev: { position: [5, 0, 0] },
+    ship: { position: [5, -1.65, 0] },
+    ...Object.fromEntries(AGENT_IDS.map((id, index) => {
+      const rowY = WIDE_AGENT_ROWS[index];
+      return [id, { position: [0.3 - 0.04 * rowY * rowY, rowY, -0.08 * rowY * rowY], rotation: [0.035 * rowY, 0, 0] }];
+    })),
+  },
+  mergePosition: [2.6, 0, 0],
+  floorY: -5.4,
+  edgeLabelPositions: { solo: [-2.25, 0, 0.25], delegate: [-2.9, 3.4, 0], synthesize: [3.6, 1.4, 0] },
+  routeEdge: routeWideEdge,
+};
+
+function routeWideEdge(edge) {
+  if (WIDE_VERTICAL_EDGE_KEYS.has(edge.key)) return { fromSide: "bottom", toSide: "top", depthBow: 0 };
+
+  return { fromSide: "right", toSide: "left", depthBow: 0 };
+}
+
+const COMPACT_AGENT_ROWS = [2.55, 1.45, 0.35, -0.75];
+const COMPACT_COLUMN_OFFSET = 1.85;
+const COMPACT_LAYOUT = {
+  placements: {
+    req: { position: [0, 5.35, 0] },
+    orch: { position: [0, 3.95, 0] },
+    rev: { position: [-0.95, -2.85, 0] },
+    ship: { position: [1.95, -2.85, 0] },
+    ...Object.fromEntries(AGENT_IDS.map((id, index) => {
+      const columnSign = index % 2 === 0 ? -1 : 1;
+      const rowY = COMPACT_AGENT_ROWS[Math.floor(index / 2)];
+      return [id, { position: [columnSign * COMPACT_COLUMN_OFFSET, rowY, 0], rotation: [0, -columnSign * 0.14, 0] }];
+    })),
+  },
+  mergePosition: [0, -1.75, 0],
+  floorY: -3.9,
+  edgeLabelPositions: { solo: [-1.35, -1.5, 0.2], delegate: [-2.9, 4.6, 0], synthesize: [1.35, -1.5, 0] },
+  routeEdge: routeCompactEdge,
+};
+
+function routeCompactEdge(edge) {
+  if (edge.kind === "delegate") {
+    const outerSide = COMPACT_LAYOUT.placements[edge.to].position[0] < 0 ? "left" : "right";
+    return { fromSide: outerSide, toSide: outerSide, depthBow: -0.3 };
+  }
+
+  if (edge.kind === "synthesize") {
+    const innerSide = COMPACT_LAYOUT.placements[edge.from].position[0] < 0 ? "right" : "left";
+    return { fromSide: innerSide, toSide: "top", depthBow: 0 };
+  }
+
+  if (edge.to === "ship") return { fromSide: "right", toSide: "left", depthBow: 0 };
+
+  return { fromSide: "bottom", toSide: "top", depthBow: 0 };
+}
+
+const sceneStage = document.getElementById("scene");
+const sceneCanvas = document.getElementById("scene-canvas");
+const sceneStatus = document.getElementById("scene-status");
+const resetButton = document.getElementById("scene-reset");
+const nodeList = document.getElementById("scene-node-list");
+
+function buildScene(THREE, webglContext) {
+  const reducedMotionQuery = matchMedia("(prefers-reduced-motion: reduce)");
+  const pixelRatio = Math.min(window.devicePixelRatio || 1, MAXIMUM_PIXEL_RATIO);
+  const renderer = new THREE.WebGLRenderer({ canvas: sceneCanvas, context: webglContext, antialias: true, alpha: true });
+  renderer.setPixelRatio(pixelRatio);
+  renderer.setClearColor(0x000000, 0);
+  const maximumAnisotropy = renderer.capabilities.getMaxAnisotropy();
+
+  const rootStyle = getComputedStyle(document.documentElement);
+  const palette = Object.fromEntries(Object.entries(PALETTE_TOKENS).map(([name, token]) => [name, rootStyle.getPropertyValue(token).trim()]));
+
+  const scene = new THREE.Scene();
+  scene.fog = new THREE.Fog(palette.surface, 20, 50);
+  const camera = new THREE.PerspectiveCamera(CAMERA_FIELD_OF_VIEW, 1, 0.1, 200);
+  scene.add(new THREE.AmbientLight(0xffffff, 2.2));
+  const keyLight = new THREE.DirectionalLight(0xffffff, 1.6);
+  keyLight.position.set(-6, 9, 12);
+  scene.add(keyLight);
+
+  function createRoundedRectPath(path, width, height, radius) {
+    const halfWidth = width / 2;
+    const halfHeight = height / 2;
+    path.moveTo(-halfWidth + radius, -halfHeight);
+    path.lineTo(halfWidth - radius, -halfHeight);
+    path.quadraticCurveTo(halfWidth, -halfHeight, halfWidth, -halfHeight + radius);
+    path.lineTo(halfWidth, halfHeight - radius);
+    path.quadraticCurveTo(halfWidth, halfHeight, halfWidth - radius, halfHeight);
+    path.lineTo(-halfWidth + radius, halfHeight);
+    path.quadraticCurveTo(-halfWidth, halfHeight, -halfWidth, halfHeight - radius);
+    path.lineTo(-halfWidth, -halfHeight + radius);
+    path.quadraticCurveTo(-halfWidth, -halfHeight, -halfWidth + radius, -halfHeight);
+    return path;
+  }
+
+  const cards = FLOW_ORDER.map((id) => {
+    const svgNode = document.querySelector(`.node[data-id="${id}"]`);
+    const [width, height] = CARD_SIZES[id] ?? AGENT_CARD_SIZE;
+    const isEmphasis = id === EMPHASIS_NODE_ID;
+
+    const bodyGeometry = new THREE.ExtrudeGeometry(
+      createRoundedRectPath(new THREE.Shape(), width - 2 * CARD_BEVEL, height - 2 * CARD_BEVEL, CARD_CORNER_RADIUS - CARD_BEVEL),
+      { depth: CARD_DEPTH - 2 * CARD_BEVEL, bevelEnabled: true, bevelThickness: CARD_BEVEL, bevelSize: CARD_BEVEL, bevelSegments: 3, curveSegments: 8 },
+    );
+    bodyGeometry.center();
+    const body = new THREE.Mesh(bodyGeometry, new THREE.MeshStandardMaterial({
+      color: isEmphasis ? palette.black : palette.white,
+      roughness: 0.7,
+      metalness: 0,
+      transparent: true,
+    }));
+    body.userData.nodeId = id;
+
+    const labelCanvas = document.createElement("canvas");
+    labelCanvas.width = Math.round(width * LABEL_PIXELS_PER_UNIT * pixelRatio);
+    labelCanvas.height = Math.round(height * LABEL_PIXELS_PER_UNIT * pixelRatio);
+    const labelTexture = new THREE.CanvasTexture(labelCanvas);
+    labelTexture.colorSpace = THREE.SRGBColorSpace;
+    labelTexture.anisotropy = maximumAnisotropy;
+    const label = new THREE.Mesh(
+      new THREE.PlaneGeometry(width, height),
+      new THREE.MeshBasicMaterial({ map: labelTexture, transparent: true, toneMapped: false }),
+    );
+    label.position.z = CARD_DEPTH / 2 + 0.004;
+    label.renderOrder = 1;
+
+    const ringShape = createRoundedRectPath(new THREE.Shape(), width + 2 * (RING_GAP + RING_WIDTH), height + 2 * (RING_GAP + RING_WIDTH), CARD_CORNER_RADIUS + RING_GAP + RING_WIDTH);
+    ringShape.holes.push(createRoundedRectPath(new THREE.Path(), width + 2 * RING_GAP, height + 2 * RING_GAP, CARD_CORNER_RADIUS + RING_GAP));
+    const ring = new THREE.Mesh(
+      new THREE.ShapeGeometry(ringShape, 8),
+      new THREE.MeshBasicMaterial({ color: palette.black, transparent: true, toneMapped: false }),
+    );
+    ring.position.z = CARD_DEPTH / 2;
+    ring.visible = false;
+
+    const group = new THREE.Group();
+    group.add(body, label, ring);
+    scene.add(group);
+
+    return {
+      id,
+      name: DATA[id].name,
+      role: svgNode.dataset.role ?? "",
+      tierColor: getComputedStyle(svgNode).getPropertyValue("--nc").trim(),
+      isEmphasis,
+      size: [width, height],
+      group,
+      body,
+      label,
+      ring,
+      labelCanvas,
+      labelTexture,
+      lift: 0,
+      dim: 0,
+      basePosition: new THREE.Vector3(),
+    };
+  });
+  const cardsById = new Map(cards.map((card) => [card.id, card]));
+  const pickTargets = cards.map((card) => card.body);
+
+  const mergePoint = new THREE.Mesh(new THREE.SphereGeometry(0.12, 24, 16), new THREE.MeshBasicMaterial({ color: palette.black, toneMapped: false }));
+  scene.add(mergePoint);
+  const beadMaterial = new THREE.MeshBasicMaterial({ color: palette.black, toneMapped: false });
+  const beads = Array.from({ length: BEAD_POOL_SIZE }, () => {
+    const bead = new THREE.Mesh(new THREE.SphereGeometry(BEAD_RADIUS, 20, 14), beadMaterial);
+    bead.visible = false;
+    scene.add(bead);
+    return bead;
+  });
+
+  const floorGrid = new THREE.GridHelper(40, 40, palette.white, palette.white);
+  floorGrid.position.z = -8;
+  floorGrid.material.transparent = true;
+  floorGrid.material.opacity = 0.9;
+  floorGrid.material.depthWrite = false;
+  scene.add(floorGrid);
+
+  const edgeLabels = Object.entries(EDGE_LABEL_TEXTS).map(([key, text]) => {
+    const width = text.length * EDGE_LABEL_FONT_SIZE * 0.58 + 0.36;
+    const height = EDGE_LABEL_FONT_SIZE * 1.9;
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.round(width * LABEL_PIXELS_PER_UNIT * pixelRatio);
+    canvas.height = Math.round(height * LABEL_PIXELS_PER_UNIT * pixelRatio);
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.colorSpace = THREE.SRGBColorSpace;
+    const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true, depthWrite: false, toneMapped: false }));
+    sprite.scale.set(width, height, 1);
+    scene.add(sprite);
+    return { key, text, canvas, texture, sprite };
+  });
+
+  const view = { azimuth: DEFAULT_AZIMUTH, elevation: DEFAULT_ELEVATION, zoom: 1, target: new THREE.Vector3() };
+  let activeLayout = null;
+  let layoutBounds = new THREE.Box2();
+  let edgeMeshes = [];
+  let curvesByEdgeKey = new Map();
+  let selectedNodeId = document.querySelector(".node.active")?.dataset.id ?? null;
+  let hoveredNodeId = null;
+  let focusedNodeId = null;
+  let activeStep = getActiveScenarioStep();
+  let beadCurves = [];
+  let beadElapsed = 0;
+  let isAutoRotating = !reducedMotionQuery.matches;
+  let autoRotateElapsed = 0;
+  let isStageVisible = true;
+  let frameRequestId = 0;
+  let previousFrameTime = null;
+
+  function drawCardLabel(card) {
+    const context = card.labelCanvas.getContext("2d");
+    const { width: canvasWidth, height: canvasHeight } = card.labelCanvas;
+    const pixelsPerUnit = canvasWidth / card.size[0];
+    const cornerRadius = CARD_CORNER_RADIUS * pixelsPerUnit;
+    const tierBlockWidth = card.isEmphasis ? 0 : TIER_BLOCK_WIDTH * pixelsPerUnit;
+    const textLeft = tierBlockWidth + TEXT_SIDE_PADDING * pixelsPerUnit;
+    const textRight = canvasWidth - TEXT_SIDE_PADDING * pixelsPerUnit;
+    const textMaximumWidth = textRight - textLeft;
+    const textCenterX = (textLeft + textRight) / 2;
+
+    context.clearRect(0, 0, canvasWidth, canvasHeight);
+    context.save();
+    context.beginPath();
+    context.roundRect(0, 0, canvasWidth, canvasHeight, cornerRadius);
+    context.clip();
+    context.fillStyle = card.isEmphasis ? palette.black : palette.white;
+    context.fillRect(0, 0, canvasWidth, canvasHeight);
+    context.fillStyle = card.tierColor;
+    context.fillRect(0, 0, tierBlockWidth, canvasHeight);
+    context.restore();
+    if (!card.isEmphasis) {
+      const borderWidth = 2 * pixelRatio;
+      context.strokeStyle = palette.gray;
+      context.lineWidth = borderWidth;
+      context.beginPath();
+      context.roundRect(borderWidth / 2, borderWidth / 2, canvasWidth - borderWidth, canvasHeight - borderWidth, cornerRadius);
+      context.stroke();
+    }
+
+    const nameFontSize = (card.isEmphasis ? HUB_NAME_FONT_SIZE : NAME_FONT_SIZE) * pixelsPerUnit;
+    const roleFontSize = ROLE_FONT_SIZE * pixelsPerUnit;
+    const maximumRoleLines = canvasHeight >= 1.1 * pixelsPerUnit ? 2 : 1;
+    const roleLines = [];
+    context.font = `400 ${roleFontSize}px ${SARABUN_FONT_FAMILY}`;
+    for (const segment of card.role === "" ? [] : card.role.split(" · ")) {
+      const currentLine = roleLines.at(-1);
+      if (currentLine === undefined) {
+        roleLines.push(segment);
+        continue;
+      }
+      const extendedLine = `${currentLine} · ${segment}`;
+      const isLineFull = context.measureText(extendedLine).width > textMaximumWidth;
+      if (isLineFull && roleLines.length < maximumRoleLines) {
+        roleLines.push(segment);
+        continue;
+      }
+      roleLines[roleLines.length - 1] = extendedLine;
+    }
+
+    const fillFittedText = (text, weight, fontSize, centerY) => {
+      context.font = `${weight} ${fontSize}px ${SARABUN_FONT_FAMILY}`;
+      const measuredWidth = context.measureText(text).width;
+      if (measuredWidth > textMaximumWidth) context.font = `${weight} ${fontSize * textMaximumWidth / measuredWidth}px ${SARABUN_FONT_FAMILY}`;
+      context.fillText(text, textCenterX, centerY);
+    };
+    const roleLineHeight = roleFontSize * 1.3;
+    const blockHeight = nameFontSize * 1.15 + roleLines.length * roleLineHeight;
+    let lineCenterY = (canvasHeight - blockHeight) / 2 + nameFontSize * 0.6;
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.fillStyle = card.isEmphasis ? palette.white : palette.black;
+    fillFittedText(card.name, 700, nameFontSize, lineCenterY);
+    lineCenterY += nameFontSize * 0.58 + roleLineHeight / 2;
+    context.fillStyle = card.isEmphasis ? palette.gray : palette.muted;
+    for (const roleLine of roleLines) {
+      fillFittedText(roleLine, 400, roleFontSize, lineCenterY);
+      lineCenterY += roleLineHeight;
+    }
+    card.labelTexture.needsUpdate = true;
+  }
+
+  function drawEdgeLabel(edgeLabel) {
+    const context = edgeLabel.canvas.getContext("2d");
+    const { width, height } = edgeLabel.canvas;
+    const isSolo = edgeLabel.key === "solo";
+    context.clearRect(0, 0, width, height);
+    context.fillStyle = isSolo ? palette.red : palette.white;
+    context.beginPath();
+    context.roundRect(0, 0, width, height, height / 2);
+    context.fill();
+    context.fillStyle = isSolo ? palette.onRed : palette.muted;
+    context.font = `${isSolo ? 700 : 500} ${height / 1.9}px ${SARABUN_FONT_FAMILY}`;
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.fillText(edgeLabel.text, width / 2, height / 2 + height * 0.03);
+    edgeLabel.texture.needsUpdate = true;
+  }
+
+  function drawAllLabels() {
+    for (const card of cards) drawCardLabel(card);
+    for (const edgeLabel of edgeLabels) drawEdgeLabel(edgeLabel);
+  }
+
+  function anchorFor(nodeId, side, spread, layout) {
+    const direction = new THREE.Vector3(...SIDE_DIRECTIONS[side]);
+    if (nodeId === "merge") return { point: new THREE.Vector3(...layout.mergePosition), direction };
+
+    const placement = layout.placements[nodeId];
+    const rotation = new THREE.Euler(...(placement.rotation ?? [0, 0, 0]));
+    const [width, height] = cardsById.get(nodeId).size;
+    const localPoint = direction.y === 0
+      ? new THREE.Vector3(direction.x * width / 2, spread, 0)
+      : new THREE.Vector3(spread, direction.y * height / 2, 0);
+    return {
+      point: localPoint.applyEuler(rotation).add(new THREE.Vector3(...placement.position)),
+      direction: direction.applyEuler(rotation),
+    };
+  }
+
+  function createEdgeCurve(edge, layout) {
+    const route = layout.routeEdge(edge);
+    const spread = edge.kind === "delegate"
+      ? THREE.MathUtils.clamp((layout.placements[edge.to].position[1] - layout.placements.orch.position[1]) * 0.1, -0.45, 0.45)
+      : 0;
+    const start = anchorFor(edge.from, route.fromSide, spread, layout);
+    const end = anchorFor(edge.to, route.toSide, 0, layout);
+    const startBend = Math.max(MINIMUM_EDGE_BEND, end.point.clone().sub(start.point).dot(start.direction) * 0.5);
+    const endBend = Math.max(MINIMUM_EDGE_BEND, start.point.clone().sub(end.point).dot(end.direction) * 0.5);
+    const startControl = start.point.clone().addScaledVector(start.direction, startBend);
+    const endControl = end.point.clone().addScaledVector(end.direction, endBend);
+    startControl.z += route.depthBow;
+    endControl.z += route.depthBow;
+    return new THREE.CubicBezierCurve3(start.point, startControl, endControl, end.point);
+  }
+
+  function applyEdgeStyles() {
+    const activeEdgeKeys = new Set(activeStep?.edges ?? []);
+    const isScenarioActive = activeStep !== null;
+    for (const { edge, mesh } of edgeMeshes) {
+      const isInStep = activeEdgeKeys.has(edge.key);
+      const isSolo = edge.kind === "solo";
+      mesh.material.color.set(isSolo ? palette.red : isInStep ? palette.black : palette.other);
+      mesh.material.opacity = isScenarioActive && !isInStep ? DIMMED_EDGE_OPACITY : 1;
+    }
+    const isSoloInStep = activeEdgeKeys.has(SOLO_EDGE_KEY);
+    for (const edgeLabel of edgeLabels) {
+      const isLabelInStep = edgeLabel.key === "solo" && isSoloInStep;
+      edgeLabel.sprite.material.opacity = isScenarioActive && !isLabelInStep ? DIMMED_EDGE_OPACITY : 1;
+    }
+    beadCurves = (activeStep?.edges ?? []).map((edgeKey) => curvesByEdgeKey.get(edgeKey)).filter(Boolean).slice(0, BEAD_POOL_SIZE);
+  }
+
+  function resetView() {
+    const layoutCenter = layoutBounds.getCenter(new THREE.Vector2());
+    view.azimuth = DEFAULT_AZIMUTH;
+    view.elevation = DEFAULT_ELEVATION;
+    view.zoom = 1;
+    view.target.set(layoutCenter.x, layoutCenter.y, 0);
+    autoRotateElapsed = 0;
+  }
+
+  function applyLayout(layout) {
+    activeLayout = layout;
+    for (const card of cards) {
+      const placement = layout.placements[card.id];
+      card.basePosition.fromArray(placement.position);
+      card.group.rotation.fromArray(placement.rotation ?? [0, 0, 0]);
+    }
+    mergePoint.position.fromArray(layout.mergePosition);
+
+    for (const { mesh } of edgeMeshes) {
+      scene.remove(mesh);
+      mesh.geometry.dispose();
+      mesh.material.dispose();
+    }
+    curvesByEdgeKey = new Map();
+    edgeMeshes = EDGES.map((edge) => {
+      const curve = createEdgeCurve(edge, layout);
+      curvesByEdgeKey.set(edge.key, curve);
+      const tubeRadius = edge.kind === "solo" ? SOLO_EDGE_RADIUS : EDGE_RADIUS;
+      const mesh = new THREE.Mesh(
+        new THREE.TubeGeometry(curve, 64, tubeRadius, 8, false),
+        new THREE.MeshBasicMaterial({ transparent: true, toneMapped: false }),
+      );
+      scene.add(mesh);
+      return { edge, mesh };
+    });
+    applyEdgeStyles();
+
+    for (const edgeLabel of edgeLabels) edgeLabel.sprite.position.fromArray(layout.edgeLabelPositions[edgeLabel.key]);
+    floorGrid.position.y = layout.floorY;
+
+    layoutBounds = new THREE.Box2();
+    for (const card of cards) {
+      const [width, height] = card.size;
+      layoutBounds.expandByPoint(new THREE.Vector2(card.basePosition.x - width / 2, card.basePosition.y - height / 2));
+      layoutBounds.expandByPoint(new THREE.Vector2(card.basePosition.x + width / 2, card.basePosition.y + height / 2));
+    }
+    layoutBounds.expandByScalar(LAYOUT_PADDING);
+    resetView();
+  }
+
+  function updateCamera() {
+    const halfFieldOfViewTangent = Math.tan(THREE.MathUtils.degToRad(CAMERA_FIELD_OF_VIEW / 2));
+    const layoutSize = layoutBounds.getSize(new THREE.Vector2());
+    const fitDistance = Math.max(
+      layoutSize.y / 2 / halfFieldOfViewTangent,
+      layoutSize.x / 2 / (halfFieldOfViewTangent * camera.aspect),
+    ) * FIT_MARGIN;
+    const distance = fitDistance * view.zoom;
+    camera.position.set(
+      view.target.x + distance * Math.cos(view.elevation) * Math.sin(view.azimuth),
+      view.target.y + distance * Math.sin(view.elevation),
+      view.target.z + distance * Math.cos(view.elevation) * Math.cos(view.azimuth),
+    );
+    camera.lookAt(view.target);
+    scene.fog.near = distance + 3;
+    scene.fog.far = distance + 30;
+  }
+
+  function panView(deltaX, deltaY) {
+    const halfFieldOfViewTangent = Math.tan(THREE.MathUtils.degToRad(CAMERA_FIELD_OF_VIEW / 2));
+    const worldUnitsPerPixel = 2 * camera.position.distanceTo(view.target) * halfFieldOfViewTangent / sceneCanvas.clientHeight;
+    const cameraRight = new THREE.Vector3().setFromMatrixColumn(camera.matrix, 0);
+    const cameraUp = new THREE.Vector3().setFromMatrixColumn(camera.matrix, 1);
+    view.target.addScaledVector(cameraRight, -deltaX * worldUnitsPerPixel).addScaledVector(cameraUp, deltaY * worldUnitsPerPixel);
+    view.target.x = THREE.MathUtils.clamp(view.target.x, layoutBounds.min.x, layoutBounds.max.x);
+    view.target.y = THREE.MathUtils.clamp(view.target.y, layoutBounds.min.y, layoutBounds.max.y);
+    view.target.z = THREE.MathUtils.clamp(view.target.z, -2, 2);
+  }
+
+  function zoomView(factor) {
+    view.zoom = THREE.MathUtils.clamp(view.zoom * factor, ...ZOOM_LIMITS);
+  }
+
+  function requestFrame() {
+    if (frameRequestId !== 0) return;
+    frameRequestId = requestAnimationFrame(drawFrame);
+  }
+
+  function drawFrame(time) {
+    frameRequestId = 0;
+    if (activeLayout === null) return;
+
+    const deltaSeconds = previousFrameTime === null ? 0 : Math.min((time - previousFrameTime) / 1000, 0.1);
+    previousFrameTime = time;
+    const isReducedMotion = reducedMotionQuery.matches;
+    const easing = isReducedMotion ? 1 : 1 - Math.exp(-deltaSeconds * 12);
+    const activeNodeIds = new Set(activeStep?.nodes ?? []);
+    const isScenarioActive = activeStep !== null;
+
+    let isSettling = false;
+    for (const card of cards) {
+      const isInStep = activeNodeIds.has(card.id);
+      const isRaised = isInStep || card.id === hoveredNodeId || card.id === focusedNodeId || card.id === selectedNodeId;
+      const targetLift = isRaised ? 1 : 0;
+      const targetDim = isScenarioActive && !isInStep ? 1 : 0;
+      card.lift += (targetLift - card.lift) * easing;
+      card.dim += (targetDim - card.dim) * easing;
+      if (Math.abs(targetLift - card.lift) > 0.002 || Math.abs(targetDim - card.dim) > 0.002) isSettling = true;
+      card.group.position.copy(card.basePosition);
+      card.group.position.z += card.lift * HOVER_LIFT;
+      card.group.scale.setScalar(1 + card.lift * 0.04);
+      const opacity = 1 - card.dim * (1 - DIMMED_OPACITY);
+      card.body.material.opacity = opacity;
+      card.label.material.opacity = opacity;
+      card.ring.visible = card.id === selectedNodeId || card.id === focusedNodeId;
+      card.ring.material.opacity = opacity;
+    }
+
+    if (isAutoRotating) {
+      autoRotateElapsed += deltaSeconds;
+      view.azimuth = DEFAULT_AZIMUTH + AUTO_ROTATE_AMPLITUDE * Math.sin(autoRotateElapsed * AUTO_ROTATE_SPEED);
+    }
+
+    const isBeadMoving = !isReducedMotion && beadCurves.length > 0;
+    beadElapsed += isBeadMoving ? deltaSeconds : 0;
+    const beadProgress = (beadElapsed % BEAD_LOOP_SECONDS) / BEAD_TRAVEL_SECONDS;
+    beads.forEach((bead, index) => {
+      const curve = beadCurves[index];
+      bead.visible = isBeadMoving && curve !== undefined && beadProgress <= 1;
+      if (!bead.visible) return;
+      bead.position.copy(curve.getPointAt(beadProgress));
+    });
+
+    updateCamera();
+    renderer.render(scene, camera);
+
+    const shouldKeepAnimating = isSettling || (isAutoRotating && !isReducedMotion) || isBeadMoving;
+    if (!isStageVisible || !shouldKeepAnimating) {
+      previousFrameTime = null;
+      return;
+    }
+    requestFrame();
+  }
+
+  const raycaster = new THREE.Raycaster();
+  function pickNodeAt(clientX, clientY) {
+    const canvasRect = sceneCanvas.getBoundingClientRect();
+    const pointer = new THREE.Vector2(
+      ((clientX - canvasRect.left) / canvasRect.width) * 2 - 1,
+      -((clientY - canvasRect.top) / canvasRect.height) * 2 + 1,
+    );
+    raycaster.setFromCamera(pointer, camera);
+    const [nearestHit] = raycaster.intersectObjects(pickTargets, false);
+    return nearestHit?.object.userData.nodeId ?? null;
+  }
+
+  function updateHoveredNode(nodeId) {
+    if (nodeId === hoveredNodeId) return;
+    hoveredNodeId = nodeId;
+    sceneCanvas.style.cursor = nodeId === null ? "grab" : "pointer";
+    requestFrame();
+  }
+
+  const activePointers = new Map();
+  let pointerDownPoint = { x: 0, y: 0 };
+  let isDragging = false;
+  let isPanGesture = false;
+  let isSceneEngaged = false;
+
+  function releasePointer(pointerId) {
+    activePointers.delete(pointerId);
+    if (activePointers.size > 0) return;
+    isDragging = false;
+    sceneCanvas.style.cursor = hoveredNodeId === null ? "grab" : "pointer";
+  }
+
+  sceneCanvas.addEventListener("pointerdown", (event) => {
+    sceneCanvas.setPointerCapture(event.pointerId);
+    activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    pointerDownPoint = { x: event.clientX, y: event.clientY };
+    isPanGesture = event.button === 2 || event.shiftKey;
+    isSceneEngaged = true;
+    isAutoRotating = false;
+  });
+
+  sceneCanvas.addEventListener("pointermove", (event) => {
+    if (activePointers.size === 0) {
+      updateHoveredNode(pickNodeAt(event.clientX, event.clientY));
+      return;
+    }
+    const previousPoint = activePointers.get(event.pointerId);
+    if (previousPoint === undefined) return;
+    const currentPoint = { x: event.clientX, y: event.clientY };
+
+    if (activePointers.size >= 2) {
+      const [firstPoint, secondPoint] = activePointers.values();
+      const previousSpan = Math.hypot(firstPoint.x - secondPoint.x, firstPoint.y - secondPoint.y);
+      activePointers.set(event.pointerId, currentPoint);
+      const [nextFirstPoint, nextSecondPoint] = activePointers.values();
+      const nextSpan = Math.hypot(nextFirstPoint.x - nextSecondPoint.x, nextFirstPoint.y - nextSecondPoint.y);
+      zoomView(previousSpan / Math.max(nextSpan, 1));
+      panView((currentPoint.x - previousPoint.x) / 2, (currentPoint.y - previousPoint.y) / 2);
+      isDragging = true;
+      requestFrame();
+      return;
+    }
+
+    activePointers.set(event.pointerId, currentPoint);
+    const travelledDistance = Math.hypot(currentPoint.x - pointerDownPoint.x, currentPoint.y - pointerDownPoint.y);
+    if (!isDragging && travelledDistance < CLICK_MOVE_TOLERANCE) return;
+    isDragging = true;
+    sceneCanvas.style.cursor = "grabbing";
+    const deltaX = currentPoint.x - previousPoint.x;
+    const deltaY = currentPoint.y - previousPoint.y;
+    if (isPanGesture) {
+      panView(deltaX, deltaY);
+      requestFrame();
+      return;
+    }
+    view.azimuth = THREE.MathUtils.clamp(view.azimuth - deltaX * ROTATE_RADIANS_PER_PIXEL, -AZIMUTH_LIMIT, AZIMUTH_LIMIT);
+    view.elevation = THREE.MathUtils.clamp(view.elevation + deltaY * ROTATE_RADIANS_PER_PIXEL, ...ELEVATION_LIMITS);
+    requestFrame();
+  });
+
+  sceneCanvas.addEventListener("pointerup", (event) => {
+    const isClick = activePointers.size === 1 && !isDragging;
+    releasePointer(event.pointerId);
+    if (!isClick) return;
+    const nodeId = pickNodeAt(event.clientX, event.clientY);
+    if (nodeId === null) return;
+    render(nodeId);
+  });
+
+  sceneCanvas.addEventListener("pointercancel", (event) => releasePointer(event.pointerId));
+
+  sceneCanvas.addEventListener("pointerleave", () => {
+    isSceneEngaged = false;
+    updateHoveredNode(null);
+  });
+
+  sceneCanvas.addEventListener("contextmenu", (event) => event.preventDefault());
+
+  sceneCanvas.addEventListener("wheel", (event) => {
+    // page scroll must pass through until the reader engages the scene; trackpad pinch arrives as ctrl+wheel
+    if (!event.ctrlKey && !isSceneEngaged) return;
+    event.preventDefault();
+    isAutoRotating = false;
+    const pixelDelta = event.deltaMode === WheelEvent.DOM_DELTA_LINE ? event.deltaY * 16 : event.deltaY;
+    const zoomDelta = THREE.MathUtils.clamp(event.ctrlKey ? pixelDelta * PINCH_WHEEL_MULTIPLIER : pixelDelta, -MAXIMUM_WHEEL_DELTA, MAXIMUM_WHEEL_DELTA);
+    zoomView(Math.exp(zoomDelta * WHEEL_ZOOM_PER_PIXEL));
+    requestFrame();
+  }, { passive: false });
+
+  sceneCanvas.addEventListener("webglcontextlost", () => {
+    cancelAnimationFrame(frameRequestId);
+    showFallbackDiagram("WebGL หลุดระหว่างแสดงผล (GPU reset หรือหน่วยความจำไม่พอ) จึงสลับเป็นผังแบบ 2D");
+  });
+
+  resetButton.addEventListener("click", () => {
+    resetView();
+    isAutoRotating = !reducedMotionQuery.matches;
+    requestFrame();
+  });
+
+  nodeList.replaceChildren(...cards.map((card) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.dataset.nodeId = card.id;
+    button.setAttribute("aria-controls", "detail");
+    button.setAttribute("aria-current", String(card.id === selectedNodeId));
+    button.textContent = card.role === "" ? card.name : `${card.name} — ${card.role}`;
+    const item = document.createElement("li");
+    item.append(button);
+    return item;
+  }));
+  const nodeButtons = [...nodeList.querySelectorAll("button")];
+
+  nodeList.addEventListener("click", (event) => {
+    const button = event.target.closest("button");
+    if (button === null) return;
+    render(button.dataset.nodeId);
+  });
+
+  nodeList.addEventListener("keydown", (event) => {
+    const step = ARROW_KEY_STEPS[event.key];
+    if (step === undefined) return;
+    const currentIndex = nodeButtons.indexOf(document.activeElement);
+    if (currentIndex === -1) return;
+    event.preventDefault();
+    nodeButtons[(currentIndex + step + nodeButtons.length) % nodeButtons.length].focus();
+  });
+
+  nodeList.addEventListener("focusin", (event) => {
+    focusedNodeId = event.target.dataset.nodeId ?? null;
+    isAutoRotating = false;
+    requestFrame();
+  });
+
+  nodeList.addEventListener("focusout", () => {
+    focusedNodeId = null;
+    requestFrame();
+  });
+
+  document.addEventListener(NODE_SELECT_EVENT, (event) => {
+    selectedNodeId = event.detail;
+    for (const button of nodeButtons) button.setAttribute("aria-current", String(button.dataset.nodeId === selectedNodeId));
+    requestFrame();
+  });
+
+  document.addEventListener(SCENARIO_STEP_EVENT, (event) => {
+    activeStep = event.detail;
+    beadElapsed = 0;
+    applyEdgeStyles();
+    requestFrame();
+  });
+
+  Promise.allSettled([
+    document.fonts.load(`700 32px ${SARABUN_FONT_FAMILY}`),
+    document.fonts.load(`400 32px ${SARABUN_FONT_FAMILY}`),
+  ]).then(() => {
+    drawAllLabels();
+    requestFrame();
+  });
+
+  new ResizeObserver(([entry]) => {
+    const { width, height } = entry.contentRect;
+    if (width === 0) return;
+    if (height === 0) return;
+    renderer.setSize(width, height, false);
+    camera.aspect = width / height;
+    camera.updateProjectionMatrix();
+    const nextLayout = width / height < COMPACT_LAYOUT_MAX_ASPECT ? COMPACT_LAYOUT : WIDE_LAYOUT;
+    if (nextLayout !== activeLayout) applyLayout(nextLayout);
+    requestFrame();
+  }).observe(sceneStage);
+
+  new IntersectionObserver(([entry]) => {
+    isStageVisible = entry.isIntersecting;
+    if (isStageVisible) requestFrame();
+  }).observe(sceneStage);
+
+  drawAllLabels();
+  sceneStatus.hidden = true;
+}
+
+async function mountScene() {
+  const webglContext = sceneCanvas.getContext("webgl2", { antialias: true, alpha: true });
+  // three.js r163+ renders through WebGL2 only
+  if (webglContext === null) {
+    showFallbackDiagram("เบราว์เซอร์นี้เปิด WebGL2 ไม่ได้ จึงแสดงผังแบบ 2D แทน");
+    return;
+  }
+
+  const THREE = await import("three").catch(() => null);
+  if (THREE === null) {
+    showFallbackDiagram("โหลด three.js จาก cdnjs ไม่สำเร็จ (ออฟไลน์หรือถูกบล็อก) จึงแสดงผังแบบ 2D แทน");
+    return;
+  }
+
+  if (sceneLoad.state !== "loading") return;
+
+  buildScene(THREE, webglContext);
+  markSceneReady();
+}
+
+mountScene().catch((error) => {
+  console.error(error);
+  showFallbackDiagram(`วาดผัง 3D ไม่สำเร็จ (${error.message}) จึงแสดงผังแบบ 2D แทน`);
+});
 </script>
