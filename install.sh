@@ -32,12 +32,21 @@ ln -sf "$HARNESS_DIR/AGENTS.md" "$HOME/.codex/AGENTS.md"
 [ -f "$HOME/.codex/config.toml" ] && [ ! -L "$HOME/.codex/config.toml" ] && cp "$HOME/.codex/config.toml" "$HOME/.codex/config.toml.bak"
 ln -sf "$HARNESS_DIR/codex/config.toml" "$HOME/.codex/config.toml"
 
+# Agent Skills standard dir: Codex and Gemini CLI discover skills here, so every skill works outside Claude Code
+CROSS_TOOL_SKILLS_DIR="$HOME/.agents/skills"
+mkdir -p "$CROSS_TOOL_SKILLS_DIR"
+
 for skill in "$HARNESS_DIR"/skills/*/; do
     name=$(basename "$skill")
-    # replace a real directory from an old copy-based install with the symlink
-    [ -d "$CLAUDE_DIR/skills/$name" ] && [ ! -L "$CLAUDE_DIR/skills/$name" ] && rm -rf "$CLAUDE_DIR/skills/$name"
+    # a real directory of the same name (old copy-based install, or a skill from elsewhere) moves out of skills/ so Claude Code stops loading it, never deleted
+    if [ -d "$CLAUDE_DIR/skills/$name" ] && [ ! -L "$CLAUDE_DIR/skills/$name" ]; then
+        mkdir -p "$CLAUDE_DIR/skills-backup"
+        mv "$CLAUDE_DIR/skills/$name" "$CLAUDE_DIR/skills-backup/$name"
+        echo "backed up existing skills/$name -> skills-backup/$name"
+    fi
     ln -sfn "${skill%/}" "$CLAUDE_DIR/skills/$name"
+    ln -sfn "${skill%/}" "$CROSS_TOOL_SKILLS_DIR/$name"
 done
 
-echo "installed: CLAUDE.md -> AGENTS.md, $(ls "$HARNESS_DIR"/agents/*.md | wc -l | tr -d ' ') agents, $(ls -d "$HARNESS_DIR"/skills/*/ | wc -l | tr -d ' ') skills into $CLAUDE_DIR; codex: ~/.codex/AGENTS.md + config.toml"
+echo "installed: CLAUDE.md -> AGENTS.md, $(ls "$HARNESS_DIR"/agents/*.md | wc -l | tr -d ' ') agents, $(ls -d "$HARNESS_DIR"/skills/*/ | wc -l | tr -d ' ') skills into $CLAUDE_DIR and $CROSS_TOOL_SKILLS_DIR; codex: ~/.codex/AGENTS.md + config.toml"
 echo "other AI tools: point them at $HARNESS_DIR/AGENTS.md (most read AGENTS.md from a project root automatically)"
