@@ -646,7 +646,7 @@ isExpress := order.Type != <span class="kw">nil</span> &amp;&amp; *order.Type ==
 
     <div class="rule">
       <h3>แยก function เมื่อมีคนเรียกซ้ำ — โค้ดใช้ครั้งเดียวอยู่ inline</h3>
-      <p class="why">helper ที่มีไว้แค่ตั้งชื่อ block โค้ด ทำให้อ่านทีเดียวไม่จบ ต้องกระโดดไปมา และซ่อนว่ามีคนเรียกกี่ที่ — แยกเมื่อมีผู้เรียกตั้งแต่สองที่ หรือ logic ซับซ้อนพอจะมี test ของตัวเอง</p>
+      <p class="why">helper ที่มีไว้แค่ตั้งชื่อ block โค้ด ทำให้อ่านทีเดียวไม่จบ ต้องกระโดดไปมา และซ่อนว่ามีคนเรียกกี่ที่ — แยกเมื่อมีผู้เรียกตั้งแต่สองที่ หรือ logic ซับซ้อนพอจะมี test ของตัวเอง · method ที่ทั้งตัวแค่ส่งต่อไป helper กลาง (<code>Validate()</code> → <code>validateStruct(p)</code>) ก็นับเป็นกลิ่นเดียวกัน เรียก helper ตรงจุดใช้งานเลย</p>
       <div class="panes">
         <div class="pane bad"><span class="tag">อย่าทำ — helper ใช้ครั้งเดียว</span>
 <pre><span class="kw">func</span> (u *usecase) GetLatest(...) {

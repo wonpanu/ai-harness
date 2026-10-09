@@ -14,7 +14,7 @@ Concrete avoid/prefer code for every rule: see [EXAMPLES.md](EXAMPLES.md) — re
 - Guard clauses + early return; never `else` after a returning branch.
 - Error handling is a flat ladder of independent `if` guards (transport err → 404 → non-200 → nil body), each returning immediately, never nested.
 - Name a boolean only for a business condition (`isExpress := ...`) or one tested more than once; plain nil/empty guards stay inline (`if messages == nil`).
-- Extract a function only for reused (two or more callers) or genuinely complex logic; single-use blocks stay inline so a method reads top to bottom.
+- Extract a function only for reused (two or more callers) or genuinely complex logic; single-use blocks stay inline so a method reads top to bottom. A method that only forwards to a shared helper (`Validate()` → `validateStruct(p)`) is the same smell: call the helper directly.
 - Assign, then guard on its own line (`err := f()` / `if err != nil {`) — no `if err := f(); err != nil {` one-liners.
 
 ## Naming

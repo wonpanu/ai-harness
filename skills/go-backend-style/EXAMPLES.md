@@ -104,6 +104,21 @@ Extract when a second caller appears (`wrapModuleError` used on every error
 path, `categoryOptions` shared by two mappers) or when the block is complex
 enough to deserve its own tests.
 
+A one-line method that forwards to a shared helper is the same smell, one per type:
+```go
+func (p LoginPayload) Validate() *errs.AppError { return validateStruct(p) }
+// ... in the handler
+appErr := payload.Validate()
+```
+
+Prefer — the helper at the call site, the payload struct stays tags-only:
+```go
+appErr := validateStruct(payload)
+if appErr != nil {
+    return fiberresp.BadRequest(c, appErr.Message, appErr)
+}
+```
+
 ## Assign, then guard — nil check first, classify inside
 
 Avoid — inline init one-liners and a specific-error test ahead of the nil guard:
