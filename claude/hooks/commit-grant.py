@@ -6,7 +6,8 @@ import os
 import re
 import sys
 
-ASKS = re.compile(r"(?<![a-z])(commit|push|pr|pull request|merge)(?![a-z])", re.IGNORECASE)
+# a bare "pr" is prose ("the pr you opened"); only commit, push, merge or an explicit open/create of a PR is an ask
+ASKS = re.compile(r"(?<![a-z])(commit|push|merge|(open|create|เปิด|สร้าง)\s*(a\s+)?(pr|pull request))(?![a-z])", re.IGNORECASE)
 FORBIDS = re.compile(r"(don'?t|do not|never|without|not yet|stop|อย่า|ห้าม|ยังไม่|ไม่ให้|ไม่ต้อง|ทำไม)", re.IGNORECASE)
 
 

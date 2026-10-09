@@ -35,6 +35,11 @@ grep -q "ask the user" "$TMP/err" 2>/dev/null; true
 
 grant "ทำไมถึง commit แล้ว push โดยไม่ถาม ห้ามทำอีก"
 expect "negated prompt grants nothing"        2 "$(guard "$TMP/product" "git commit -m x")"
+grant "ลองดู test ของ pr ที่เปิดไป มันพัง"
+expect "a bare pr in prose grants nothing"      2 "$(guard "$TMP/product" "git commit -m x")"
+grant "เปิด PR ให้ด้วย"
+expect "asking to open a PR grants"            0 "$(guard "$TMP/product" "gh pr create --base main")"
+find "$HOME/.claude/commit-grants" -type f -exec touch -t 202001010000 {} \;
 grant "ok commit ได้เลย"
 expect "prompt saying commit grants"          0 "$(guard "$TMP/product" "git commit -m x")"
 expect "grant also covers push"               0 "$(guard "$TMP/product" "git push origin feature/x")"
