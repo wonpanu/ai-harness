@@ -157,9 +157,44 @@ const (
     explorerTokenIssuer = "message-center-russet"
 )
 
+// returned by Login and GoogleLogin, so it is declared once
 var errInvalidCredentials = errs.AppError{
     ErrorCode: errcode.ErrCodeAuthUsecaseLoginInvalidCredentials.ToString(),
     Message:   errcode.MessageInvalidCredentials,
+}
+```
+
+An error only one guard returns is not a sentinel; build it in the guard:
+```go
+if errors.As(err, &pgErr) && pgErr.ConstraintName == "project_user_user_id_foreign" {
+    return errs.AppError{
+        ErrorCode: errcode.ErrCodeProjectUserRepoAddMemberUserNotFound.ToString(),
+        Message:   errcode.MessageUserNotFound,
+    }
+}
+```
+
+## One repo method, one statement
+
+Avoid — a repo that opens a transaction and writes two tables:
+```go
+func (r *projectRepo) CreateProject(ctx, in) (*ProjectRow, error) {
+    tx, _ := r.pool.Begin(ctx)
+    tx.QueryRow(ctx, `INSERT INTO projects ...`)
+    tx.Exec(ctx, `INSERT INTO project_user ...`)   // a second table, a business decision
+    tx.Commit(ctx)
+}
+```
+
+Prefer — one repo per table, the usecase decides the sequence:
+```go
+row, err := u.projectRepo.CreateProject(ctx, insert)
+if err != nil {
+    return nil, err
+}
+err = u.projectUserRepo.AddMember(ctx, repo.ProjectMemberInsert{ProjectID: row.ID, UserID: userID, Role: projectCreatorRole})
+if err != nil {
+    return nil, err
 }
 ```
 

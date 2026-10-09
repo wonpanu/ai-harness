@@ -704,8 +704,8 @@ err = bcrypt.CompareHashAndPassword(hash, pw)
     </div>
 
     <div class="rule">
-      <h3>Sentinel error และค่าที่เป็น contract อยู่บนสุดของไฟล์เป็น <code>const</code>/<code>var</code></h3>
-      <p class="why">error ที่สร้างกลางฟังก์ชันและ string ที่ระบบอื่นอ่าน (issuer, URL prefix, TTL) แทรกอยู่ใน flow ทำให้ scan โค้ดสะดุด และไม่บอกว่าเป็น contract ของใคร — ประกาศครั้งเดียวบนสุด ตั้งชื่อตามเจ้าของ contract</p>
+      <h3>Sentinel error ที่หลายฟังก์ชันคืน และค่าที่เป็น contract อยู่บนสุดของไฟล์เป็น <code>const</code>/<code>var</code></h3>
+      <p class="why">error ที่สร้างเป็น local กลางฟังก์ชันและ string ที่ระบบอื่นอ่าน (issuer, URL prefix, TTL) แทรกอยู่ใน flow ทำให้ scan โค้ดสะดุด และไม่บอกว่าเป็น contract ของใคร — ประกาศครั้งเดียวบนสุด ตั้งชื่อตามเจ้าของ contract · error ที่ guard เดียวคืน ไม่ใช่ sentinel สร้าง inline ใน guard นั้นเลย ไม่ยกขึ้นไฟล์ · repo method หนึ่งตัว = statement เดียวบนตารางเดียว เขียนสองตารางคือสอง repo แล้ว usecase เป็นคนเรียงลำดับ</p>
       <div class="panes">
         <div class="pane bad"><span class="tag">อย่าทำ — ประกาศกลางฟังก์ชัน, literal inline</span>
 <pre><span class="kw">func</span> (u *authUsecase) Login(...) {

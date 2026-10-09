@@ -28,6 +28,7 @@ Concrete avoid/prefer code for every rule: see [EXAMPLES.md](EXAMPLES.md) — re
 
 - Strict one-direction flow (e.g. handler → usecase → repo); DI through constructors wired in `main`.
 - Handler: param extraction + validation + status mapping. Usecase: business rules + entity mapping. Repo: transport + status classification only.
+- A repo method is one statement on one table. A request that writes two tables is two repo methods, and the usecase sequences them: which rows a request creates is a business rule, so it lives above the repo. No `pool.Begin` inside a repo method.
 - Constructors `NewXxx` return the interface, not the struct; concrete impls unexported.
 - One file per method for large types; repo splits `_request.go` / `_response.go` / impl.
 
@@ -35,7 +36,7 @@ Concrete avoid/prefer code for every rule: see [EXAMPLES.md](EXAMPLES.md) — re
 
 - Follow the project's error-value pattern (typed error codes, compare helpers) — don't invent `fmt.Errorf("%w")` chains where the codebase uses coded errors.
 - `if err != nil` first, classify inside it (`errs.IsErrorCode`, `errors.Is`); never compare a specific error before the nil guard.
-- Canonical error values (`errInvalidCredentials`) are package-level `var`s beside the file's `const`s, never declared mid-function.
+- A canonical error value that two or more functions return (`errInvalidCredentials`) is a package-level `var` beside the file's `const`s. One that a single guard returns is built inline in that guard; never a mid-function local.
 - Contract values another system reads (JWT issuer, URL prefix, TTL, fixed enum strings) are named `const`s at the top of the file, never inline literals.
 - Every method opens with the project's tracing boilerplate (span named `Type/Method`) when the codebase does; every error branch records to the span.
 - Handlers respond only through the shared response helpers, never hand-rolled payloads.
