@@ -53,6 +53,22 @@
           {
             "type": "command",
             "command": "echo 'harness: non-trivial task -> invoke the harness-mode skill, match a playbook, copy its steps into the todo list before any other work. Behavior change -> tdd skill, red before green.'"
+          },
+          {
+            "type": "command",
+            "command": "python3 -I ~/.claude/hooks/commit-grant.py"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 -I ~/.claude/hooks/commit-guard.py",
+            "timeout": 10
           }
         ]
       }
