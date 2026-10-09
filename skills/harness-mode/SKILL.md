@@ -24,8 +24,8 @@ Remaining triggers:
 - Contested design → the **interrogate** skill (multi-model adversarial review) before shipping.
 - Nontrivial multi-step → write the throughput checkpoint (Feature step 3).
 - Any written artifact (docs, PR body, commit message, skill text, README) → the **unslop** skill, then the **technical-writing** skill for docs, RFCs, readmes, PR descriptions, and commit messages. Chat replies follow the harness output style instead (AGENTS.md "Output style"). Agent-facing prose (SKILL.md, agent definitions) also follows the **creating-skills** skill.
-- Before commit → the **simplifying-code** skill over the diff (readability, simplification, reuse, altitude, efficiency), then the comment pass from AGENTS.md "Code style".
-- Before review → the **no-comments** skill (`comment-reviewer` agent).
+- Before commit → the **simplifying-code** skill over the diff (readability, simplification, reuse, altitude, efficiency), then the comment pass from AGENTS.md "Code style". Run it in a fresh context, never the agent that wrote the diff: the author reads its own helpers as reused and its own comments as needed.
+- Before review → the **no-comments** skill (`comment-reviewer` agent), same fresh-context rule.
 - Shipping UI / CLI / server behavior → prove it on the real surface. The **run** skill drives the project's app; the **claude-in-chrome** skill drives browser UIs. For bug fixes, reproduce first on the same surface yourself. Hand to the user only under the narrow Bug fix step 1 exception.
 - Running a benchmark, measuring perf, or reporting a speedup or regression you measured → the **benchmark-checklist** skill before you report or act on the number.
 - Any PR-status request → the **Babysit** playbook (`playbooks/babysit.md`). That includes "babysit this", "get it green", "address the review comments", "check on PR X", "anything outstanding on X". Never triggered by merely opening a PR. Declare its mode before polling. Step 1 owns the request-to-mode mapping.

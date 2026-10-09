@@ -526,7 +526,7 @@ footer{color:var(--ws-text-muted);font-size:14px;padding-top:var(--ws-space-3);b
     <div><b>TDD ท่าบังคับ</b><p>ทุก behavior change (feature, bug fix) ผ่าน skill tdd เสมอ: ตกลง seam กับ user ก่อน → red (test ที่ fail หนึ่งตัวที่ seam, expected เป็น literal จากแหล่งอิสระ) → green (โค้ดน้อยสุดที่ผ่าน) ทีละ slice → refactor เฉพาะตอน review ผ่าน simplifying-code · ไม่มี implementation ก่อน failing test · ข้ามได้แค่กรณีไม่มี local test path ถูก ๆ และต้องเขียน skip: เหตุผล ใน todo · codebase-design ให้ศัพท์ seam/module/interface · ดัดแปลงจาก mattpocock/skills (MIT)</p></div>
     <div><b>เข้าใจก่อนแก้</b><p><code>how</code> เดินผ่านว่า subsystem ทำงานอย่างไร · <code>why</code> หาเหตุผลที่สร้างแบบนี้จาก git, tracker, docs, MCP · <code>teach</code> รวมสองอย่างเป็นคำอธิบายทีละ diagram · <code>recall</code> ดึง context ล่าสุดจาก transcript · <code>blast-radius</code> งานเล็กที่อาจกระทบอะไรบ้าง พิสูจน์ด้วยการรันจริง</p></div>
     <div><b>ออกแบบและ fan-out</b><p><code>architect</code> ตั้ง caller usage, types, module shape ก่อนโค้ดข้าม boundary · <code>arena</code> N รอบคู่ขนานโจทย์เดียว แล้ว graft ส่วนดีที่สุด · <code>swarm</code> N worker คนละ slice รายงานเดียว · panel = deep-reasoner + harness-agent + Codex (<code>codex exec</code> gpt-6-sol) — ต่าง model family เห็นตรงกัน = สัญญาณแรง</p></div>
-    <div><b>Review และตัวเลข</b><p><code>interrogate</code> หลาย model พยายามหัก diff รวม lens code-quality และ senior-lead-reviewer · <code>benchmark-checklist</code> ตรวจตัวเลขที่วัดได้ก่อนรายงาน (limiter, tuning, repeat runs) · <code>no-comments</code> → comment-reviewer ก่อน review · <code>simplifying-code</code> ก่อน commit</p></div>
+    <div><b>Review และตัวเลข</b><p><code>interrogate</code> หลาย model พยายามหัก diff รวม lens code-quality และ senior-lead-reviewer · <code>benchmark-checklist</code> ตรวจตัวเลขที่วัดได้ก่อนรายงาน (limiter, tuning, repeat runs) · <code>no-comments</code> → comment-reviewer ก่อน review · <code>simplifying-code</code> ก่อน commit · ทั้งสองรันใน context ใหม่ ไม่ใช่ agent ที่เขียน diff เอง (คนเขียนมองว่า helper ของตัวเองถูก reuse และ comment ของตัวเองจำเป็น)</p></div>
     <div><b>เรียนรู้เป็นโครงสร้าง</b><p>แก้ซ้ำเรื่องเดิม = ต้องแก้ที่ repo ไม่ใช่ prompt ใหม่ · <code>reflect</code> หลัง session ที่ได้บทเรียน → เสนอ skill edit แยก Accepted/Rejected/Backlog · <code>correct</code> เมื่อโดนแก้เรื่องเดียวกันครั้งที่สอง → ขุด class ความผิดจาก history แล้วแก้ที่ระดับสูงสุดที่ได้ (architecture → types/lint/CI → test → docs) พร้อมตาราง rule ↔ enforcer ใน AGENTS.md · <code>automate-me</code> ร่าง -mode ของตัวเองจาก history · <code>show-me-your-work</code> decision log แบบ TSV เมื่อ user ปล่อยให้ทำแล้วมา review ทีหลัง</p></div>
     <div><b>งานเขียน</b><p>คำตอบใน chat = i-have-adhd (ด้านล่าง) · artifact ที่เขียนออก (docs, PR body, commit message, skill) ผ่าน <code>unslop</code> (ลบ AI tell) แล้ว <code>technical-writing</code> (Diátaxis + Google style) · <code>bro</code> แปลข้อความล่าสุดเป็นภาษาคน · <code>harness-help</code> ถามว่าใช้ playbook/skill ไหนดี</p></div>
   </div>
@@ -867,7 +867,7 @@ err = bcrypt.CompareHashAndPassword(hash, pw)
   <p class="eyebrow">General practice</p>
   <h2>กฎการทำงาน</h2>
   <div class="practice">
-    <div><b>PRD ก่อนลงมือ</b><p>ทุก requirement ที่เข้ามาต้องมี PRD ย่อ — goal, acceptance criteria, context ที่จำเป็น — ส่งให้ทุก worker และ reviewer ที่ delegate งานเล็กไม่กี่บรรทัดพอ งานใหญ่ค่อยเต็มรูป ถ้า domain term ใน requirement กำกวมหรือความหมายอาจต่างใน context ของโปรเจกต์ → รัน grill-with-docs ก่อนร่าง PRD เพื่อเทียบศัพท์กับ domain model/docs ให้ตรงก่อน</p></div>
+    <div><b>PRD ก่อนลงมือ</b><p>ทุก requirement ที่เข้ามาต้องมี PRD ย่อ — goal, acceptance criteria, context ที่จำเป็น — ส่งให้ทุก worker และ reviewer ที่ delegate งานเล็กไม่กี่บรรทัดพอ งานใหญ่ค่อยเต็มรูป ถ้า domain term ใน requirement กำกวมหรือความหมายอาจต่างใน context ของโปรเจกต์ → รัน grill-with-docs ก่อนร่าง PRD เพื่อเทียบศัพท์กับ domain model/docs ให้ตรงก่อน · constant / error / message / helper ใหม่ทุกตัวใน PRD ต้องชี้ไฟล์ต้นแบบที่มีอยู่แล้ว (model: auth.go) ชื่อลอย ๆ คือการเดาที่ delegate จะสร้างตามตัวอักษร</p></div>
     <div><b>Docs-first</b><p>ยึด practice ที่ถูกที่สุดแม้ขัด convention ปัจจุบัน — การเปลี่ยน pattern ต้องเสนอและแก้ docs ก่อนลงมือ implement</p></div>
     <div><b>Pattern ไม่ใช่ copy</b><p>Reference repo ให้ pattern (state management, hook structure, return shape) — ตั้งชื่อใหม่ทั้งหมดให้สื่อหน้าที่ใน repo ของเราเอง</p></div>
     <div><b>Verify ไม่ใช่จำ</b><p>ก่อน assert ว่า "ส่วนอื่นถูก practice แล้ว" ต้อง explore โค้ดจริง อย่าเชื่อความจำ</p></div>
@@ -899,6 +899,7 @@ const DATA = {
     "จุดแรกคือ orchestrator เสมอ — ไม่มีการ route ตรงไปหา agent"]},
   orch: {name:"Orchestrator", meta:{model:"session model ปัจจุบัน", codex:"gpt-6-astra · high", role:"plan · decompose · synthesize"}, points:[
     "PRD gate: เขียน goal + acceptance criteria + context ก่อน delegate ทุกครั้ง — ทุก worker และ reviewer ได้รับ",
+    "ของใหม่ทุกตัวใน PRD (constant, error, message, helper) ชี้ไฟล์ต้นแบบในโปรเจกต์ ไม่ตั้งชื่อลอย ๆ",
     "Domain term กำกวม → รัน grill-with-docs เทียบศัพท์กับ docs ของโปรเจกต์ก่อนร่าง PRD",
     "Default คือ solo — งานจบใน turn เดียว (แก้ 1-2 ไฟล์, ตอบคำถาม, edit เล็ก) ไม่ delegate",
     "Decision สำคัญ: ส่ง peer + deep-reasoner ทำคู่ขนาน แล้วสังเคราะห์โดยไม่ให้เห็นคำตอบกัน",
@@ -995,7 +996,7 @@ const ROUTING_MENTIONS = {
   hillclimb: { how: 1, "technical-writing": 1, "show-me-your-work": 1, "benchmark-checklist": 1 },
   "runtime-forensics": { "technical-writing": 1 },
   "trace-forensics": { "technical-writing": 1 },
-  feature: { how: 1, architect: 1, arena: 1, interrogate: 1, tdd: 2, "simplifying-code": 1, "technical-writing": 1 },
+  feature: { how: 1, architect: 1, arena: 1, interrogate: 1, tdd: 2, "no-comments": 1, "simplifying-code": 2, "technical-writing": 1 },
   refactoring: { how: 1, architect: 1, "technical-writing": 1 },
   prototype: { architect: 1, "technical-writing": 1 },
   "visual-parity": { "technical-writing": 1 },
@@ -1038,8 +1039,9 @@ const SCENARIOS = [
       { text: "how ไล่ subsystem ที่โดน · ศัพท์กำกวมใช้ grill-with-docs ก่อนร่าง PRD", nodes: ["req", "orch", "explore"], edges: ["req>orch", "orch>explore"], skills: ["how", "grill-with-docs"] },
       { text: "architect ออกแบบคู่ขนานหลายทาง แล้วเลือกทางเดียว", nodes: ["orch", "deep", "ha"], edges: ["orch>deep", "orch>ha"], skills: ["architect"] },
       { text: "เขียน throughput checkpoint ลง todo พร้อม test seam ที่ tdd จะใช้", nodes: ["orch"], edges: [], skills: ["tdd"] },
-      { text: "Delegate ให้ harness-agent พร้อม PRD เขียนทีละ slice red → green · หลายทางเลือกใช้ arena", nodes: ["orch", "ha"], edges: ["orch>ha"], skills: ["tdd", "arena"] },
+      { text: "Delegate ให้ harness-agent พร้อม PRD (ของใหม่ทุกตัวชี้ไฟล์ต้นแบบ) เขียนทีละ slice red → green · หลายทางเลือกใช้ arena · delegate ไม่รัน simplifying-code / no-comments เอง", nodes: ["orch", "ha"], edges: ["orch>ha"], skills: ["tdd", "arena"] },
       { text: "Verify บน surface จริง ผล inconclusive ไม่นับ", nodes: ["ha", "orch"], edges: ["ha>merge"], skills: ["run", "claude-in-chrome"] },
+      { text: "Review แยกคนก่อนรายงานเสร็จ: no-comments + simplifying-code ใน context ใหม่ แล้ว /code-review บน diff · ตัวเองอ่านแค่ correctness", nodes: ["orch", "cr", "rev"], edges: ["orch>cr", "merge>rev"], skills: ["no-comments", "simplifying-code"] },
       { text: "Rebase เป็น commit เล็กเรียงลำดับ แต่ละ commit จบด้วย check", nodes: ["orch", "committer"], edges: ["orch>committer"], skills: ["code-committer"] },
       { text: "Design ยังมีข้อโต้แย้ง ใช้ interrogate หลาย model ก่อน ship", nodes: ["deep", "ha", "rev"], edges: ["deep>merge", "ha>merge", "merge>rev"], skills: ["interrogate"] },
       { text: "เปิด PR: simplifying-code, no-comments แล้วเขียน PR ด้วย technical-writing + unslop", nodes: ["cr", "rev", "ship"], edges: ["orch>cr", "merge>rev", "rev>ship"], skills: ["simplifying-code", "no-comments", "technical-writing", "unslop"] },

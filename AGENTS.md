@@ -44,7 +44,7 @@ High-stakes decisions: task the peer on the same problem in parallel, synthesize
 - Code-writing step of a harness-mode playbook (Feature step 4, Bug fix step 3) → `harness-agent`, for the review separation; the one-turn exception below still applies
 Work you can finish yourself in one turn (one or two file edits, answering questions, small edits): **do NOT delegate** — cold-context agent overhead isn't worth it. That same "one or two file edits" line is the trivial cut-off everywhere in this file and the playbooks.
 
-**PRD before starting:** whenever the orchestrator takes on incoming requirements, write a brief PRD first — goal, acceptance criteria, and necessary context (constraints, relevant files/systems, decisions already made) — and pass it to every delegated worker and reviewer so they work/review on the same context. Scale to the task: a few lines for small work, full form only for large work. If any domain term in the requirement is ambiguous or may mean something different in this project's context, run `grill-with-docs` (or align terminology against the project's domain model/docs by hand) BEFORE drafting the PRD — so the PRD's words carry the project's meaning, not a guessed one.
+**PRD before starting:** whenever the orchestrator takes on incoming requirements, write a brief PRD first — goal, acceptance criteria, and necessary context (constraints, relevant files/systems, decisions already made) — and pass it to every delegated worker and reviewer so they work/review on the same context. Scale to the task: a few lines for small work, full form only for large work. If any domain term in the requirement is ambiguous or may mean something different in this project's context, run `grill-with-docs` (or align terminology against the project's domain model/docs by hand) BEFORE drafting the PRD — so the PRD's words carry the project's meaning, not a guessed one. Every new constant, error value, message string, or helper the PRD names points at an existing file that already does the same thing (`model: internal/handler/auth.go`); a name without a model is a guess the delegate builds literally.
 
 ## Task routing (harness-mode)
 
@@ -58,6 +58,8 @@ Recurring mistakes get structural fixes, not more prompting: `reflect` after a s
 | Never push to main; branch + PR | `permissions.deny` in `claude/settings.json` blocks `git push origin main` and force pushes; `code-committer` instructions and the Shipping / Opening-a-PR playbooks cover the rest (text) |
 | Comments default none | `comment-reviewer` agent limited to read tools (`tools:` in its frontmatter), spawned by `no-comments` before review |
 | Diff readability pass before done | text only: `simplifying-code` skill, named in Code style |
+| Review separation: `simplifying-code` and `no-comments` run in a fresh context, never by the diff's author, before the first "done" reply | text only: Feature step 6; `harness-mode` non-negotiables |
+| Every new constant / error / message / helper in a PRD names its model file | text only: "PRD before starting" above; Feature step 4 |
 | Red → green → refactor for every behavior change | text only: `tdd` skill (mandatory in `harness-mode`); Feature step 4 and Bug fix step 3 brief it; a skip is written in the todo list per the tdd skill's skip clause |
 | Chat replies in i-have-adhd shape | plugin SessionStart hook via `.i-have-adhd-always` (install.sh) |
 
