@@ -27,7 +27,7 @@ You (the session model) are the orchestrator. Plan, decompose, synthesize.
 Reasoning-heavy phases → deep-reasoner role (Opus 5.5, effort xhigh)
 Mechanical work → fast-worker role (Sonnet 5, effort medium)
 Internet research (docs, versions, error messages, current facts) → web-searcher role (Haiku 4.5)
-Committing finished work on instruction → code-committer role (Haiku 4.5) — never modifies code, never pushes to main — branch + PR when told to ship
+Committing finished work on instruction → code-committer role (Haiku 4.5) — never modifies code, never pushes to main — branch + PR when told to ship. "On instruction" means the user asked for the commit/push/PR in the current turn; a delivery plan ending in PRs is not that ask. Only `~/ai-harness` may be committed and pushed (on a branch) without asking.
 Other agent (a fresh instance of the current session model — same model as you, separate context) is a cracked engineer on par with deep-reasoner, from a different perspective. Treat as a peer, not a reviewer.
 Code-writing delegate inside a harness-mode playbook step → harness-agent role (session model, fresh context; reads the `harness-mode` skill in full before working, executes the brief only — a `general-purpose` agent skips that read and drifts)
 Comment pass before review → comment-reviewer role (Sonnet 5, read-only; spawned by the `no-comments` skill)
@@ -55,6 +55,7 @@ Recurring mistakes get structural fixes, not more prompting: `reflect` after a s
 | Rule | Enforced by (hook / permission / agent limit, or honestly `text only`) |
 |---|---|
 | Playbook steps copied verbatim into the todo list | `UserPromptSubmit` hook in `claude/settings.json` injects the reminder every prompt; the `harness-mode` skill holds the steps |
+| No `git commit` / `git push` / `gh pr` unless the user asked this turn (`~/ai-harness` exempt) | `PreToolUse` hook `claude/hooks/commit-guard.py` blocks the Bash command; `UserPromptSubmit` hook `commit-grant.py` opens a 30-minute grant when the user's message asks for it; `claude/hooks/test_commit_guard.sh` pins both. Subagent and playbook text repeats the rule |
 | Never push to main; branch + PR | `permissions.deny` in `claude/settings.json` blocks `git push origin main` and force pushes; `code-committer` instructions and the Shipping / Opening-a-PR playbooks cover the rest (text) |
 | Comments default none | `comment-reviewer` agent limited to read tools (`tools:` in its frontmatter), spawned by `no-comments` before review |
 | Diff readability pass before done | text only: `simplifying-code` skill, named in Code style |

@@ -26,6 +26,32 @@ for agent in "$HARNESS_DIR"/agents/*.md; do
     ln -sf "$agent" "$CLAUDE_DIR/agents/$(basename "$agent")"
 done
 
+# hooks: commit-guard blocks git commit/push and gh pr outside this repo unless the user asked this turn (commit-grant)
+mkdir -p "$CLAUDE_DIR/hooks"
+for hook in "$HARNESS_DIR"/claude/hooks/*.py; do
+    ln -sf "$hook" "$CLAUDE_DIR/hooks/$(basename "$hook")"
+done
+# settings.json is a real file Claude Code rewrites, so the harness hooks are merged in, never symlinked
+HARNESS_DIR="$HARNESS_DIR" CLAUDE_DIR="$CLAUDE_DIR" python3 - <<'PY'
+import json, os
+live_path = os.path.join(os.environ["CLAUDE_DIR"], "settings.json")
+live = json.load(open(live_path)) if os.path.exists(live_path) else {}
+harness = json.load(open(os.path.join(os.environ["HARNESS_DIR"], "claude", "settings.json")))
+live_hooks = live.setdefault("hooks", {})
+for event, groups in harness["hooks"].items():
+    live_groups = live_hooks.setdefault(event, [])
+    present = {hook["command"] for group in live_groups for hook in group.get("hooks", [])}
+    for group in groups:
+        missing = [hook for hook in group["hooks"] if hook["command"] not in present]
+        if missing:
+            live_groups.append({**group, "hooks": missing})
+live.setdefault("permissions", {}).setdefault("deny", [])
+for rule in harness["permissions"]["deny"]:
+    if rule not in live["permissions"]["deny"]:
+        live["permissions"]["deny"].append(rule)
+json.dump(live, open(live_path, "w"), indent=2)
+PY
+
 # Codex CLI: same rules + role/model tiers mirrored in codex/config.toml
 mkdir -p "$HOME/.codex"
 ln -sf "$HARNESS_DIR/AGENTS.md" "$HOME/.codex/AGENTS.md"
@@ -48,5 +74,5 @@ for skill in "$HARNESS_DIR"/skills/*/; do
     ln -sfn "${skill%/}" "$CROSS_TOOL_SKILLS_DIR/$name"
 done
 
-echo "installed: CLAUDE.md -> AGENTS.md, $(ls "$HARNESS_DIR"/agents/*.md | wc -l | tr -d ' ') agents, $(ls -d "$HARNESS_DIR"/skills/*/ | wc -l | tr -d ' ') skills into $CLAUDE_DIR and $CROSS_TOOL_SKILLS_DIR; codex: ~/.codex/AGENTS.md + config.toml"
+echo "installed: CLAUDE.md -> AGENTS.md, hooks merged into settings.json, $(ls "$HARNESS_DIR"/agents/*.md | wc -l | tr -d ' ') agents, $(ls -d "$HARNESS_DIR"/skills/*/ | wc -l | tr -d ' ') skills into $CLAUDE_DIR and $CROSS_TOOL_SKILLS_DIR; codex: ~/.codex/AGENTS.md + config.toml"
 echo "other AI tools: point them at $HARNESS_DIR/AGENTS.md (most read AGENTS.md from a project root automatically)"

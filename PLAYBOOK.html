@@ -872,6 +872,7 @@ err = bcrypt.CompareHashAndPassword(hash, pw)
     <div><b>Pattern ไม่ใช่ copy</b><p>Reference repo ให้ pattern (state management, hook structure, return shape) — ตั้งชื่อใหม่ทั้งหมดให้สื่อหน้าที่ใน repo ของเราเอง</p></div>
     <div><b>Verify ไม่ใช่จำ</b><p>ก่อน assert ว่า "ส่วนอื่นถูก practice แล้ว" ต้อง explore โค้ดจริง อย่าเชื่อความจำ</p></div>
     <div><b>Grill ก่อนเริ่ม</b><p>Challenge สมมติฐานผ่าน AskUserQuestion ทีละคำถามก่อนเริ่มงาน เคาะ decision เป็นข้อ ๆ — ถ้าคำตอบคือข้อเท็จจริงที่รันดูได้ (behavior, timing, output) ให้ prototype แทนการถาม</p></div>
+    <div><b>ไม่ commit จนกว่าจะสั่ง</b><p>ทุก repo ยกเว้น ~/ai-harness: diff อยู่ใน working tree จนกว่า user จะพิมพ์ขอ commit/push/PR ในเทิร์นนั้น · คำตอบเรื่อง scope ("ส่งเป็น 4 PRs") ไม่ใช่คำสั่ง commit · hook commit-guard บล็อกจริง ไม่ใช่แค่ข้อความ</p></div>
     <div><b>กฎที่ไม่มีอะไรบังคับจะโดนลืม</b><p>โดนแก้เรื่องเดียวกันซ้ำ → รัน correct เพื่อแก้ที่ repo (lint, type, test, hook) ไม่ใช่ prompt เพิ่ม · ตาราง rule ↔ enforcer อยู่ใน AGENTS.md "Task routing"</p></div>
   </div>
 </section>
@@ -1553,6 +1554,7 @@ const STORY_GUARDS = [
   { label: "plugin", beatIndex: 1, detail: "plugin i-have-adhd: SessionStart hook กำหนดทรงคำตอบทุก session" },
   { label: "hook", beatIndex: 2, detail: "UserPromptSubmit hook เตือนให้ copy steps ลง todo ทุก prompt" },
   { label: "permission", beatIndex: 4, detail: "permissions.deny บล็อก git push origin main และ force push" },
+  { label: "hook", beatIndex: 4, detail: "commit-guard: PreToolUse บล็อก git commit / push / gh pr ทุก repo ยกเว้น ~/ai-harness จนกว่า user จะพิมพ์ขอ commit ในเทิร์นนั้น (commit-grant เปิดให้ 30 นาที)" },
   { label: "agent tools", beatIndex: 4, detail: "comment-reviewer มีแค่ read tools: รายงานได้ แก้โค้ดไม่ได้" },
 ];
 const STORY_TIER_COLOR_TOKENS = ["--ws-chart-cat-1", "--ws-chart-cat-1", "--ws-chart-cat-2", "--ws-chart-cat-2", "--ws-chart-cat-3", "--ws-chart-cat-3", "--ws-chart-cat-4", "--ws-chart-cat-5", "--ws-chart-cat-5"];

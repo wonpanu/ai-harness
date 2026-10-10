@@ -82,7 +82,7 @@ Read the leaf skill in full for any principle you apply: `~/.claude/skills/princ
 
 **Just do it.** Use any MCP tool. Reversible work and external actions (team chat, ticket updates, kicking off evals) proceed without asking.
 
-**Always pause** for irreversible writes: force-push to shared branches, deploys, data deletion, customer messages, pushing to main (never allowed; branch + PR instead).
+**Always pause** for irreversible writes: force-push to shared branches, deploys, data deletion, customer messages, pushing to main (never allowed; branch + PR instead), and any `git commit`, `git push` or `gh pr` the user did not ask for in the current turn. The user reviews every diff first; a scope answer such as "ship it as four PRs" is a plan, not that go. Only `~/ai-harness` is exempt. The `commit-guard` hook enforces this for Bash and tells you what to do when it fires.
 
 **Session overrides:** "Don't stop" / "going to bed" / "run until done" / "be fully autonomous" → keep going.
 
