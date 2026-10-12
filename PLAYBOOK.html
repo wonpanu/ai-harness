@@ -645,6 +645,30 @@ isExpress := order.Type != <span class="kw">nil</span> &amp;&amp; *order.Type ==
     </div>
 
     <div class="rule">
+      <h3>guard อ่านไปทางเดียวกับที่มันทำงาน — ห้ามตั้ง flag แล้วค่อยกลับค่า</h3>
+      <p class="why">flag ที่ตั้งใน loop แล้วเช็ค <code>!flag</code> ทีหลัง ทำให้คนอ่านต้องพลิกความหมายสองรอบ ให้ loop "หาของ" แล้ว guard เช็คของที่หาได้ทีละเหตุผล ชื่อ boolean ตั้งตาม branch ที่มันพาไป (<code>isActionDisabled</code>) ยกเว้น idiom ของภาษา (<code>v, ok := m[k]; if !ok</code>, <code>errors.As</code>) เขียนตามภาษา</p>
+      <div class="panes">
+        <div class="pane bad"><span class="tag">อย่าทำ — ตั้ง flag แล้ว negate</span>
+<pre>isActionEnabled := <span class="kw">false</span>
+<span class="kw">for</span> _, action := <span class="kw">range</span> actions {
+    <span class="kw">if</span> action.ID == req.ZeActionID &amp;&amp; action.DisabledAt == <span class="kw">nil</span> {
+        isActionEnabled = <span class="kw">true</span>
+    }
+}
+<span class="kw">if</span> !isActionEnabled { <span class="kw">return</span> <span class="kw">nil</span>, errActionNotFound }</pre></div>
+        <div class="pane good"><span class="tag">ทำแบบนี้ — หาของ แล้ว guard ทีละเหตุผล</span>
+<pre><span class="kw">var</span> action *CampaignAction
+<span class="kw">for</span> i := <span class="kw">range</span> actions {
+    <span class="kw">if</span> actions[i].ID == req.ZeActionID { action = &amp;actions[i] }
+}
+<span class="kw">if</span> action == <span class="kw">nil</span> { <span class="kw">return</span> <span class="kw">nil</span>, errActionNotFound }
+<span class="cm">// product decision: a disabled action is rejected like a deleted one</span>
+isActionDisabled := action.DisabledAt != <span class="kw">nil</span>
+<span class="kw">if</span> isActionDisabled { <span class="kw">return</span> <span class="kw">nil</span>, errActionNotFound }</pre></div>
+      </div>
+    </div>
+
+    <div class="rule">
       <h3>แยก function เมื่อมีคนเรียกซ้ำ — โค้ดใช้ครั้งเดียวอยู่ inline</h3>
       <p class="why">helper ที่มีไว้แค่ตั้งชื่อ block โค้ด ทำให้อ่านทีเดียวไม่จบ ต้องกระโดดไปมา และซ่อนว่ามีคนเรียกกี่ที่ — แยกเมื่อมีผู้เรียกตั้งแต่สองที่ หรือ logic ซับซ้อนพอจะมี test ของตัวเอง</p>
       <div class="panes">

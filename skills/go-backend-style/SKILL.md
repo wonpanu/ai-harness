@@ -14,6 +14,7 @@ Concrete avoid/prefer code for every rule: see [EXAMPLES.md](EXAMPLES.md) — re
 - Guard clauses + early return; never `else` after a returning branch.
 - Error handling is a flat ladder of independent `if` guards (transport err → 404 → non-200 → nil body), each returning immediately, never nested.
 - Name a boolean only for a business condition (`isExpress := ...`) or one tested more than once; plain nil/empty guards stay inline (`if messages == nil`).
+- A guard reads in the direction it fires (`isActionDisabled` → `if isActionDisabled`), never a flag set in a loop and negated after it; find the value, then guard on it. Comma-ok (`v, ok := m[k]; if !ok`) and `errors.As` stay inline and negated as the language writes them.
 - Extract a function only for reused (two or more callers) or genuinely complex logic; single-use blocks stay inline so a method reads top to bottom.
 - Assign, then guard on its own line (`err := f()` / `if err != nil {`) — no `if err := f(); err != nil {` one-liners.
 

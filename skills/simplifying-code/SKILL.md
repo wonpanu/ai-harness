@@ -56,6 +56,7 @@ The reader should follow each changed function top to bottom without jumping bet
 
 - **Control flow:** nesting that guard clauses would flatten, `else` after a branch that returns, one condition that mixes two unrelated reasons.
 - **Names:** abbreviations, generic names (`data`, `tmp`, `flag`, `handle`), names that promise something different from what the value holds.
+- **Booleans:** a named condition tested only as its negation (`if !isActionEnabled`), or a flag set inside a loop and tested after it. The fix is to find the value, then guard on it in the direction the guard fires.
 - **Indirection:** a helper with one caller that exists only to name a block.
 - **Comments:** a comment that restates the code, or a business rule with no comment explaining why.
 - **Literals:** a value another system reads, written inline instead of as a named constant.

@@ -74,6 +74,52 @@ lastID := ""
 if len(messages) > 0 { lastID = messages[len(messages)-1].ID }
 ```
 
+## Guards read in the direction they fire
+
+Avoid — a flag accumulated in a loop, then tested as its negation; the reader flips the meaning twice:
+```go
+isActionEnabled := false
+for _, action := range actions {
+	if action.ID == req.ZeActionID && action.DisabledAt == nil {
+		isActionEnabled = true
+	}
+}
+if !isActionEnabled {
+	return nil, errActionNotFound
+}
+```
+
+Prefer — find the value, then one guard per reason, each named for the branch it takes:
+```go
+var action *CampaignAction
+for i := range actions {
+	if actions[i].ID == req.ZeActionID {
+		action = &actions[i]
+	}
+}
+if action == nil {
+	return nil, errActionNotFound
+}
+// product decision: a disabled action is rejected like a deleted one
+isActionDisabled := action.DisabledAt != nil
+if isActionDisabled {
+	return nil, errActionNotFound
+}
+```
+
+Stays as the language writes it — comma-ok and `errors.As` are plain guards, inline and negated:
+```go
+code, ok := errcodeByModuleCode[moduleError.ErrorCode]
+if !ok {
+	code = errcode.ErrCodeModuleFailed
+}
+
+var moduleError moduleerrs.AppError
+if !errors.As(err, &moduleError) {
+	return wrapUnknown(err)
+}
+```
+
 ## Extract only when reused
 
 Avoid — single-use helpers that make the reader jump around:
