@@ -22,13 +22,14 @@ def grant_path(project_dir):
 
 
 def toplevel(path):
+    # --git-common-dir resolves a worktree to its main repo, so an ai-harness worktree stays exempt
     try:
-        out = subprocess.run(["git", "-C", path, "rev-parse", "--show-toplevel"], capture_output=True, text=True, timeout=5)
+        out = subprocess.run(["git", "-C", path, "rev-parse", "--path-format=absolute", "--git-common-dir"], capture_output=True, text=True, timeout=5)
     except (OSError, subprocess.TimeoutExpired):
         return None
     if out.returncode != 0:
         return None
-    return os.path.realpath(out.stdout.strip())
+    return os.path.realpath(os.path.dirname(out.stdout.strip()))
 
 
 def target_dirs(command, cwd):

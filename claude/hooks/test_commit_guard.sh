@@ -30,6 +30,10 @@ expect "git -C product commit blocked"        2 "$(guard "$HARNESS_DIR" "git -C 
 expect "commit in ai-harness allowed"         0 "$(guard "$HARNESS_DIR" "git commit -m x")"
 expect "push in ai-harness allowed"           0 "$(guard "$HARNESS_DIR" "git push origin fix/x")"
 expect "cd into ai-harness from product cwd allowed" 0 "$(guard "$TMP/product" "cd $HARNESS_DIR && git commit -m x && git push -u origin fix/x")"
+git -C "$HARNESS_DIR" -c user.email=t@t -c user.name=t commit -q --allow-empty -m init; git -C "$HARNESS_DIR" worktree add -q "$TMP/harness-wt" -b wt
+git -C "$TMP/product" -c user.email=t@t -c user.name=t commit -q --allow-empty -m init; git -C "$TMP/product" worktree add -q "$TMP/product-wt" -b wt
+expect "commit in an ai-harness worktree allowed" 0 "$(guard "$TMP/harness-wt" "git commit -m x && git push -u origin wt")"
+expect "commit in a product worktree blocked"    2 "$(guard "$TMP/product-wt" "git commit -m x")"
 expect "harness and product in one command blocked" 2 "$(guard "$TMP/product" "git -C $TMP/product commit -m x; cd $HARNESS_DIR && git push")"
 grep -q "ask the user" "$TMP/err" 2>/dev/null; true
 
