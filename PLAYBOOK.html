@@ -1555,6 +1555,7 @@ const STORY_GUARDS = [
   { label: "hook", beatIndex: 2, detail: "UserPromptSubmit hook เตือนให้ copy steps ลง todo ทุก prompt" },
   { label: "permission", beatIndex: 4, detail: "permissions.deny บล็อก git push origin main และ force push" },
   { label: "hook", beatIndex: 4, detail: "commit-guard: PreToolUse บล็อก git commit / push / gh pr ทุก repo ยกเว้น ~/ai-harness จนกว่า user จะพิมพ์ขอ commit ในเทิร์นนั้น (commit-grant เปิดให้ 30 นาที)" },
+  { label: "hook", beatIndex: 4, detail: "comment-guard: PostToolUse แจ้งทุก comment line ที่ Edit/Write เพิ่ม (ยกเว้น Arrange/Act/Assert และ directive) ให้ลบหรือระบุ business rule ตั้งแต่ตอนเขียน" },
   { label: "agent tools", beatIndex: 4, detail: "comment-reviewer มีแค่ read tools: รายงานได้ แก้โค้ดไม่ได้" },
 ];
 const STORY_TIER_COLOR_TOKENS = ["--ws-chart-cat-1", "--ws-chart-cat-1", "--ws-chart-cat-2", "--ws-chart-cat-2", "--ws-chart-cat-3", "--ws-chart-cat-3", "--ws-chart-cat-4", "--ws-chart-cat-5", "--ws-chart-cat-5"];

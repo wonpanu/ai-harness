@@ -26,7 +26,8 @@ for agent in "$HARNESS_DIR"/agents/*.md; do
     ln -sf "$agent" "$CLAUDE_DIR/agents/$(basename "$agent")"
 done
 
-# hooks: commit-guard blocks git commit/push and gh pr outside this repo unless the user asked this turn (commit-grant)
+# hooks: commit-guard blocks git commit/push and gh pr outside this repo unless the user asked this turn (commit-grant);
+# comment-guard lists every comment line an Edit/Write adds so the comment pass happens at write time
 mkdir -p "$CLAUDE_DIR/hooks"
 for hook in "$HARNESS_DIR"/claude/hooks/*.py; do
     ln -sf "$hook" "$CLAUDE_DIR/hooks/$(basename "$hook")"

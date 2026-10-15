@@ -72,6 +72,18 @@
           }
         ]
       }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 -I ~/.claude/hooks/comment-guard.py",
+            "timeout": 10
+          }
+        ]
+      }
     ]
   }
 }

@@ -42,7 +42,7 @@ Concrete avoid/prefer code for every rule: see [EXAMPLES.md](EXAMPLES.md) — re
 
 ## Comments & tests
 
-- Comments: default none. One line max, only for a business rule or external constraint the code cannot show (client reads `projects[0]`, legacy quirk mirrored, workaround) — never how a technique works, what a struct holds, or a restatement of the name.
+- Comments: default none. One line max, only for a business rule or external constraint the code cannot show (client reads `projects[0]`, legacy quirk mirrored, workaround) — never how a technique works, what a struct holds, or a restatement of the name. A doc comment that repeats the route or signature, a route-order note, or "what this field holds" is the same smell and goes.
 - Godoc only on exported symbols whose rule isn't visible in the signature, also one line. Handler doc: one line naming the route.
 - Test `// Arrange` / `// Act` / `// Assert` markers stay bare unless the arrangement itself is the surprise (`// Arrange — a closed pool stands in for a dead connection`).
 - Last step of any change: a comment pass over the diff, deleting every comment that fails the rules above.
