@@ -44,6 +44,29 @@ Red flags:
 - Test name describes HOW not WHAT
 - Verifying through external means instead of interface
 
+**Table-driven cases**: One loop, one assertion line, many inputs.
+
+```go
+// BAD: a failure at line 12 could be any of the four cases
+cases := []struct{ name, input, expect string }{ /* … */ }
+for _, tc := range cases {
+	t.Run(tc.name, func(t *testing.T) {
+		_, err := Transform(parse(tc.input))
+		assert.EqualError(t, err, tc.expect)
+	})
+}
+
+// GOOD: one function per case; the failing line is the case
+func TestTransformMetaIsArrayReturnsError(t *testing.T) { /* Arrange / Act / Assert */ }
+func TestTransformYoutubeNullTypeReturnsError(t *testing.T) { /* … */ }
+```
+
+Red flags:
+
+- A `cases` slice with `input`/`expect` fields
+- The failing line in CI output does not name the case
+- Adding a case means adding a row, not a test
+
 ```typescript
 // BAD: Bypasses interface to verify
 test("createUser saves to database", async () => {
