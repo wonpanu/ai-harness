@@ -46,4 +46,5 @@ Concrete avoid/prefer code for every rule: see [EXAMPLES.md](EXAMPLES.md) — re
 - Godoc only on exported symbols whose rule isn't visible in the signature, also one line. Handler doc: one line naming the route.
 - Test `// Arrange` / `// Act` / `// Assert` markers stay bare unless the arrangement itself is the surprise (`// Arrange — a closed pool stands in for a dead connection`).
 - Last step of any change: a comment pass over the diff, deleting every comment that fails the rules above.
-- Tests: external test package, `t.Run("should …")` subtests, `// Arrange` / `// Act` / `// Assert` markers in every case, tiny local helpers (`intPtr`) over inline noise.
+- Tests: external test package, one `Test…` function per case (`TestTransformYoutubeNullTypeReturnsError`), `// Arrange` / `// Act` / `// Assert` markers in every case, tiny local helpers (`intPtr`) over inline noise.
+- Never a table-driven `cases := []struct{…}` loop: every case fails on the same assertion line, so the stack trace names the loop, not the case. `t.Run` subtests are fine only when each has its own literal body; a subtest that reads from a table is the same smell.
