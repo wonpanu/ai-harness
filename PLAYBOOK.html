@@ -794,6 +794,37 @@ err = bcrypt.CompareHashAndPassword(hash, pw)
     </div>
 
     <div class="rule">
+      <h3>ทุก subtest ยืนยัน call ของตัวเอง — mock เป็น struct เปล่า ไม่มี <code>.Maybe()</code></h3>
+      <p class="why"><code>assert.NoError</code> หรือ body ที่มีแค่ status ผ่านได้แม้ usecase ไม่เคยเรียก repo — แต่ละ subtest จึงต้องบอกเองว่า scene นี้ถึง call ไหน (<code>AssertCalled</code> พร้อม args จริง) และ guard ตัด call ไหน (<code>AssertNotCalled</code>) · สร้าง mock เป็น <code>&amp;mocks.IX{}</code> ไม่ใช่ <code>mocks.NewIX(t)</code> เพราะ constructor ลงทะเบียน <code>t.Cleanup(AssertExpectations)</code> ที่บังคับให้แปะ <code>.Maybe()</code> ทุก stub ใน beforeEach จนมองไม่เห็นว่า subtest ตรวจอะไร · ก่อนเลือก pattern ดู repo พี่น้องในองค์กรก่อน (analytics-suite, influencer-directory) — แบบเข้มกว่าที่ไม่มีใครใช้ไม่ได้ดีกว่า</p>
+      <div class="panes">
+        <div class="pane bad"><span class="tag">อย่าทำ</span>
+<pre>projectRepo = repoMocks.NewIProjectRepo(t)
+projectRepo.On(<span class="str">"CreateProject"</span>, mock.Anything, mock.Anything).Return(…).Maybe()
+
+t.Run(<span class="str">"should return nil when the repo succeeds"</span>, <span class="kw">func</span>(t *testing.T) {
+    <span class="cm">// Assert</span>
+    assert.NoError(t, err) <span class="cm">// ผ่านแม้ UpdateRole ไม่ถูกเรียก</span>
+})</pre></div>
+        <div class="pane good"><span class="tag">ทำแบบนี้</span>
+<pre>projectRepo = &amp;repoMocks.IProjectRepo{}
+projectRepo.On(<span class="str">"CreateProject"</span>, mock.Anything, mock.Anything).Return(…)
+
+t.Run(<span class="str">"should return PUCP01 when the caller has 5 of 5"</span>, <span class="kw">func</span>(t *testing.T) {
+    <span class="cm">// Assert</span>
+    assert.Equal(t, <span class="str">"PUCP01"</span>, errs.ErrorCode(err))
+    projectRepo.AssertNotCalled(t, <span class="str">"CreateProject"</span>, mock.Anything, mock.Anything)
+})
+
+t.Run(<span class="str">"should return nil when the repo succeeds"</span>, <span class="kw">func</span>(t *testing.T) {
+    <span class="cm">// Assert</span>
+    assert.NoError(t, err)
+    projectUserRepo.AssertCalled(t, <span class="str">"UpdateRole"</span>, mock.Anything,
+        repo.ProjectMemberRoleUpdate{ProjectID: 501, UserID: 42, Role: <span class="str">"viewer"</span>})
+})</pre></div>
+      </div>
+    </div>
+
+    <div class="rule">
       <h3>ที่เหลือยึด official style ของภาษา</h3>
       <p class="why">Go บังคับ initialism casing: <code>ID</code>, <code>URL</code>, <code>API</code> — ข้อยกเว้นเดียวคือ struct ที่ mirror wire format ให้ใช้ casing ตาม JSON ต้นทางเป๊ะ</p>
       <div class="panes">
