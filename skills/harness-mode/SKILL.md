@@ -28,6 +28,7 @@ Remaining triggers:
 - Before review → the **no-comments** skill (`comment-reviewer` agent).
 - Shipping UI / CLI / server behavior → prove it on the real surface. The **run** skill drives the project's app; the **claude-in-chrome** skill drives browser UIs. For bug fixes, reproduce first on the same surface yourself. Hand to the user only under the narrow Bug fix step 1 exception.
 - Running a benchmark, measuring perf, or reporting a speedup or regression you measured → the **benchmark-checklist** skill before you report or act on the number.
+- A claim that depends on a shipped binary, JavaScript bundle, APK, firmware, or an app you have no source for (how does their feature work, what changed between versions, decompile this) → the **reverse-engineer-anything** skill (REA MCP, registered per machine by `npx -y rea-agents@latest setup --client claude_code --skill=false`, since the skill is managed here, not by REA). Not for a repo whose source you already have: read the code.
 - Any PR-status request → the **Babysit** playbook (`playbooks/babysit.md`). That includes "babysit this", "get it green", "address the review comments", "check on PR X", "anything outstanding on X". Never triggered by merely opening a PR. Declare its mode before polling. Step 1 owns the request-to-mode mapping.
 - Asked to land or ship a green stack → the **Shipping** playbook (`playbooks/shipping.md`). Green is not safe. Nothing lands before an independent per-PR verdict, and only the contiguous verified run from the root lands. Never push to main. Ship via branch + PR (AGENTS.md).
 - A review bot commented (Claude Code `/code-review`, `/security-review`, a GitHub review bot) → skeptical posture. They catch real bugs and also file non-issues and nitpicks. Assess each on its merits and dismiss noise with a concrete reason instead of churning code. Triage fix / dismiss / ask per `references/review-bot-triage.md`.
@@ -82,7 +83,7 @@ Read the leaf skill in full for any principle you apply: `~/.claude/skills/princ
 
 **Just do it.** Use any MCP tool. Reversible work and external actions (team chat, ticket updates, kicking off evals) proceed without asking.
 
-**Always pause** for irreversible writes: force-push to shared branches, deploys, data deletion, customer messages, pushing to main (never allowed; branch + PR instead).
+**Always pause** for irreversible writes: force-push to shared branches, deploys, data deletion, customer messages, pushing to main (never allowed; branch + PR instead), and any `git commit`, `git push` or `gh pr` the user did not ask for in the current turn. The user reviews every diff first; a scope answer such as "ship it as four PRs" is a plan, not that go. Only `~/ai-harness` is exempt. The `commit-guard` hook enforces this for Bash and tells you what to do when it fires.
 
 **Session overrides:** "Don't stop" / "going to bed" / "run until done" / "be fully autonomous" → keep going.
 

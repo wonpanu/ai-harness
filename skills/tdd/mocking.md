@@ -57,3 +57,13 @@ The SDK approach means:
 - No conditional logic in test setup
 - Easier to see which endpoints a test exercises
 - Type safety per endpoint
+
+## Verifying calls
+
+A mock that only feeds results lets a test pass when the code under test never reached it: `NoError` and a status-only body look the same whether the collaborator ran or not. Every subtest states what it expects of the calls it owns:
+
+- The path reaches the call → assert it was called with the literal arguments (`AssertCalled(t, "CreateProject", …)`, `expect(client.charge).toHaveBeenCalledWith(…)`). The arguments are the contract, not just the fact of the call.
+- A guard cuts the path first → assert it was not called (`AssertNotCalled`, `not.toHaveBeenCalled()`).
+- A result that only the stub could have produced (an error code, a mapped body) is implicit proof of the call, but not of the arguments; add the explicit assertion when the arguments carry a rule (`CreatedBy: userID`).
+
+Prefer plain mocks you verify yourself over self-verifying mocks (`mocks.NewIX(t)`) that assert every stub was used: a shared `beforeEach` stubs the whole happy path, and the self-verifying variant then forces an "optional" marker (`.Maybe()`) onto every stub a guard may skip, which hides the assertions that matter. The explicit style reads the same across the organisation's repos; a stricter local variant is not worth the divergence.

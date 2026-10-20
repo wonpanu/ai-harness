@@ -524,7 +524,7 @@ footer{color:var(--ws-text-muted);font-size:14px;padding-top:var(--ws-space-3);b
   <div class="practice">
     <div><b>Playbooks (23)</b><p>investigation · bug-fix (ใช้ diagnose) · perf-issue · hillclimb · runtime-forensics · trace-forensics · feature (tdd เมื่อขอ) · refactoring · prototype · visual-parity · authoring-a-skill · eval · babysit · shipping · autonomous-run · orchestrate · autopilot-full · autopilot-stack · session-pickup · pause-safely (handoff) · multi-phase-plan (to-prd, to-issues) · worktree-cleanup · opening-a-pr — ไม่มีอันไหนตรง → skill figure-it-out ออกแบบ playbook เฉพาะงาน</p></div>
     <div><b>TDD ท่าบังคับ</b><p>ทุก behavior change (feature, bug fix) ผ่าน skill tdd เสมอ: ตกลง seam กับ user ก่อน → red (test ที่ fail หนึ่งตัวที่ seam, expected เป็น literal จากแหล่งอิสระ) → green (โค้ดน้อยสุดที่ผ่าน) ทีละ slice → refactor เฉพาะตอน review ผ่าน simplifying-code · ไม่มี implementation ก่อน failing test · ข้ามได้แค่กรณีไม่มี local test path ถูก ๆ และต้องเขียน skip: เหตุผล ใน todo · codebase-design ให้ศัพท์ seam/module/interface · ดัดแปลงจาก mattpocock/skills (MIT)</p></div>
-    <div><b>เข้าใจก่อนแก้</b><p><code>how</code> เดินผ่านว่า subsystem ทำงานอย่างไร · <code>why</code> หาเหตุผลที่สร้างแบบนี้จาก git, tracker, docs, MCP · <code>teach</code> รวมสองอย่างเป็นคำอธิบายทีละ diagram · <code>recall</code> ดึง context ล่าสุดจาก transcript · <code>blast-radius</code> งานเล็กที่อาจกระทบอะไรบ้าง พิสูจน์ด้วยการรันจริง</p></div>
+    <div><b>เข้าใจก่อนแก้</b><p><code>how</code> เดินผ่านว่า subsystem ทำงานอย่างไร · <code>why</code> หาเหตุผลที่สร้างแบบนี้จาก git, tracker, docs, MCP · <code>teach</code> รวมสองอย่างเป็นคำอธิบายทีละ diagram · <code>recall</code> ดึง context ล่าสุดจาก transcript · <code>blast-radius</code> งานเล็กที่อาจกระทบอะไรบ้าง พิสูจน์ด้วยการรันจริง · <code>reverse-engineer-anything</code> (REA MCP) เมื่อคำตอบพึ่ง binary / JS bundle / APK / app ที่ไม่มี source — ถ้ามี source อยู่แล้วให้อ่านโค้ดแทน</p></div>
     <div><b>ออกแบบและ fan-out</b><p><code>architect</code> ตั้ง caller usage, types, module shape ก่อนโค้ดข้าม boundary · <code>arena</code> N รอบคู่ขนานโจทย์เดียว แล้ว graft ส่วนดีที่สุด · <code>swarm</code> N worker คนละ slice รายงานเดียว · panel = deep-reasoner + harness-agent + Codex (<code>codex exec</code> gpt-6-sol) — ต่าง model family เห็นตรงกัน = สัญญาณแรง</p></div>
     <div><b>Review และตัวเลข</b><p><code>interrogate</code> หลาย model พยายามหัก diff รวม lens code-quality และ senior-lead-reviewer · <code>benchmark-checklist</code> ตรวจตัวเลขที่วัดได้ก่อนรายงาน (limiter, tuning, repeat runs) · <code>no-comments</code> → comment-reviewer ก่อน review · <code>simplifying-code</code> ก่อน commit</p></div>
     <div><b>เรียนรู้เป็นโครงสร้าง</b><p>แก้ซ้ำเรื่องเดิม = ต้องแก้ที่ repo ไม่ใช่ prompt ใหม่ · <code>reflect</code> หลัง session ที่ได้บทเรียน → เสนอ skill edit แยก Accepted/Rejected/Backlog · <code>correct</code> เมื่อโดนแก้เรื่องเดียวกันครั้งที่สอง → ขุด class ความผิดจาก history แล้วแก้ที่ระดับสูงสุดที่ได้ (architecture → types/lint/CI → test → docs) พร้อมตาราง rule ↔ enforcer ใน AGENTS.md · <code>automate-me</code> ร่าง -mode ของตัวเองจาก history · <code>show-me-your-work</code> decision log แบบ TSV เมื่อ user ปล่อยให้ทำแล้วมา review ทีหลัง</p></div>
@@ -771,6 +771,60 @@ err = bcrypt.CompareHashAndPassword(hash, pw)
     </div>
 
     <div class="rule">
+      <h3>หนึ่ง test function ต่อหนึ่ง case ห้าม table-driven</h3>
+      <p class="why">เวลา test พัง CI บอกแค่บรรทัด — ใน loop บรรทัดนั้นคือ assertion ที่ทุก case ใช้ร่วมกัน กดกระโดดไปดูแล้วไม่รู้ว่า case ไหนพัง ต้องรันซ้ำด้วย <code>-run -v</code> · แยกเป็นฟังก์ชันละ case ชื่อฟังก์ชันคือชื่อ case บรรทัดที่พังคือ case นั้นทันที</p>
+      <div class="panes">
+        <div class="pane bad"><span class="tag">อย่าทำ</span>
+<pre>cases := []<span class="kw">struct</span>{ name, input, expect <span class="kw">string</span> }{ <span class="cm">/* 4 rows */</span> }
+<span class="kw">for</span> _, tc := <span class="kw">range</span> cases {
+    t.Run(tc.name, <span class="kw">func</span>(t *testing.T) {
+        _, err := Transform(parse(tc.input))
+        assert.EqualError(t, err, tc.expect) <span class="cm">// line 12 — case ไหน?</span>
+    })
+}</pre></div>
+        <div class="pane good"><span class="tag">ทำแบบนี้</span>
+<pre><span class="kw">func</span> TestTransformMetaIsArrayReturnsError(t *testing.T) {
+    <span class="cm">// Arrange</span> … <span class="cm">// Act</span> … <span class="cm">// Assert</span>
+}
+
+<span class="kw">func</span> TestTransformYoutubeNullTypeReturnsError(t *testing.T) {
+    <span class="cm">// Arrange</span> … <span class="cm">// Act</span> … <span class="cm">// Assert</span>
+}</pre></div>
+      </div>
+    </div>
+
+    <div class="rule">
+      <h3>ทุก subtest ยืนยัน call ของตัวเอง — mock เป็น struct เปล่า ไม่มี <code>.Maybe()</code></h3>
+      <p class="why"><code>assert.NoError</code> หรือ body ที่มีแค่ status ผ่านได้แม้ usecase ไม่เคยเรียก repo — แต่ละ subtest จึงต้องบอกเองว่า scene นี้ถึง call ไหน (<code>AssertCalled</code> พร้อม args จริง) และ guard ตัด call ไหน (<code>AssertNotCalled</code>) · สร้าง mock เป็น <code>&amp;mocks.IX{}</code> ไม่ใช่ <code>mocks.NewIX(t)</code> เพราะ constructor ลงทะเบียน <code>t.Cleanup(AssertExpectations)</code> ที่บังคับให้แปะ <code>.Maybe()</code> ทุก stub ใน beforeEach จนมองไม่เห็นว่า subtest ตรวจอะไร · ก่อนเลือก pattern ดู repo พี่น้องในองค์กรก่อน (analytics-suite, influencer-directory) — แบบเข้มกว่าที่ไม่มีใครใช้ไม่ได้ดีกว่า</p>
+      <div class="panes">
+        <div class="pane bad"><span class="tag">อย่าทำ</span>
+<pre>projectRepo = repoMocks.NewIProjectRepo(t)
+projectRepo.On(<span class="str">"CreateProject"</span>, mock.Anything, mock.Anything).Return(…).Maybe()
+
+t.Run(<span class="str">"should return nil when the repo succeeds"</span>, <span class="kw">func</span>(t *testing.T) {
+    <span class="cm">// Assert</span>
+    assert.NoError(t, err) <span class="cm">// ผ่านแม้ UpdateRole ไม่ถูกเรียก</span>
+})</pre></div>
+        <div class="pane good"><span class="tag">ทำแบบนี้</span>
+<pre>projectRepo = &amp;repoMocks.IProjectRepo{}
+projectRepo.On(<span class="str">"CreateProject"</span>, mock.Anything, mock.Anything).Return(…)
+
+t.Run(<span class="str">"should return PUCP01 when the caller has 5 of 5"</span>, <span class="kw">func</span>(t *testing.T) {
+    <span class="cm">// Assert</span>
+    assert.Equal(t, <span class="str">"PUCP01"</span>, errs.ErrorCode(err))
+    projectRepo.AssertNotCalled(t, <span class="str">"CreateProject"</span>, mock.Anything, mock.Anything)
+})
+
+t.Run(<span class="str">"should return nil when the repo succeeds"</span>, <span class="kw">func</span>(t *testing.T) {
+    <span class="cm">// Assert</span>
+    assert.NoError(t, err)
+    projectUserRepo.AssertCalled(t, <span class="str">"UpdateRole"</span>, mock.Anything,
+        repo.ProjectMemberRoleUpdate{ProjectID: 501, UserID: 42, Role: <span class="str">"viewer"</span>})
+})</pre></div>
+      </div>
+    </div>
+
+    <div class="rule">
       <h3>ที่เหลือยึด official style ของภาษา</h3>
       <p class="why">Go บังคับ initialism casing: <code>ID</code>, <code>URL</code>, <code>API</code> — ข้อยกเว้นเดียวคือ struct ที่ mirror wire format ให้ใช้ casing ตาม JSON ต้นทางเป๊ะ</p>
       <div class="panes">
@@ -872,6 +926,7 @@ err = bcrypt.CompareHashAndPassword(hash, pw)
     <div><b>Pattern ไม่ใช่ copy</b><p>Reference repo ให้ pattern (state management, hook structure, return shape) — ตั้งชื่อใหม่ทั้งหมดให้สื่อหน้าที่ใน repo ของเราเอง</p></div>
     <div><b>Verify ไม่ใช่จำ</b><p>ก่อน assert ว่า "ส่วนอื่นถูก practice แล้ว" ต้อง explore โค้ดจริง อย่าเชื่อความจำ</p></div>
     <div><b>Grill ก่อนเริ่ม</b><p>Challenge สมมติฐานผ่าน AskUserQuestion ทีละคำถามก่อนเริ่มงาน เคาะ decision เป็นข้อ ๆ — ถ้าคำตอบคือข้อเท็จจริงที่รันดูได้ (behavior, timing, output) ให้ prototype แทนการถาม</p></div>
+    <div><b>ไม่ commit จนกว่าจะสั่ง</b><p>ทุก repo ยกเว้น ~/ai-harness: diff อยู่ใน working tree จนกว่า user จะพิมพ์ขอ commit/push/PR ในเทิร์นนั้น · คำตอบเรื่อง scope ("ส่งเป็น 4 PRs") ไม่ใช่คำสั่ง commit · hook commit-guard บล็อกจริง ไม่ใช่แค่ข้อความ</p></div>
     <div><b>กฎที่ไม่มีอะไรบังคับจะโดนลืม</b><p>โดนแก้เรื่องเดียวกันซ้ำ → รัน correct เพื่อแก้ที่ repo (lint, type, test, hook) ไม่ใช่ prompt เพิ่ม · ตาราง rule ↔ enforcer อยู่ใน AGENTS.md "Task routing"</p></div>
   </div>
 </section>
@@ -1553,6 +1608,8 @@ const STORY_GUARDS = [
   { label: "plugin", beatIndex: 1, detail: "plugin i-have-adhd: SessionStart hook กำหนดทรงคำตอบทุก session" },
   { label: "hook", beatIndex: 2, detail: "UserPromptSubmit hook เตือนให้ copy steps ลง todo ทุก prompt" },
   { label: "permission", beatIndex: 4, detail: "permissions.deny บล็อก git push origin main และ force push" },
+  { label: "hook", beatIndex: 4, detail: "commit-guard: PreToolUse บล็อก git commit / push / gh pr ทุก repo ยกเว้น ~/ai-harness จนกว่า user จะพิมพ์ขอ commit ในเทิร์นนั้น (commit-grant เปิดให้ 30 นาที)" },
+  { label: "hook", beatIndex: 4, detail: "comment-guard: PostToolUse แจ้งทุก comment line ที่ Edit/Write เพิ่ม (ยกเว้น Arrange/Act/Assert และ directive) ให้ลบหรือระบุ business rule ตั้งแต่ตอนเขียน" },
   { label: "agent tools", beatIndex: 4, detail: "comment-reviewer มีแค่ read tools: รายงานได้ แก้โค้ดไม่ได้" },
 ];
 const STORY_TIER_COLOR_TOKENS = ["--ws-chart-cat-1", "--ws-chart-cat-1", "--ws-chart-cat-2", "--ws-chart-cat-2", "--ws-chart-cat-3", "--ws-chart-cat-3", "--ws-chart-cat-4", "--ws-chart-cat-5", "--ws-chart-cat-5"];

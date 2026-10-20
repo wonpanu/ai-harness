@@ -42,8 +42,10 @@ Concrete avoid/prefer code for every rule: see [EXAMPLES.md](EXAMPLES.md) — re
 
 ## Comments & tests
 
-- Comments: default none. One line max, only for a business rule or external constraint the code cannot show (client reads `projects[0]`, legacy quirk mirrored, workaround) — never how a technique works, what a struct holds, or a restatement of the name.
+- Comments: default none. One line max, only for a business rule or external constraint the code cannot show (client reads `projects[0]`, legacy quirk mirrored, workaround) — never how a technique works, what a struct holds, or a restatement of the name. A doc comment that repeats the route or signature, a route-order note, or "what this field holds" is the same smell and goes.
 - Godoc only on exported symbols whose rule isn't visible in the signature, also one line. Handler doc: one line naming the route.
 - Test `// Arrange` / `// Act` / `// Assert` markers stay bare unless the arrangement itself is the surprise (`// Arrange — a closed pool stands in for a dead connection`).
 - Last step of any change: a comment pass over the diff, deleting every comment that fails the rules above.
-- Tests: external test package, `t.Run("should …")` subtests, `// Arrange` / `// Act` / `// Assert` markers in every case, tiny local helpers (`intPtr`) over inline noise.
+- Tests: external test package, one `Test…` function per case (`TestTransformYoutubeNullTypeReturnsError`), `// Arrange` / `// Act` / `// Assert` markers in every case, tiny local helpers (`intPtr`) over inline noise.
+- Never a table-driven `cases := []struct{…}` loop: every case fails on the same assertion line, so the stack trace names the loop, not the case. `t.Run` subtests are fine only when each has its own literal body; a subtest that reads from a table is the same smell.
+- Mockery mocks are `&repoMocks.IProjectRepo{}`, never `repoMocks.NewIProjectRepo(t)`: the constructor registers `t.Cleanup(AssertExpectations)`, which fails any subtest whose guard returns before a shared `beforeEach` stub and so forces `.Maybe()` on every stub. `.Maybe()` is never written. Each subtest proves its scene instead: `repo.AssertCalled(t, "CreateProject", mock.Anything, repo.ProjectInsert{…literal…})` on the path it reaches, `repo.AssertNotCalled(t, "CreateProject", mock.Anything, mock.Anything)` on the path a guard cuts. A call to a method with no `.On()` still panics, in both styles.
