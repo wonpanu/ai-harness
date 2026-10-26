@@ -80,6 +80,26 @@ export default function OrderResults() {
 ```
 The orchestrator above this never sees `isLoading`; `OrderResultsContent` is pure.
 
+## Route guard hook + per-page early returns
+
+Avoid — a wrapper that takes the skeleton as a prop, and one generic skeleton for every page:
+```tsx
+<FrameGate skeleton={<PageSkeleton />}>
+  <Home />
+</FrameGate>
+```
+
+Prefer — the guard is a hook returning a discriminated union and doing its own redirect; each page early-returns its own mirrored skeleton:
+```tsx
+export function Home() {
+  const { guard, handleLogin } = useHome()
+  if (guard.kind === 'loading' || guard.kind === 'redirecting') return <HomeSkeleton />
+  if (guard.kind === 'missing-context') return <MissingContextPanel reason={guard.reason} />
+  return <GetMessageCenterPanel onLogin={handleLogin} />
+}
+```
+`useHome()` composes `useRouteGuard()` with the page's handlers, so the orchestrator never touches `useRouter` or env.
+
 ## as const set with derived type
 
 Avoid: `type OrderStatus = 'pending' | 'paid' | 'cancelled'` duplicated next to a values array.

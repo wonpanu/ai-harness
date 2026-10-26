@@ -13,6 +13,8 @@ Concrete avoid/prefer code for every rule: see [EXAMPLES.md](EXAMPLES.md) — re
 
 - One component per file; PascalCase filename = component name.
 - Orchestrator components compose hooks + render only; pure UI lives in `components/`.
+- One feature hook per orchestrator (`const { guard, handleLogin } = useHome()`); the orchestrator never calls `useRouter`, `useState`, `useId` or reads env itself — the feature hook owns navigation, env and handlers.
+- Use the project's UI kit primitives (shadcn via its CLI) composed or wrapped, never hand-written `<input>`, `<label>`, dividers, skeletons or alerts. After `shadcn add`, fix the generated `cn` import (it may misread the alias and add a `cn` package) and swap its icon library for the project's.
 - No barrel `index.ts` — import concrete file paths.
 - Co-locate skeletons and small private render helpers with their owner; split anything with a meaningful standalone name.
 
@@ -34,7 +36,9 @@ Concrete avoid/prefer code for every rule: see [EXAMPLES.md](EXAMPLES.md) — re
 
 ## Rendering
 
-- Loading/error/empty branching = early-return ladder in a gate component that returns a pure content component; orchestrators never see `isLoading`.
+- Loading/error/empty/guard branching = early-return ladder at the top of the orchestrator (or a gate component), each branch returning a pure component; orchestrators never see `isLoading`, they switch on one discriminated union (`guard.kind`).
+- A cross-cutting precondition (session cookie, embed context) is a hook returning a discriminated union (`useRouteGuard()` → `loading | missing-context | redirecting | ready`) that performs its own redirect in an effect; never a wrapper component taking `skeleton` or render props.
+- Every page owns a co-located skeleton that mirrors its real layout (same wrapper, same block sizes). Never one generic skeleton shared by all pages: it shifts the layout on load.
 - Inline `&&` only for small optional JSX slices, never for state branching.
 
 ## TypeScript
@@ -52,9 +56,12 @@ Concrete avoid/prefer code for every rule: see [EXAMPLES.md](EXAMPLES.md) — re
 - One shared typed HTTP client with a typed error; features never call `fetch` directly.
 - Services are injectable factories (`createXService(http)`) + default singleton; they unwrap the envelope and return mapped entities — consumers never touch `.data`.
 - Guard closed-set enum fields with a `toXxx` mapper + fallback at the boundary.
+- Values that do not vary by environment (store links, external contract URLs) are named constants in code; env vars only for what differs per environment.
 
 ## Styling, naming, tests
 
 - Conditional classes through a `cn()` helper; semantic design tokens over raw palette utilities; inline `style` only for genuinely non-class values.
 - Handlers `handleX`, callback props `onX`, booleans `is/has/should/can`.
+- Name with the mainstream frontend term (`useRouteGuard`, `Skeleton`, `ProtectedRoute`), not a word coined for one repo (`frame`, `gate`). Helpers are files named after their main export (`resolveSessionRoute.ts`); entity types live in `src/entity/`; no product-name abbreviations (`MESSAGE_CENTER_…`, not `MC_…`). User-facing copy spells the product as the brand does; identifiers keep the code name.
+- No comment that narrates a placeholder or a future ticket (`// until the API lands`): a `PLACEHOLDER_…` name already says it.
 - Extract DOM-independent logic into pure functions and test those; the hook stays a thin binding. Test files co-located, named after the unit.
