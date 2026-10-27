@@ -61,6 +61,7 @@ Recurring mistakes get structural fixes, not more prompting: `reflect` after a s
 | Diff readability pass before done | text only: `simplifying-code` skill, named in Code style |
 | Red → green → refactor for every behavior change | text only: `tdd` skill (mandatory in `harness-mode`); Feature step 4 and Bug fix step 3 brief it; a skip is written in the todo list per the tdd skill's skip clause |
 | Chat replies in i-have-adhd shape | plugin SessionStart hook via `.i-have-adhd-always` (install.sh) |
+| Project knowledge in context at session start | SessionStart hook `claude/hooks/knowledge-context.py`; `knowledge-scan.sh` writes the files (`knowledge-map` skill) |
 
 `tdd` is not optional: every behavior change goes red (failing test at a written-down seam) → green (minimal code) → refactor (at review, via `simplifying-code`), one slice at a time; the tdd skill holds the only skip clause. `codebase-design` supplies the seam/module/interface vocabulary when the interface shape itself is in question. User-invoked workflow skills (`grill-me` / `grill-with-docs` / `to-prd` / `to-issues` / `diagnose` / `handoff` / `harness-help`) stay manual; the playbooks name them where they fit (`diagnose` in Bug fix, `handoff` in Pause safely, `to-prd` + `to-issues` in Multi-phase plan).
 
