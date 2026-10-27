@@ -59,8 +59,8 @@ scan_one() { # $1 repo path -> prints one of: mapped <repo> | skip <repo> (uncha
     mkdir -p "$out_dir"
     raw=$(mktemp)
     if ! (cd "$repo" && "${KNOWLEDGE_CLAUDE:-claude}" -p --model "${KNOWLEDGE_MODEL:-opus}" \
-            --append-system-prompt-file "$PROMPT_FILE" --allowedTools "$READER_TOOLS" --max-turns 60 \
             --add-dir "$(dirname "$repo")" \
+            --append-system-prompt-file "$PROMPT_FILE" --allowedTools "$READER_TOOLS" --max-turns 60 \
             "Map this repository." > "$raw"); then
         rm -f "$raw"
         echo "fail $name (reader exited non-zero)"

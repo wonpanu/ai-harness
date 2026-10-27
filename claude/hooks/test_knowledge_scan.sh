@@ -74,6 +74,7 @@ expect "graph holds the alpha node at HEAD" "alpha $HEAD_SHA" \
   "$(graph "g['nodes'][0]['id'] + ' ' + g['nodes'][0]['mapped_sha']")"
 expect "stub called once" "1" "$(calls)"
 expect "reader may read the sibling repos under the same folder" "--add-dir $ROOT" "$(grep -o -- "--add-dir [^ ]*" "$STUB_ARGS")"
+expect "add-dir is variadic, so a flag must follow it and the prompt stays last" "--add-dir $ROOT --append-system-prompt-file ... Map this repository." "$(sed -E 's/.*(--add-dir [^ ]* --append-system-prompt-file) .* (Map this repository\.)$/\1 ... \2/' "$STUB_ARGS" | head -1)"
 
 # Act
 OUT=$(sh "$SCAN" "$ROOT/alpha" 2>&1 | grep -v "^rendered ")
