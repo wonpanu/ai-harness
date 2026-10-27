@@ -18,9 +18,30 @@ def inline(text):
     return re.sub(r"\*\*([^*]+)\*\*", r"<strong>\1</strong>", text)
 
 
+def flow_block(markdown):
+    sections = re.split(r"^## Flow\s*$", markdown, maxsplit=1, flags=re.M)
+    if len(sections) == 1:
+        return None
+    section = re.split(r"^## ", sections[1], maxsplit=1, flags=re.M)[0]
+    blocks = re.findall(r"```json\s*\n(.*?)\n\s*```", section, re.S)
+    if not blocks:
+        return None
+    try:
+        parsed = json.loads(blocks[0])
+    except ValueError:
+        return None
+    if not isinstance(parsed, dict):
+        return None
+    if not isinstance(parsed.get("components"), list):
+        return None
+    if not isinstance(parsed.get("flows"), list):
+        return None
+    return {"components": parsed["components"], "flows": parsed["flows"]}
+
+
 def notes_html(markdown):
     body = markdown.split("---", 2)[2] if markdown.startswith("---") else markdown
-    body = re.split(r"^## Edges\s*$", body, flags=re.M)[0]
+    body = re.split(r"^## (?:Flow|Edges)\s*$", body, maxsplit=1, flags=re.M)[0]
     out, paragraph, in_list = [], [], False
 
     def flush():
@@ -82,11 +103,16 @@ def main():
     roots = json.load(open(roots_path)).get("roots", []) if os.path.exists(roots_path) else []
     root_path = next((root for root in roots if os.path.basename(root) == args.root), "")
     mapped = {node["id"] for node in graph["nodes"]}
-    notes = {}
+    notes, flows = {}, {}
     for node in graph["nodes"]:
         md_path = os.path.join(folder, node["id"] + ".md")
-        if os.path.exists(md_path):
-            notes[node["id"]] = notes_html(open(md_path).read())
+        if not os.path.exists(md_path):
+            continue
+        markdown = open(md_path).read()
+        notes[node["id"]] = notes_html(markdown)
+        flow = flow_block(markdown)
+        if flow is not None:
+            flows[node["id"]] = flow
     data = {
         "title": f"{args.root.capitalize()} Knowledge Map",
         "root": args.root,
@@ -96,6 +122,7 @@ def main():
         "nodes": graph["nodes"],
         "edges": graph["edges"],
         "notes": notes,
+        "flows": flows,
         "unmapped": [name for name in repos_under(root_path) if name not in mapped],
     }
     template = open(TEMPLATE).read()

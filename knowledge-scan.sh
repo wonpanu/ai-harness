@@ -60,6 +60,7 @@ scan_one() { # $1 repo path -> prints one of: mapped <repo> | skip <repo> (uncha
     raw=$(mktemp)
     if ! (cd "$repo" && "${KNOWLEDGE_CLAUDE:-claude}" -p --model "${KNOWLEDGE_MODEL:-opus}" \
             --append-system-prompt-file "$PROMPT_FILE" --allowedTools "$READER_TOOLS" --max-turns 60 \
+            --add-dir "$(dirname "$repo")" \
             "Map this repository." > "$raw"); then
         rm -f "$raw"
         echo "fail $name (reader exited non-zero)"
@@ -70,15 +71,25 @@ scan_one() { # $1 repo path -> prints one of: mapped <repo> | skip <repo> (uncha
 import datetime, fcntl, json, os, re, sys
 raw_path, md_path, graph_path, repo, repo_path, sha = sys.argv[1:]
 body = open(raw_path).read().strip()
-blocks = re.findall(r"```json\s*\n(.*?)\n\s*```", body, re.S)
-edges = None
-if blocks:
+
+
+def edges_block(markdown):
+    sections = re.split(r"^## Edges\s*$", markdown, maxsplit=1, flags=re.M)
+    if len(sections) == 1:
+        return None
+    blocks = re.findall(r"```json\s*\n(.*?)\n\s*```", sections[1], re.S)
+    if not blocks:
+        return None
     try:
-        parsed = json.loads(blocks[-1])
+        parsed = json.loads(blocks[0])
     except ValueError:
-        parsed = None
-    if isinstance(parsed, list):
-        edges = parsed
+        return None
+    if not isinstance(parsed, list):
+        return None
+    return parsed
+
+
+edges = edges_block(body)
 if edges is None:
     if "## Edges" not in body:
         body += "\n\n## Edges"

@@ -137,6 +137,11 @@ td.n{font-variant-numeric:tabular-nums;text-align:right}
         <figure><svg id="ego" role="img" aria-label="Resources the selected repo touches and the repos sharing them"></svg>
         <figcaption id="egoCaption"></figcaption></figure>
       </div>
+      <div class="card">
+        <figure><svg id="flow" role="img" aria-label="Data flow inside the selected repo: its components, the queues and stores they touch, and the direction data moves"></svg>
+        <figcaption id="flowCaption"></figcaption></figure>
+        <div class="wrap" style="margin-top:12px"><table id="flows"><thead><tr><th>From</th><th>Kind</th><th>Via</th><th>To</th><th>Evidence</th></tr></thead><tbody></tbody></table></div>
+      </div>
       <div class="card notes" id="notes"></div>
     </div>
   </div>
@@ -197,6 +202,7 @@ function select(id) {
   history.replaceState(null, '', '#' + id);
   renderList(document.getElementById('search').value.trim());
   drawEgo(id);
+  drawFlow(id);
   document.getElementById('notes').innerHTML = `<p class="tag">${id} · mapped at ${DATA.nodes.find(n => n.id === id)?.mapped_sha.slice(0, 7)}</p>` + (DATA.notes[id] || '<p>No notes.</p>');
   document.querySelector('.detail').scrollIntoView({ block: 'nearest' });
 }
@@ -246,6 +252,92 @@ function drawEgo(id) {
   svg.setAttribute('viewBox', `0 0 ${W} ${h}`); svg.style.minWidth = '720px'; svg.innerHTML = s;
   svg.querySelectorAll('text[data-id]').forEach(t => t.addEventListener('click', () => select(t.dataset.id)));
   document.getElementById('egoCaption').textContent = `${id} touches ${resources.length} resource${resources.length === 1 ? '' : 's'}; ${otherIds.length} other repo${otherIds.length === 1 ? '' : 's'} share at least one of them. Hover a resource for the queue, table or URL that carries it.`;
+}
+
+const FLOW_NODE_WIDTH = 200, FLOW_COLUMN_GAP = 260, FLOW_ROW = 36, FLOW_TOP = 34, FLOW_LEFT = 20;
+function flowLayers(ids, hops) {
+  const outgoing = new Map(ids.map(id => [id, []]));
+  hops.forEach((hop, index) => outgoing.get(hop.from).push(index));
+  const state = new Map(), finished = [], backEdges = new Set();
+  function visit(node) {
+    state.set(node, 'open');
+    for (const index of outgoing.get(node)) {
+      const next = hops[index].to;
+      if (state.get(next) === 'open') { backEdges.add(index); continue; }
+      if (!state.has(next)) visit(next);
+    }
+    state.set(node, 'done');
+    finished.push(node);
+  }
+  for (const id of ids) if (!state.has(id)) visit(id);
+  const layer = new Map(ids.map(id => [id, 0]));
+  for (const node of finished.reverse()) for (const index of outgoing.get(node)) {
+    if (backEdges.has(index)) continue;
+    const next = hops[index].to;
+    layer.set(next, Math.max(layer.get(next), layer.get(node) + 1));
+  }
+  return { layer, backEdges };
+}
+function flowLabel(id) { return id.length > 30 ? id.slice(0, 29) + '…' : id; }
+function drawFlow(id) {
+  const svg = document.getElementById('flow');
+  const caption = document.getElementById('flowCaption');
+  const flowBody = document.querySelector('#flows tbody');
+  const flow = DATA.flows[id];
+  if (!flow) {
+    svg.removeAttribute('viewBox'); svg.style.minWidth = ''; svg.innerHTML = '';
+    caption.textContent = `No flow recorded for ${id} yet; rescan with knowledge-scan.sh --force <path>.`;
+    flowBody.innerHTML = '';
+    return;
+  }
+  const components = new Map(flow.components.map(c => [c.id, c]));
+  const hops = flow.flows;
+  const ids = [...new Set([...components.keys(), ...hops.flatMap(hop => [hop.from, hop.to])])];
+  const { layer, backEdges } = flowLayers(ids, hops);
+  const columns = Array.from({ length: Math.max(...layer.values(), 0) + 1 }, () => []);
+  for (const node of ids) columns[layer.get(node)].push(node);
+  const row = new Map();
+  columns.forEach(column => {
+    const meanPredecessorRow = node => {
+      const rows = hops.filter(hop => hop.to === node && row.has(hop.from)).map(hop => row.get(hop.from));
+      return rows.length ? rows.reduce((a, b) => a + b, 0) / rows.length : Number.MAX_SAFE_INTEGER;
+    };
+    column.sort((a, b) => meanPredecessorRow(a) - meanPredecessorRow(b));
+    column.forEach((node, index) => row.set(node, index));
+  });
+  const x = node => FLOW_LEFT + layer.get(node) * FLOW_COLUMN_GAP;
+  const y = node => FLOW_TOP + row.get(node) * FLOW_ROW + FLOW_ROW / 2;
+  const W = FLOW_LEFT * 2 + (columns.length - 1) * FLOW_COLUMN_GAP + FLOW_NODE_WIDTH;
+  const H = FLOW_TOP + Math.max(...columns.map(column => column.length)) * FLOW_ROW + 10;
+  let s = `<defs><marker id="flowArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>`;
+  s += `<g font-family="IBM Plex Sans,system-ui" font-size="12" fill="currentColor">`;
+  s += `<text x="${FLOW_LEFT}" y="18" font-size="10" fill="var(--muted)" letter-spacing=".06em">INSIDE THE REPO · DATA MOVES LEFT TO RIGHT</text>`;
+  hops.forEach(hop => {
+    const x1 = x(hop.from) + FLOW_NODE_WIDTH, y1 = y(hop.from), x2 = x(hop.to) - 4, y2 = y(hop.to);
+    const kind = KINDS.includes(hop.kind) ? hop.kind : 'calls';
+    const bend = Math.max(Math.abs(x2 - x1) / 2, 20);
+    s += `<path d="M${x1} ${y1} C ${x1 + bend} ${y1}, ${x2 - bend} ${y2}, ${x2} ${y2}" fill="none" stroke="var(--k-${kind})" stroke-width="1.5" marker-end="url(#flowArrow)"><title>${esc(hop.kind)} via ${esc(hop.via)} (${esc(hop.evidence)})</title></path>`;
+  });
+  for (const node of ids) {
+    const left = x(node), cy = y(node);
+    const component = components.get(node);
+    if (component) {
+      s += `<text x="${left}" y="${cy - 10}" font-size="9" fill="var(--muted)" letter-spacing=".06em">${esc(component.kind.toUpperCase())}</text>`;
+      s += `<rect x="${left}" y="${cy - 7}" width="${FLOW_NODE_WIDTH}" height="18" rx="4" fill="var(--soft)" stroke="var(--accent)" stroke-width="1.2"/>`;
+      s += `<text x="${left + 8}" y="${cy + 5}" font-family="IBM Plex Mono,monospace" font-size="11" font-weight="500"><title>${esc(node)}: ${esc(component.does)} (${esc(component.entry)})</title>${esc(flowLabel(node))}</text>`;
+      continue;
+    }
+    const clickable = repoIds.has(node) ? ` data-id="${esc(node)}" style="cursor:pointer"` : '';
+    s += `<rect x="${left}" y="${cy - 9}" width="${FLOW_NODE_WIDTH}" height="18" rx="9" fill="var(--panel)" stroke="var(--line)"/>`;
+    s += `<text x="${left + 10}" y="${cy + 4}" font-family="IBM Plex Mono,monospace" font-size="11"${clickable}><title>${esc(node)}</title>${esc(flowLabel(node))}</text>`;
+  }
+  s += `</g>`;
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.style.minWidth = `${W}px`; svg.innerHTML = s;
+  svg.querySelectorAll('text[data-id]').forEach(t => t.addEventListener('click', () => select(t.dataset.id)));
+  caption.textContent = `${id}: ${components.size} component${components.size === 1 ? '' : 's'}, ${hops.length} hop${hops.length === 1 ? '' : 's'}. Hover an arrow for the env var that names the queue, table or URL.`;
+  const ordered = [...hops].sort((a, b) => layer.get(a.from) - layer.get(b.from) || row.get(a.from) - row.get(b.from) || layer.get(a.to) - layer.get(b.to) || row.get(a.to) - row.get(b.to));
+  flowBody.innerHTML = ordered.map(hop =>
+    `<tr><td class="mono">${esc(hop.from)}</td><td>${esc(hop.kind)}</td><td class="mono">${esc(hop.via)}</td><td class="mono">${esc(hop.to)}</td><td class="mono">${esc(hop.evidence)}</td></tr>`).join('') || '<tr><td colspan="5">No hops recorded.</td></tr>';
 }
 
 const tbody = document.querySelector('#shared tbody');
