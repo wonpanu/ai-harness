@@ -43,7 +43,7 @@ graph() { # $1 python expression over g, the parsed graph.json
 # Arrange
 HEAD_SHA=$(git -C "$ROOT/alpha" rev-parse HEAD)
 # Act
-OUT=$(sh "$SCAN" "$ROOT/alpha" 2>&1)
+OUT=$(sh "$SCAN" "$ROOT/alpha" 2>&1 | grep -v "^rendered ")
 # Assert
 expect "first run reports mapped" "mapped alpha" "$OUT"
 expect "first run writes the md with mapped_sha at HEAD" "mapped_sha: $HEAD_SHA" "$(grep '^mapped_sha:' "$KNOWLEDGE/work/alpha.md")"
@@ -57,13 +57,13 @@ expect "graph holds the alpha node at HEAD" "alpha $HEAD_SHA" \
 expect "stub called once" "1" "$(calls)"
 
 # Act
-OUT=$(sh "$SCAN" "$ROOT/alpha" 2>&1)
+OUT=$(sh "$SCAN" "$ROOT/alpha" 2>&1 | grep -v "^rendered ")
 # Assert
 expect "second run at the same sha skips" "skip alpha (unchanged)" "$OUT"
 expect "stub not called again on skip" "1" "$(calls)"
 
 # Act
-OUT=$(sh "$SCAN" --force "$ROOT/alpha" 2>&1)
+OUT=$(sh "$SCAN" --force "$ROOT/alpha" 2>&1 | grep -v "^rendered ")
 # Assert
 expect "--force maps again" "mapped alpha" "$OUT"
 expect "--force calls the stub again" "2" "$(calls)"
@@ -71,7 +71,7 @@ expect "--force calls the stub again" "2" "$(calls)"
 # Arrange
 GRAPH_BEFORE=$(cat "$KNOWLEDGE/work/graph.json")
 # Act
-OUT=$(STUB_MODE=noedges sh "$SCAN" --force "$ROOT/alpha" 2>&1)
+OUT=$(STUB_MODE=noedges sh "$SCAN" --force "$ROOT/alpha" 2>&1 | grep -v "^rendered ")
 # Assert
 expect "output without an Edges block still maps, with a warning" "warning: alpha: no Edges json block parsed; graph unchanged
 mapped alpha" "$OUT"
@@ -81,7 +81,7 @@ none parsed" "$(sed -n '/^## Edges/,$p' "$KNOWLEDGE/work/alpha.md")"
 expect "graph unchanged when no edges parsed" "$GRAPH_BEFORE" "$(cat "$KNOWLEDGE/work/graph.json")"
 
 # Act
-OUT=$(sh "$SCAN" --root "$ROOT" 2>&1)
+OUT=$(sh "$SCAN" --root "$ROOT" 2>&1 | grep -v "^rendered ")
 # Assert
 expect "root scan maps the unmapped repo, skips the mapped one, ignores non-repos" "skip alpha (unchanged)
 mapped beta" "$OUT"

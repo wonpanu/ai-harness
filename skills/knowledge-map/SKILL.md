@@ -13,9 +13,10 @@ Everything is under `$CLAUDE_CONFIG_DIR/knowledge/` (default `~/.claude/knowledg
 
 - `roots.json`: `{"roots": ["/Users/me/wisesight", "/Users/me/me"]}`, the folders whose direct git subdirectories are repos.
 - `<root-basename>/<repo-basename>.md`: YAML frontmatter `repo`, `path`, `mapped_sha`, `mapped_at`, then the reader's markdown with the sections `What it is`, `Stack and entry points`, `Depends on`, `Provides`, `Config that names other systems`, `Unknowns`, `Edges`.
+- `<root-basename>/index.html`: the human-readable map, rebuilt by `knowledge-render.py` after every scan (`python3 ~/ai-harness/knowledge-render.py --root <root-basename>` rebuilds it alone): the build pipeline diagram, a repo explorer showing what each repo touches and which repos share it, the shared-resource table, and each repo's notes. Open it for onboarding, or publish it as an artifact for the team.
 - `<root-basename>/graph.json`: `nodes` (one per mapped repo) and `edges` `{from, to, kind, via, evidence}` where `kind` is one of `calls`, `publishes`, `consumes`, `reads`, `writes`, `deploys`. A rescan of a repo replaces only the edges whose `from` is that repo.
 
-The `knowledge-context` SessionStart hook prints `knowledge: <md path> · neighbors: a, b` when the session starts inside a mapped repo, a second line `knowledge: stale by <n> commits` when HEAD moved since the scan, or `knowledge: <repo> is not mapped` with the command to run.
+The `knowledge-context` SessionStart hook prints `knowledge: <md path> · neighbors: a, b` when the session starts inside a mapped repo (neighbors are repos with a direct edge or a shared resource such as the same queue, table or API), a second line `knowledge: stale by <n> commits` when HEAD moved since the scan, or `knowledge: <repo> is not mapped` with the command to run.
 
 ## What to do with it
 

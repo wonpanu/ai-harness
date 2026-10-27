@@ -106,6 +106,10 @@ set), never inside the repos. The `knowledge-context` SessionStart hook prints a
 Rescan one repo with `knowledge-scan.sh <repo path>` (`--force` redoes an
 unchanged one, `KNOWLEDGE_PARALLEL=4` runs four readers at once). The
 `knowledge-map` skill holds the reading rules; nobody edits the files by hand.
+Each scan also rebuilds `<folder>/index.html` through `knowledge-render.py`: a
+page for people, with the build pipeline, a repo explorer (what a repo touches,
+which repos share it), the shared-resource table and every repo's notes. Open it
+for onboarding or publish it for the team.
 
 ## Agents
 

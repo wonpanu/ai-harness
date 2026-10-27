@@ -1,7 +1,7 @@
 #!/bin/sh
 # Controller for the project knowledge map: lists the git repos under each chosen folder, skips the ones mapped at
 # their current HEAD, runs one `claude -p` reader per repo and files its output under $CLAUDE_DIR/knowledge.
-# It never summarizes a repo itself. Skill: skills/knowledge-map/SKILL.md.
+# It never summarizes a repo itself, and re-renders the folder's index.html after a scan. Skill: skills/knowledge-map/SKILL.md.
 # Usage: ./knowledge-scan.sh --init                       pick folders, then offer a scan
 #        ./knowledge-scan.sh [--force] [--root <dir>] [<repo path>...]
 # Env:   KNOWLEDGE_MODEL (opus) · KNOWLEDGE_PARALLEL (1) · KNOWLEDGE_CLAUDE (claude) · CLAUDE_DIR (~/.claude)
@@ -34,6 +34,12 @@ repos_under() { # $1 root -> one repo path per line
 
 scan_all() {
     configured_roots | while read -r root; do repos_under "$root"; done | scan_list
+    configured_roots | while read -r root; do render "$(basename "$root")"; done
+}
+
+render() { # $1 root basename -> index.html beside graph.json, skipped when nothing was mapped yet
+    [ -f "$KNOWLEDGE_DIR/$1/graph.json" ] || return 0
+    CLAUDE_CONFIG_DIR="$CLAUDE_DIR" python3 -I "$HARNESS_DIR/knowledge-render.py" --root "$1" >&2
 }
 
 scan_one() { # $1 repo path -> prints one of: mapped <repo> | skip <repo> (unchanged) | fail <repo> (<reason>)
@@ -142,10 +148,12 @@ done
 
 if [ -n "$repos" ]; then
     printf '%s' "$repos" | scan_list
+    printf '%s' "$repos" | while read -r repo; do render "$(basename "$(dirname "$(cd "$repo" && pwd)")")"; done
     exit 0
 fi
 if [ -n "$root" ]; then
     repos_under "$root" | scan_list
+    render "$(basename "$root")"
     exit 0
 fi
 if [ ! -f "$ROOTS_FILE" ]; then

@@ -30,12 +30,16 @@ def neighbors(graph_path, repo):
         return []
     graph = json.load(open(graph_path))
     known = {node["id"] for node in graph.get("nodes", [])}
-    found = set()
+    touched = {}
     for edge in graph.get("edges", []):
-        ends = {edge.get("from"), edge.get("to")}
-        if repo in ends:
-            found |= ends - {repo}
-    return sorted(found & known)
+        for end in (edge.get("from"), edge.get("to")):
+            touched.setdefault(end, set()).add(edge.get("from"))
+            touched[end].add(edge.get("to"))
+    found = set()
+    for end, members in touched.items():
+        if repo in members:
+            found |= members
+    return sorted((found - {repo}) & known)
 
 
 def commits_since(repo_path, sha):

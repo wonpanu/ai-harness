@@ -37,16 +37,19 @@ expect "unmapped repo asks for a scan" \
 # Arrange
 write_map "$HEAD_SHA"
 cat > "$KNOWLEDGE/work/graph.json" <<EOF
-{"nodes": [{"id": "alpha", "path": "$ROOT/alpha", "mapped_sha": "$HEAD_SHA"}, {"id": "beta", "path": "$ROOT/beta", "mapped_sha": "x"}],
+{"nodes": [{"id": "alpha", "path": "$ROOT/alpha", "mapped_sha": "$HEAD_SHA"}, {"id": "beta", "path": "$ROOT/beta", "mapped_sha": "x"},
+           {"id": "gamma", "path": "$ROOT/gamma", "mapped_sha": "x"}, {"id": "delta", "path": "$ROOT/delta", "mapped_sha": "x"}],
  "edges": [{"from": "beta", "to": "alpha", "kind": "calls", "via": "HTTP /v1", "evidence": "main.go:3"},
-           {"from": "alpha", "to": "sqs:orders", "kind": "publishes", "via": "orders", "evidence": "pub.go:9"}]}
+           {"from": "alpha", "to": "sqs:orders", "kind": "publishes", "via": "orders", "evidence": "pub.go:9"},
+           {"from": "gamma", "to": "sqs:orders", "kind": "consumes", "via": "orders", "evidence": "worker.go:4"},
+           {"from": "delta", "to": "sqs:other", "kind": "consumes", "via": "other", "evidence": "worker.go:4"}]}
 EOF
 # Act / Assert
-expect "mapped at HEAD prints the file and repo neighbors only" \
-  "knowledge: $KNOWLEDGE/work/alpha.md · neighbors: beta" \
+expect "mapped at HEAD prints the file, direct neighbors and repos sharing a resource" \
+  "knowledge: $KNOWLEDGE/work/alpha.md · neighbors: beta, gamma" \
   "$(context "$ROOT/alpha")"
 expect "cwd in a subdirectory resolves to the repo" \
-  "knowledge: $KNOWLEDGE/work/alpha.md · neighbors: beta" \
+  "knowledge: $KNOWLEDGE/work/alpha.md · neighbors: beta, gamma" \
   "$(context "$ROOT/alpha/sub")"
 
 # Arrange
@@ -54,7 +57,7 @@ git -C "$ROOT/alpha" -c user.email=t@t -c user.name=t commit -q --allow-empty -m
 git -C "$ROOT/alpha" -c user.email=t@t -c user.name=t commit -q --allow-empty -m three
 # Act / Assert
 expect "mapped two commits ago reports stale by 2" \
-  "knowledge: $KNOWLEDGE/work/alpha.md · neighbors: beta
+  "knowledge: $KNOWLEDGE/work/alpha.md · neighbors: beta, gamma
 knowledge: stale by 2 commits. Run: ~/ai-harness/knowledge-scan.sh $ROOT/alpha" \
   "$(context "$ROOT/alpha")"
 
