@@ -57,6 +57,7 @@ td.n{font-variant-numeric:tabular-nums;text-align:right}
 .chip:hover,.chip:focus-visible{border-color:var(--accent);outline:none}
 .tag{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
 @media (prefers-reduced-motion:no-preference){.list button,.chip{transition:background .12s}}
+details summary { cursor: pointer; list-style: none } details summary::-webkit-details-marker { display: none } details summary h2::before { content: "▸ "; color: var(--muted) } details[open] summary h2::before { content: "▾ " }
 </style>
 
 <main>
@@ -65,10 +66,50 @@ td.n{font-variant-numeric:tabular-nums;text-align:right}
   <p class="sub" id="subtitle"></p>
 </header>
 
+<section>
+  <h2>Repo explorer</h2>
+  <p class="sub">Pick a repo. The first diagram is the inside: its runnable parts, the queues and stores between them, with production names. The second is the outside: what it touches and which other repos touch the same thing.</p>
+  <div class="legend" id="legend"></div>
+  <div class="explorer" style="margin-top:12px">
+    <div class="list">
+      <input id="search" type="search" placeholder="Filter repos" aria-label="Filter repos">
+      <div id="repoList"></div>
+    </div>
+    <div class="detail">
+      <div class="card">
+        <h3 class="tag" style="margin:0 0 8px">Inside the repo</h3>
+        <figure><svg id="flow" role="img" aria-label="Data flow inside the selected repo: its components, the queues and stores they touch, and the direction data moves"></svg>
+        <figcaption id="flowCaption"></figcaption></figure>
+        <div class="wrap" style="margin-top:12px"><table id="flows"><thead><tr><th>From</th><th>Kind</th><th>Via</th><th>To</th><th>Evidence</th></tr></thead><tbody></tbody></table></div>
+      </div>
+      <div class="card">
+        <h3 class="tag" style="margin:0 0 8px">Outside the repo</h3>
+        <figure><svg id="ego" role="img" aria-label="Resources the selected repo touches and the repos sharing them"></svg>
+        <figcaption id="egoCaption"></figcaption></figure>
+      </div>
+      <div class="card notes" id="notes"></div>
+    </div>
+  </div>
+</section>
+
 <section class="tiles" id="tiles"></section>
 
+
+
 <section>
-  <h2>How the map is built</h2>
+  <h2>Shared resources</h2>
+  <p class="sub">Queues, tables, APIs and buckets touched by more than one repo. These are the seams where one change becomes a multi-repo change.</p>
+  <div class="wrap"><table id="shared"><thead><tr><th>Resource</th><th>Type</th><th class="n">Repos</th><th>Touched by</th></tr></thead><tbody></tbody></table></div>
+</section>
+
+<section>
+  <h2>Not mapped yet</h2>
+  <p class="sub" id="unmappedNote"></p>
+  <div id="unmapped"></div>
+</section>
+<section>
+  <details>
+  <summary><h2 style="display:inline">How this page is built</h2></summary>
   <figure>
     <svg viewBox="0 0 980 300" role="img" aria-label="Data flow: install.sh asks for folders, knowledge-scan.sh runs one Opus reader per repo, the readers write one markdown file per repo and one graph.json per folder, and the SessionStart hook reads those back into every new Claude session before a PRD is drafted." style="min-width:720px">
       <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
@@ -121,42 +162,7 @@ td.n{font-variant-numeric:tabular-nums;text-align:right}
     </svg>
     <figcaption>The controller only lists repos and compares commit hashes. Every sentence in the map was written by an Opus reader inside that repo, read-only, and cites the file and line it came from.</figcaption>
   </figure>
-</section>
-
-<section>
-  <h2>Repo explorer</h2>
-  <p class="sub">Pick a repo. The diagram shows what it touches (middle) and which other repos touch the same thing (right). That shared column is the chain a change here can reach.</p>
-  <div class="legend" id="legend"></div>
-  <div class="explorer" style="margin-top:12px">
-    <div class="list">
-      <input id="search" type="search" placeholder="Filter repos" aria-label="Filter repos">
-      <div id="repoList"></div>
-    </div>
-    <div class="detail">
-      <div class="card">
-        <figure><svg id="ego" role="img" aria-label="Resources the selected repo touches and the repos sharing them"></svg>
-        <figcaption id="egoCaption"></figcaption></figure>
-      </div>
-      <div class="card">
-        <figure><svg id="flow" role="img" aria-label="Data flow inside the selected repo: its components, the queues and stores they touch, and the direction data moves"></svg>
-        <figcaption id="flowCaption"></figcaption></figure>
-        <div class="wrap" style="margin-top:12px"><table id="flows"><thead><tr><th>From</th><th>Kind</th><th>Via</th><th>To</th><th>Evidence</th></tr></thead><tbody></tbody></table></div>
-      </div>
-      <div class="card notes" id="notes"></div>
-    </div>
-  </div>
-</section>
-
-<section>
-  <h2>Shared resources</h2>
-  <p class="sub">Queues, tables, APIs and buckets touched by more than one repo. These are the seams where one change becomes a multi-repo change.</p>
-  <div class="wrap"><table id="shared"><thead><tr><th>Resource</th><th>Type</th><th class="n">Repos</th><th>Touched by</th></tr></thead><tbody></tbody></table></div>
-</section>
-
-<section>
-  <h2>Not mapped yet</h2>
-  <p class="sub" id="unmappedNote"></p>
-  <div id="unmapped"></div>
+  </details>
 </section>
 </main>
 
