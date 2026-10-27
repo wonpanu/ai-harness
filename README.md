@@ -91,6 +91,26 @@ skills (laziness protocol, model the domain, prove it works, never block on the
 human, ...) are one rule each; the mode indexes them and the reply names the ones
 that changed a decision.
 
+## Project knowledge
+
+A machine-local map of your repos, so a session knows what a repo is and which
+other repos a change touches before it drafts the PRD. `knowledge-scan.sh --init`
+asks which folders to map (for example `~/wisesight`); `install.sh` runs it when
+no folders are picked yet. Every git repo directly under a folder gets one
+knowledge file written by a read-only `claude -p` run on Opus (`KNOWLEDGE_MODEL`
+overrides), plus one `graph.json` per folder recording which repos call, publish
+to, consume, read, write or deploy which, each edge cited `path:line`. The files
+live under `~/.claude/knowledge/<folder>/` (`$CLAUDE_CONFIG_DIR/knowledge/` when
+set), never inside the repos. The `knowledge-context` SessionStart hook prints a
+`knowledge:` line with the file, its neighbors and whether the map is stale.
+Rescan one repo with `knowledge-scan.sh <repo path>` (`--force` redoes an
+unchanged one, `KNOWLEDGE_PARALLEL=4` runs four readers at once). The
+`knowledge-map` skill holds the reading rules; nobody edits the files by hand.
+Each scan also rebuilds `<folder>/index.html` through `knowledge-render.py`: a
+page for people, with the build pipeline, a repo explorer (what a repo touches,
+which repos share it), the shared-resource table and every repo's notes. Open it
+for onboarding or publish it for the team.
+
 ## Agents
 
 | Agent | Claude · effort | OpenAI (Codex) | Role |

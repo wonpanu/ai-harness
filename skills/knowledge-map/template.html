@@ -1,0 +1,261 @@
+<title>__TITLE__</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* layout: one reading column for the story, a two-pane explorer (repo list | ego diagram + notes) below it */
+:root{
+  --bg:#f7f6f2; --panel:#ffffff; --fg:#1d1c19; --muted:#5f5d56; --line:#d9d6cc; --accent:#2a4a7a; --soft:#edeae1;
+  --k-calls:#2a78d6; --k-publishes:#eb6834; --k-consumes:#1baf7a; --k-reads:#eda100; --k-writes:#e87ba4; --k-deploys:#008300;
+  --display:"IBM Plex Sans",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#171716; --panel:#1f1f1d; --fg:#ecebe6; --muted:#aaa89f; --line:#3a3936; --accent:#8fb3e6; --soft:#2a2a27;
+  --k-calls:#3987e5; --k-publishes:#d95926; --k-consumes:#199e70; --k-reads:#c98500; --k-writes:#d55181; --k-deploys:#008300; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#171716; --panel:#1f1f1d; --fg:#ecebe6; --muted:#aaa89f; --line:#3a3936; --accent:#8fb3e6; --soft:#2a2a27;
+  --k-calls:#3987e5; --k-publishes:#d95926; --k-consumes:#199e70; --k-reads:#c98500; --k-writes:#d55181; --k-deploys:#008300; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--display);line-height:1.5;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px 48px}
+main{max-width:1180px;margin:0 auto;display:grid;gap:32px}
+h1{font-size:clamp(26px,4vw,36px);font-weight:600;letter-spacing:-.01em;margin:0;text-wrap:balance}
+h2{font-size:20px;font-weight:600;margin:0 0 12px}
+h3{font-size:15px;font-weight:600;margin:16px 0 6px}
+p{max-width:68ch;margin:0 0 10px}
+.sub{color:var(--muted);font-size:14px;margin-top:4px}
+code,.mono{font-family:var(--mono);font-size:.92em}
+code{background:var(--soft);padding:1px 5px;border-radius:3px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.tile{border:1px solid var(--line);background:var(--panel);padding:12px 14px;border-radius:6px}
+.tile b{display:block;font-size:26px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1.1}
+.tile span{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+figure{margin:0;overflow-x:auto}
+figure svg{max-width:100%;height:auto;display:block}
+figcaption{font-size:13px;color:var(--muted);margin-top:8px;max-width:68ch}
+.explorer{display:grid;grid-template-columns:260px minmax(0,1fr);gap:20px}
+@media (max-width:760px){.explorer{grid-template-columns:1fr}}
+.list{border:1px solid var(--line);background:var(--panel);border-radius:6px;max-height:70vh;overflow:auto;min-width:0}
+.list input{width:100%;border:0;border-bottom:1px solid var(--line);background:transparent;color:var(--fg);padding:10px 12px;font:inherit;font-size:14px}
+.list input:focus{outline:2px solid var(--accent);outline-offset:-2px}
+.list button{display:flex;justify-content:space-between;gap:8px;width:100%;text-align:left;border:0;background:transparent;color:var(--fg);padding:7px 12px;font:inherit;font-size:14px;cursor:pointer}
+.list button:hover,.list button:focus-visible{background:var(--soft);outline:none}
+.list button[aria-current="true"]{background:var(--soft);box-shadow:inset 3px 0 0 var(--accent)}
+.list button small{color:var(--muted);font-variant-numeric:tabular-nums}
+.detail{min-width:0;display:grid;gap:16px}
+.card{border:1px solid var(--line);background:var(--panel);border-radius:6px;padding:16px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--muted)}
+.legend i{display:inline-block;width:18px;height:3px;vertical-align:middle;margin-right:6px;border-radius:2px}
+.notes h3{border-top:1px solid var(--line);padding-top:12px}
+.notes ul{padding-left:20px;margin:0 0 8px}
+.notes li{margin:2px 0}
+.notes li,.notes p{overflow-wrap:anywhere}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+td.n{font-variant-numeric:tabular-nums;text-align:right}
+.wrap{overflow-x:auto}
+.chip{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:0 8px;font-size:12px;margin:2px 4px 2px 0;cursor:pointer;background:var(--panel);color:var(--fg);font-family:var(--mono)}
+.chip:hover,.chip:focus-visible{border-color:var(--accent);outline:none}
+.tag{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+@media (prefers-reduced-motion:no-preference){.list button,.chip{transition:background .12s}}
+</style>
+
+<main>
+<header>
+  <h1 id="title"></h1>
+  <p class="sub" id="subtitle"></p>
+</header>
+
+<section class="tiles" id="tiles"></section>
+
+<section>
+  <h2>How the map is built</h2>
+  <figure>
+    <svg viewBox="0 0 980 300" role="img" aria-label="Data flow: install.sh asks for folders, knowledge-scan.sh runs one Opus reader per repo, the readers write one markdown file per repo and one graph.json per folder, and the SessionStart hook reads those back into every new Claude session before a PRD is drafted." style="min-width:720px">
+      <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+      <g fill="none" stroke="currentColor" stroke-width="1.4" font-family="IBM Plex Sans,system-ui" font-size="12">
+        <rect x="20" y="40" width="150" height="54" rx="6"/>
+        <text x="95" y="62" text-anchor="middle" fill="currentColor" stroke="none" font-weight="600">install.sh</text>
+        <text x="95" y="80" text-anchor="middle" fill="currentColor" stroke="none" font-size="11">asks which folders</text>
+
+        <rect x="230" y="40" width="170" height="54" rx="6"/>
+        <text x="315" y="62" text-anchor="middle" fill="currentColor" stroke="none" font-weight="600">knowledge-scan.sh</text>
+        <text x="315" y="80" text-anchor="middle" fill="currentColor" stroke="none" font-size="11">controller, never reads code</text>
+
+        <rect x="460" y="20" width="170" height="40" rx="6" stroke-dasharray="4 3"/>
+        <rect x="460" y="66" width="170" height="40" rx="6" stroke-dasharray="4 3"/>
+        <rect x="460" y="112" width="170" height="40" rx="6" stroke-dasharray="4 3"/>
+        <text x="545" y="45" text-anchor="middle" fill="currentColor" stroke="none">Opus reader · repo A</text>
+        <text x="545" y="91" text-anchor="middle" fill="currentColor" stroke="none">Opus reader · repo B</text>
+        <text x="545" y="137" text-anchor="middle" fill="currentColor" stroke="none">Opus reader · repo N</text>
+
+        <rect x="700" y="40" width="260" height="112" rx="6"/>
+        <text x="830" y="62" text-anchor="middle" fill="currentColor" stroke="none" font-weight="600">~/.claude/knowledge/&lt;folder&gt;/</text>
+        <text x="830" y="86" text-anchor="middle" fill="currentColor" stroke="none" font-family="IBM Plex Mono,monospace" font-size="11">&lt;repo&gt;.md  (one per repo, cited path:line)</text>
+        <text x="830" y="108" text-anchor="middle" fill="currentColor" stroke="none" font-family="IBM Plex Mono,monospace" font-size="11">graph.json  (repo → resource edges)</text>
+        <text x="830" y="130" text-anchor="middle" fill="currentColor" stroke="none" font-family="IBM Plex Mono,monospace" font-size="11">index.html  (this page)</text>
+
+        <line x1="170" y1="67" x2="228" y2="67" marker-end="url(#arrow)"/>
+        <text x="199" y="60" text-anchor="middle" fill="currentColor" stroke="none" font-size="10">roots.json</text>
+        <line x1="400" y1="60" x2="458" y2="42" marker-end="url(#arrow)"/>
+        <line x1="400" y1="67" x2="458" y2="86" marker-end="url(#arrow)"/>
+        <line x1="400" y1="74" x2="458" y2="130" marker-end="url(#arrow)"/>
+        <text x="430" y="105" text-anchor="middle" fill="currentColor" stroke="none" font-size="10">claude -p</text>
+        <line x1="630" y1="40" x2="698" y2="60" marker-end="url(#arrow)"/>
+        <line x1="630" y1="86" x2="698" y2="86" marker-end="url(#arrow)"/>
+        <line x1="630" y1="132" x2="698" y2="112" marker-end="url(#arrow)"/>
+        <text x="664" y="78" text-anchor="middle" fill="currentColor" stroke="none" font-size="10">markdown</text>
+
+        <rect x="700" y="210" width="260" height="54" rx="6"/>
+        <text x="830" y="232" text-anchor="middle" fill="currentColor" stroke="none" font-weight="600">SessionStart hook</text>
+        <text x="830" y="250" text-anchor="middle" fill="currentColor" stroke="none" font-size="11">knowledge: file · neighbors · stale by N</text>
+        <line x1="830" y1="152" x2="830" y2="208" marker-end="url(#arrow)"/>
+        <text x="840" y="184" fill="currentColor" stroke="none" font-size="10">reads, compares HEAD sha</text>
+
+        <rect x="230" y="210" width="400" height="54" rx="6"/>
+        <text x="430" y="232" text-anchor="middle" fill="currentColor" stroke="none" font-weight="600">Claude session in that repo</text>
+        <text x="430" y="250" text-anchor="middle" fill="currentColor" stroke="none" font-size="11">PRD names the chain of repos the change touches</text>
+        <line x1="698" y1="237" x2="632" y2="237" marker-end="url(#arrow)"/>
+        <line x1="315" y1="208" x2="315" y2="96" marker-end="url(#arrow)" stroke-dasharray="4 3"/>
+        <text x="322" y="155" fill="currentColor" stroke="none" font-size="10">stale or unmapped → rescan</text>
+      </g>
+    </svg>
+    <figcaption>The controller only lists repos and compares commit hashes. Every sentence in the map was written by an Opus reader inside that repo, read-only, and cites the file and line it came from.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <h2>Repo explorer</h2>
+  <p class="sub">Pick a repo. The diagram shows what it touches (middle) and which other repos touch the same thing (right). That shared column is the chain a change here can reach.</p>
+  <div class="legend" id="legend"></div>
+  <div class="explorer" style="margin-top:12px">
+    <div class="list">
+      <input id="search" type="search" placeholder="Filter repos" aria-label="Filter repos">
+      <div id="repoList"></div>
+    </div>
+    <div class="detail">
+      <div class="card">
+        <figure><svg id="ego" role="img" aria-label="Resources the selected repo touches and the repos sharing them"></svg>
+        <figcaption id="egoCaption"></figcaption></figure>
+      </div>
+      <div class="card notes" id="notes"></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Shared resources</h2>
+  <p class="sub">Queues, tables, APIs and buckets touched by more than one repo. These are the seams where one change becomes a multi-repo change.</p>
+  <div class="wrap"><table id="shared"><thead><tr><th>Resource</th><th>Type</th><th class="n">Repos</th><th>Touched by</th></tr></thead><tbody></tbody></table></div>
+</section>
+
+<section>
+  <h2>Not mapped yet</h2>
+  <p class="sub" id="unmappedNote"></p>
+  <div id="unmapped"></div>
+</section>
+</main>
+
+<script id="data" type="application/json">__DATA__</script>
+<script>
+const DATA = JSON.parse(document.getElementById('data').textContent);
+const KINDS = ['calls','publishes','consumes','reads','writes','deploys'];
+const repoIds = new Set(DATA.nodes.map(n => n.id));
+const edges = DATA.edges.filter(e => KINDS.includes(e.kind));
+const byRepo = {};
+for (const e of edges) (byRepo[e.from] ||= []).push(e);
+const touchers = {};
+for (const e of edges) if (!repoIds.has(e.to)) (touchers[e.to] ||= new Set()).add(e.from);
+for (const e of edges) if (repoIds.has(e.to)) { (touchers[e.to] ||= new Set()).add(e.from); }
+
+document.getElementById('title').textContent = DATA.title;
+document.getElementById('subtitle').textContent = `${DATA.root} · rendered ${DATA.rendered} · readers ran on ${DATA.model}`;
+
+const sharedResources = Object.entries(touchers).filter(([id, s]) => !repoIds.has(id) && s.size > 1);
+const tiles = [
+  [DATA.nodes.length, 'repos mapped'],
+  [Object.keys(touchers).filter(id => !repoIds.has(id)).length, 'resources'],
+  [edges.length, 'edges with evidence'],
+  [sharedResources.length, 'shared resources'],
+  [DATA.unmapped.length, 'not mapped'],
+];
+document.getElementById('tiles').innerHTML = tiles.map(([n, l]) => `<div class="tile"><b>${n}</b><span>${l}</span></div>`).join('');
+
+document.getElementById('legend').innerHTML = KINDS.map(k => `<span><i style="background:var(--k-${k})"></i>${k}</span>`).join('');
+
+const list = document.getElementById('repoList');
+const sortedRepos = [...DATA.nodes].sort((a, b) => a.id.localeCompare(b.id));
+function renderList(filter) {
+  list.innerHTML = sortedRepos.filter(n => n.id.includes(filter)).map(n =>
+    `<button type="button" data-id="${n.id}" aria-current="${n.id === current}"><span class="mono">${n.id}</span><small>${(byRepo[n.id] || []).length}</small></button>`).join('');
+}
+list.addEventListener('click', ev => { const b = ev.target.closest('button'); if (b) select(b.dataset.id); });
+document.getElementById('search').addEventListener('input', ev => renderList(ev.target.value.trim()));
+
+let current = location.hash.replace('#', '') && repoIds.has(location.hash.slice(1)) ? location.hash.slice(1) : sortedRepos[0]?.id;
+function select(id) {
+  current = id;
+  history.replaceState(null, '', '#' + id);
+  renderList(document.getElementById('search').value.trim());
+  drawEgo(id);
+  document.getElementById('notes').innerHTML = `<p class="tag">${id} · mapped at ${DATA.nodes.find(n => n.id === id)?.mapped_sha.slice(0, 7)}</p>` + (DATA.notes[id] || '<p>No notes.</p>');
+  document.querySelector('.detail').scrollIntoView({ block: 'nearest' });
+}
+window.addEventListener('hashchange', () => { const id = location.hash.slice(1); if (repoIds.has(id) && id !== current) select(id); });
+
+function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+function drawEgo(id) {
+  const mine = byRepo[id] || [];
+  const resources = [...new Set(mine.map(e => e.to))].sort((a, b) => a.localeCompare(b));
+  const others = new Map();
+  for (const r of resources) for (const t of touchers[r] || []) if (t !== id) (others.has(t) ? others.get(t) : others.set(t, new Set()).get(t)).add(r);
+  for (const e of edges) if (e.to === id && e.from !== id) (others.has(e.from) ? others.get(e.from) : others.set(e.from, new Set()).get(e.from)).add(id);
+  const otherIds = [...others.keys()].sort((a, b) => a.localeCompare(b));
+  const row = 26, top = 40;
+  const h = Math.max(resources.length, otherIds.length, 1) * row + top + 30;
+  const W = 980, xRepo = 20, xRes = 330, xOther = 720;
+  const yRes = i => top + i * row + row / 2;
+  const yOther = i => top + i * row + row / 2;
+  const yRepo = Math.max(h / 2, top + row / 2);
+  let s = `<defs><marker id="egoArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>`;
+  s += `<g font-family="IBM Plex Sans,system-ui" font-size="12" fill="currentColor">`;
+  s += `<text x="${xRepo}" y="18" class="tag" font-size="10" fill="var(--muted)" letter-spacing=".06em">THIS REPO</text><text x="${xRes}" y="18" font-size="10" fill="var(--muted)" letter-spacing=".06em">TOUCHES</text><text x="${xOther}" y="18" font-size="10" fill="var(--muted)" letter-spacing=".06em">ALSO TOUCHED BY</text>`;
+  s += `<rect x="${xRepo}" y="${yRepo - 14}" width="250" height="28" rx="5" fill="var(--soft)" stroke="var(--accent)" stroke-width="1.5"/><text x="${xRepo + 10}" y="${yRepo + 4}" font-family="IBM Plex Mono,monospace" font-weight="500">${esc(id)}</text>`;
+  resources.forEach((r, i) => {
+    const kinds = [...new Set(mine.filter(e => e.to === r).map(e => e.kind))];
+    const via = mine.find(e => e.to === r).via;
+    const y = yRes(i);
+    const c = `var(--k-${kinds[0]})`;
+    s += `<path d="M${xRepo + 250} ${yRepo} C ${xRepo + 300} ${yRepo}, ${xRes - 50} ${y}, ${xRes - 4} ${y}" fill="none" stroke="${c}" stroke-width="2" marker-end="url(#egoArrow)"/>`;
+    s += `<text x="${xRes - 8}" y="${y - 4}" text-anchor="end" font-size="10" fill="${c}">${esc(kinds.join('+'))}</text>`;
+    s += `<text x="${xRes}" y="${y + 4}" font-family="IBM Plex Mono,monospace" font-size="11.5"><title>${esc(via)}</title>${esc(r.length > 44 ? r.slice(0, 43) + '…' : r)}</text>`;
+  });
+  otherIds.forEach((o, i) => {
+    const y = yOther(i);
+    for (const r of others.get(o)) {
+      const ri = resources.indexOf(r);
+      const y0 = ri >= 0 ? yRes(ri) : yRepo;
+      const x0 = ri >= 0 ? xRes + 330 : xRepo + 250;
+      const kind = (byRepo[o] || []).find(e => e.to === r)?.kind || 'calls';
+      s += `<path d="M${x0} ${y0} C ${x0 + 30} ${y0}, ${xOther - 30} ${y}, ${xOther - 4} ${y}" fill="none" stroke="var(--k-${kind})" stroke-width="1.2" opacity=".75"/>`;
+    }
+    s += `<rect x="${xOther}" y="${y - 11}" width="240" height="22" rx="4" fill="var(--panel)" stroke="var(--line)"/><text x="${xOther + 8}" y="${y + 4}" font-family="IBM Plex Mono,monospace" font-size="11.5" data-id="${esc(o)}" style="cursor:pointer">${esc(o)}</text>`;
+  });
+  if (!resources.length) s += `<text x="${xRes}" y="${yRepo + 4}" fill="var(--muted)">No outward edges recorded.</text>`;
+  s += `</g>`;
+  const svg = document.getElementById('ego');
+  svg.setAttribute('viewBox', `0 0 ${W} ${h}`); svg.style.minWidth = '720px'; svg.innerHTML = s;
+  svg.querySelectorAll('text[data-id]').forEach(t => t.addEventListener('click', () => select(t.dataset.id)));
+  document.getElementById('egoCaption').textContent = `${id} touches ${resources.length} resource${resources.length === 1 ? '' : 's'}; ${otherIds.length} other repo${otherIds.length === 1 ? '' : 's'} share at least one of them. Hover a resource for the queue, table or URL that carries it.`;
+}
+
+const tbody = document.querySelector('#shared tbody');
+tbody.innerHTML = sharedResources.sort((a, b) => b[1].size - a[1].size || a[0].localeCompare(b[0])).map(([id, s]) =>
+  `<tr><td class="mono">${esc(id)}</td><td>${esc(id.split(':')[0])}</td><td class="n">${s.size}</td><td>${[...s].sort().map(r => `<button type="button" class="chip" data-id="${esc(r)}">${esc(r)}</button>`).join('')}</td></tr>`).join('') || '<tr><td colspan="4">No resource is shared yet.</td></tr>';
+tbody.addEventListener('click', ev => { const b = ev.target.closest('.chip'); if (b) select(b.dataset.id); });
+
+document.getElementById('unmappedNote').textContent = DATA.unmapped.length ? `Git repos under ${DATA.rootPath} without a knowledge file. Run knowledge-scan.sh to add them.` : `Every git repo under ${DATA.rootPath} is mapped.`;
+document.getElementById('unmapped').innerHTML = DATA.unmapped.map(r => `<span class="chip" style="cursor:default">${esc(r)}</span>`).join('');
+
+renderList('');
+if (current) select(current);
+</script>

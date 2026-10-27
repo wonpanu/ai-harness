@@ -27,7 +27,8 @@ for agent in "$HARNESS_DIR"/agents/*.md; do
 done
 
 # hooks: commit-guard blocks git commit/push and gh pr outside this repo unless the user asked this turn (commit-grant);
-# comment-guard lists every comment line an Edit/Write adds so the comment pass happens at write time
+# comment-guard lists every comment line an Edit/Write adds so the comment pass happens at write time;
+# knowledge-context prints the repo's knowledge-map file, neighbors and staleness at SessionStart
 mkdir -p "$CLAUDE_DIR/hooks"
 for hook in "$HARNESS_DIR"/claude/hooks/*.py; do
     ln -sf "$hook" "$CLAUDE_DIR/hooks/$(basename "$hook")"
@@ -74,6 +75,14 @@ for skill in "$HARNESS_DIR"/skills/*/; do
     ln -sfn "${skill%/}" "$CLAUDE_DIR/skills/$name"
     ln -sfn "${skill%/}" "$CROSS_TOOL_SKILLS_DIR/$name"
 done
+
+# project knowledge map: pick the folders once, interactively; a piped install only prints the hint
+if [ ! -f "$CLAUDE_DIR/knowledge/roots.json" ] && [ -t 0 ]; then
+    CLAUDE_DIR="$CLAUDE_DIR" "$HARNESS_DIR/knowledge-scan.sh" --init || true
+fi
+if [ ! -f "$CLAUDE_DIR/knowledge/roots.json" ]; then
+    echo "project knowledge: no folders picked yet; run $HARNESS_DIR/knowledge-scan.sh --init"
+fi
 
 echo "installed: CLAUDE.md -> AGENTS.md, hooks merged into settings.json, $(ls "$HARNESS_DIR"/agents/*.md | wc -l | tr -d ' ') agents, $(ls -d "$HARNESS_DIR"/skills/*/ | wc -l | tr -d ' ') skills into $CLAUDE_DIR and $CROSS_TOOL_SKILLS_DIR; codex: ~/.codex/AGENTS.md + config.toml"
 echo "other AI tools: point them at $HARNESS_DIR/AGENTS.md (most read AGENTS.md from a project root automatically)"
