@@ -9,6 +9,7 @@ export HOME="$TMP/home"; mkdir -p "$HOME"
 export CLAUDE_DIR="$TMP/home/.claude"
 export KNOWLEDGE_CLAUDE="$TMP/claude-stub"
 export STUB_CALLS="$TMP/calls"
+export STUB_ARGS="$TMP/args"
 KNOWLEDGE="$CLAUDE_DIR/knowledge"
 ROOT="$TMP/work"
 mkdir -p "$KNOWLEDGE" "$ROOT/alpha" "$ROOT/beta" "$ROOT/notes"
@@ -19,16 +20,33 @@ printf '{"roots": ["%s"]}' "$ROOT" > "$KNOWLEDGE/roots.json"
 cat > "$KNOWLEDGE_CLAUDE" <<'EOF'
 #!/bin/sh
 echo "$(basename "$PWD")" >> "$STUB_CALLS"
+echo "$*" >> "$STUB_ARGS"
 echo "## What it is"
 echo ""
 echo "A fixture service (observation)."
-[ "${STUB_MODE:-}" = "noedges" ] && exit 0
-echo ""
-echo "## Edges"
-echo ""
-echo '```json'
-echo '[{"from": "'"$(basename "$PWD")"'", "to": "beta", "kind": "calls", "via": "HTTP /v1", "evidence": "main.go:12"}]'
-echo '```'
+flow() {
+  echo ""
+  echo "## Flow"
+  echo ""
+  echo '```json'
+  echo '{"components": [{"id": ".", "kind": "service", "entry": "main.go:1", "does": "serves the fixture"}], "flows": [{"from": ".", "to": "beta", "kind": "calls", "via": "BETA_URL", "evidence": "main.go:12"}]}'
+  echo '```'
+}
+edges() {
+  echo ""
+  echo "## Edges"
+  echo ""
+  echo '```json'
+  echo '[{"from": "'"$(basename "$PWD")"'", "to": "beta", "kind": "calls", "via": "HTTP /v1", "evidence": "main.go:12"}]'
+  echo '```'
+}
+case "${STUB_MODE:-}" in
+  noedges) ;;
+  flow) flow; edges ;;
+  flownoedges) flow ;;
+  edgesthenflow) edges; flow ;;
+  *) edges ;;
+esac
 EOF
 chmod +x "$KNOWLEDGE_CLAUDE"
 
@@ -55,6 +73,8 @@ expect "graph holds the edge from alpha" "alpha beta calls HTTP /v1 main.go:12" 
 expect "graph holds the alpha node at HEAD" "alpha $HEAD_SHA" \
   "$(graph "g['nodes'][0]['id'] + ' ' + g['nodes'][0]['mapped_sha']")"
 expect "stub called once" "1" "$(calls)"
+expect "reader may read the sibling repos under the same folder" "--add-dir $ROOT" "$(grep -o -- "--add-dir [^ ]*" "$STUB_ARGS")"
+expect "add-dir is variadic, so a flag must follow it and the prompt stays last" "--add-dir $ROOT --append-system-prompt-file ... Map this repository." "$(sed -E 's/.*(--add-dir [^ ]* --append-system-prompt-file) .* (Map this repository\.)$/\1 ... \2/' "$STUB_ARGS" | head -1)"
 
 # Act
 OUT=$(sh "$SCAN" "$ROOT/alpha" 2>&1 | grep -v "^rendered ")
@@ -79,6 +99,35 @@ expect "md records that no edges were parsed" "## Edges
 
 none parsed" "$(sed -n '/^## Edges/,$p' "$KNOWLEDGE/work/alpha.md")"
 expect "graph unchanged when no edges parsed" "$GRAPH_BEFORE" "$(cat "$KNOWLEDGE/work/graph.json")"
+
+# Arrange
+FLOW_LINE='{"components": [{"id": ".", "kind": "service", "entry": "main.go:1", "does": "serves the fixture"}], "flows": [{"from": ".", "to": "beta", "kind": "calls", "via": "BETA_URL", "evidence": "main.go:12"}]}'
+# Act
+OUT=$(STUB_MODE=flow sh "$SCAN" --force "$ROOT/alpha" 2>&1 | grep -v "^rendered ")
+# Assert
+expect "flow block before the edges block still maps without a warning" "mapped alpha" "$OUT"
+expect "graph edges come from the Edges array, not the Flow object" "alpha beta calls HTTP /v1 main.go:12" \
+  "$(graph "' '.join(g['edges'][0][key] for key in ('from', 'to', 'kind', 'via', 'evidence')) if len(g['edges']) == 1 else len(g['edges'])")"
+expect "md keeps the Flow block verbatim" "$FLOW_LINE" "$(sed -n '/^## Flow/,/^## Edges/p' "$KNOWLEDGE/work/alpha.md" | grep '^{')"
+expect "md keeps the Edges block verbatim" '[{"from": "alpha", "to": "beta", "kind": "calls", "via": "HTTP /v1", "evidence": "main.go:12"}]' \
+  "$(sed -n '/^## Edges/,$p' "$KNOWLEDGE/work/alpha.md" | grep '^\[')"
+
+# Arrange
+GRAPH_BEFORE=$(cat "$KNOWLEDGE/work/graph.json")
+# Act
+OUT=$(STUB_MODE=flownoedges sh "$SCAN" --force "$ROOT/alpha" 2>&1 | grep -v "^rendered ")
+# Assert
+expect "flow block without an Edges block warns and maps" "warning: alpha: no Edges json block parsed; graph unchanged
+mapped alpha" "$OUT"
+expect "flow block without an Edges block leaves the graph unchanged" "$GRAPH_BEFORE" "$(cat "$KNOWLEDGE/work/graph.json")"
+expect "flow block without an Edges block keeps the Flow block" "$FLOW_LINE" "$(sed -n '/^## Flow/,/^## Edges/p' "$KNOWLEDGE/work/alpha.md" | grep '^{')"
+
+# Act
+OUT=$(STUB_MODE=edgesthenflow sh "$SCAN" --force "$ROOT/alpha" 2>&1 | grep -v "^rendered ")
+# Assert
+expect "edges block followed by a flow block still parses the edges" "mapped alpha" "$OUT"
+expect "edges block followed by a flow block feeds the graph from the Edges array" "alpha beta calls HTTP /v1 main.go:12" \
+  "$(graph "' '.join(g['edges'][0][key] for key in ('from', 'to', 'kind', 'via', 'evidence')) if len(g['edges']) == 1 else len(g['edges'])")"
 
 # Act
 OUT=$(sh "$SCAN" --root "$ROOT" 2>&1 | grep -v "^rendered ")

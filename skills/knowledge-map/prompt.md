@@ -31,8 +31,18 @@ Env vars, config keys and infrastructure resources whose value is another system
 ## Unknowns
 What you could not determine and why, including paths of vendored or generated code.
 
+## Flow
+
 ## Edges
 ```
+
+The `## Flow` section holds exactly one fenced ```json block containing an object `{"components": [...], "flows": [...]}`, and nothing else. It is the inside of this repository: which runnable parts exist and how data moves between them, the queues and stores they touch, and the systems outside the repo.
+
+- `components`: one object per runnable part. `id` is its directory relative to the repo root (`worker/spider`, `service/idaccount`, `bff`; `.` for a single-program repo). `kind` is one of `web`, `bff`, `service`, `worker`, `cron`, `lambda`, `lib`. `entry` is the main file as `path:line`. `does` is one short clause.
+- `flows`: one object per hop. `from` and `to` are a component id or a resource id in the same vocabulary as Edges (`rabbitmq:spider:messages`, `mongo:influencer-directory.posts`, `api:gemini`, a sibling repository's basename). Direction is the direction the data moves: a queue a component consumes goes `from` the queue `to` the component; a queue it publishes goes `from` the component `to` the queue; a store it reads is the `from`; a store it writes is the `to`; an HTTP or gRPC call goes `from` the caller `to` the callee. `kind` is one of `consumes`, `publishes`, `reads`, `writes`, `calls`. `via` is the env var or config key whose value names the queue, table or URL. `evidence` is `path:line`.
+- Take queue, exchange, topic, table, bucket and URL names from where they are set, preferring production over local: a deploy descriptor (Kubernetes or Helm manifest, Terraform, SAM or serverless template, GitHub workflow env) beats a `.env*` file or a config default. When this repo's CI or deploy descriptor points at a sibling repository under the same parent folder (a GitOps or manifests repo), open that repo's manifests for this application and take the production values from there; cite them as `../<repo>/path:line`. Read nothing else outside this repository.
+- When a publisher and a consumer inside this repo name the same queue, both hops use the same resource id so the chain reads end to end. A worker deployed several times with different queue env values is one component with one hop per deployed queue.
+- A single-program repo still lists one component. Only hops you can cite go here; a hop you suspect goes under `## Unknowns`.
 
 The `## Edges` section holds exactly one fenced ```json block containing a JSON array of edge objects, and nothing else. Each object has these keys:
 
@@ -42,4 +52,4 @@ The `## Edges` section holds exactly one fenced ```json block containing a JSON 
 - `via`: the queue, topic, table, URL, env var or resource name that carries the relationship.
 - `evidence`: `relative/path:line` of the strongest citation.
 
-An empty array `[]` is a valid answer for a repository with no outward relationships. Keep the whole output under 200 lines.
+An empty array `[]` is a valid answer for a repository with no outward relationships. Keep the whole output under 320 lines; the Flow block is the part that may grow.
